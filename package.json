@@ -2,6 +2,9 @@
   "name": "application_tracker",
   "version": "0.1.0",
   "private": true,
+  "exhortignore": [
+    "next"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
