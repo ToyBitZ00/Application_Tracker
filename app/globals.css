@@ -30,3 +30,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-body), Arial, Helvetica, sans-serif;
 }
+
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
