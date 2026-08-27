@@ -84,38 +84,33 @@ export default function ScrollProgress() {
         style={{ height: `${sections.length * ITEM_HEIGHT}px` }}
         >
         {/* Track line */}
-        <div className="absolute right-0 top-0 bottom-0 w-px bg-ink/15" />
-
-        {/* Filled progress line */}
-        <div
-            className={`absolute right-0 top-0 w-px bg-ink/40 ${
-            isDragging ? '' : 'transition-[height] duration-300 ease-out'
-            }`}
-            style={{ height: `${(activeIndex / (sections.length - 1)) * 100}%` }}
-        />
+        <div className="absolute right-0 top-1 bottom-1 w-1 bg-ink/15" />
 
         {sections.map((s, i) => (
-            <button
+          <button
             key={s.id}
             onClick={(e) => {
-                e.stopPropagation();
-                scrollToSection(s.id);
+              e.stopPropagation();
+              scrollToSection(s.id);
             }}
             className="relative flex items-center group"
-            >
+          >
             <span
-                className={`text-base font-bold whitespace-nowrap w-32 text-right pr-5 transition-colors ${
-                i === activeIndex ? 'text-ink font-bold' : 'text-ink/30 group-hover:text-ink/60'
-                }`}
+              className={`text-base font-medium whitespace-nowrap w-32 text-right pr-5 transition-colors ${
+                i === activeIndex ? 'text-ink font-semibold' : 'text-ink/30 group-hover:text-ink/60'
+              }`}
             >
-                {s.label}
+              {s.label}
             </span>
             <span
-                className={`absolute right-0 -translate-x-1/2 w-2 h-2 rounded-full transition-colors ${
+              className={`absolute right-0 -translate-x-1/2 w-2 h-2 rounded-full transition-colors ${
                 i === activeIndex ? 'bg-ink' : 'bg-ink/25'
-                }`}
+              }`}
             />
-            </button>
+            {i === activeIndex && (
+              <span className="absolute -right-5 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-ink" />
+            )}
+          </button>
         ))}
         </div>
     </div>

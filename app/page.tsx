@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Kanban, Users, BarChart3, ShieldCheck, ArrowRight } from 'lucide-react';
 import { siGithub } from 'simple-icons';
+import ScrollProgress from '@/components/ScrollProgress';
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -34,6 +35,7 @@ const team = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-paper">
+      <ScrollProgress />
       {/* Hero */}
       <section id="hero" className="px-8 pt-28 pb-24 max-w-4xl mx-auto text-center">
         <p className="text-sm uppercase tracking-widest text-slate mb-6">
@@ -128,7 +130,7 @@ export default function LandingPage() {
       {/* About Us footer */}
       <footer id="about" className="border-t border-hairline bg-paper px-8 py-20">
         <div  className="max-w-5xl mx-auto">
-          <p className="text-3xl font-bold uppercase tracking-widest text-black/70 mb-14">About this project</p>
+          <p className="text-4xl font-bold uppercase tracking-widest text-black/70 mb-14">About this project</p>
           <h2 className="font-display text-3xl text-black/60 mb-6">Internship Application Tracker</h2>
           <p className="text-base text-black/70 leading-relaxed max-w-2xl mb-14">
             Built as a Software Engineering 2 course project at St. Paul University at San Miguel,
