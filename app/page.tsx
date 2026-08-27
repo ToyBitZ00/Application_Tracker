@@ -32,7 +32,7 @@ export default function LandingPage() {
           <span className="text-coral">organized</span> for once.
         </h1>
         <p className="text-slate text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
-          Track every application, every interview round, and every offer —
+          Track every application, every interview round, and every offer
           all in one place, so nothing slips through the cracks during OJT season.
         </p>
         <Link
