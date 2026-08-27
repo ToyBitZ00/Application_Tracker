@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Kanban, Users, BarChart3, ShieldCheck } from 'lucide-react';
+import { Kanban, Users, BarChart3, ShieldCheck, ArrowRight } from 'lucide-react';
 import { siGithub } from 'simple-icons';
 
 function GithubIcon({ className }: { className?: string }) {
@@ -49,9 +49,10 @@ export default function LandingPage() {
         </p>
         <Link
           href="/login"
-          className="inline-block px-10 py-5 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold text-base hover:opacity-90 transition-opacity"
-        >
+          className="inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold text-xl hover:opacity-70 transition-opacity"
+          >
           Get Started
+          <ArrowRight size={25} />
         </Link>
       </section>
 
@@ -136,7 +137,7 @@ export default function LandingPage() {
             of every application's progress.
           </p>
 
-          <p className="text-sm uppercase tracking-widest text-black/70 mb-6">The team</p>
+          <p className="text-xl font-bold uppercase tracking-widest text-black/70 mb-6">The team</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {team.map(({ name, year, role, github }) => (
               <div key={name}>
