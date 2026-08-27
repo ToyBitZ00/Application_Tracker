@@ -40,12 +40,12 @@ export default function LandingPage() {
           For OJT & Internship Applicants
         </p>
         <h1 className="font-display text-5xl md:text-6xl leading-tight text-ink mb-8">
-          Your job hunt,{' '}
+          Your OJT hunt,{' '}
           <span className="text-coral">organized</span> for once.
         </h1>
         <p className="text-slate text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
-          Track every application, every interview round, and every offer —
-          all in one place, so nothing slips through the cracks during OJT season.
+          Track every application, every interview round, and every offer
+          all in one place, so nothing get left behind during OJT season.
         </p>
         <Link
           href="/login"
@@ -68,7 +68,7 @@ export default function LandingPage() {
               <ShieldCheck size={28} className="text-coral mb-6" />
               <h3 className="font-display text-3xl text-ink mb-5">Your data, kept safe</h3>
               <p className="text-lg text-slate leading-relaxed max-w-md">
-                Every card is forgiving by design — edit, undo, or move entries freely without
+                Every card is forgiving by design to edit, undo, or move entries freely without
                 fear of losing progress. Behind the scenes, your applications are stored securely,
                 so your job search stays private and intact.
               </p>
