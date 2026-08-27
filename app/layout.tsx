@@ -1,5 +1,4 @@
 import { Fraunces, Inter, JetBrains_Mono } from 'next/font/google';
-import ScrollProgress from '@/components/ScrollProgress';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -28,7 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} font-body bg-paper text-ink`}>
-        <ScrollProgress />
         {children}
       </body>
       
