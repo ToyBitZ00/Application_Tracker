@@ -1,21 +1,33 @@
 import Link from 'next/link';
-import { Kanban, Users, BarChart3 } from 'lucide-react';
+import { Kanban, Users, BarChart3, ShieldCheck } from 'lucide-react';
+import { siGithub } from 'simple-icons';
+
+function GithubIcon({ className }: { className?: string }) {
+  return (
+    <svg role="img" viewBox="0 0 24 24" width={16} height={16} className={className} fill="currentColor">
+      <path d={siGithub.path} />
+    </svg>
+  );
+}
 
 const team = [
   {
     name: 'Aguirre, Paul Nerie',
     year: 'BSCS 4',
     role: 'Project Manager, Lead Programmer',
+    github: 'https://github.com/ToyBitZ00',
   },
   {
     name: 'Cunanan, Rob King',
     year: 'BSCS 4',
     role: 'Backend Developer',
+    github: 'https://github.com/cunananrobking',
   },
   {
     name: 'Punzalan, Mark MJ',
     year: 'BSCS 4',
-    role: 'Frontend Developer',
+    role: 'Frontend Developer', 
+    github: 'https://github.com/MarkPunzalan',
   },
 ];
 
@@ -44,55 +56,97 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="px-8 pb-28 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="border border-hairline rounded-xl p-8 bg-white">
-          <Kanban size={28} className="text-coral mb-5" />
-          <h3 className="font-display text-xl text-ink mb-3">Pipeline tracking</h3>
-          <p className="text-base text-slate leading-relaxed">
-            See every application's status at a glance — applied, interviewing, offered, or rejected — on a simple Kanban board.
-          </p>
+      <section className="flex flex-col">
+        {/* Feature 4 — preview left, text right, sand bg */}
+        <div className="bg-sand px-8 py-32">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+            <div className="order-2 md:order-1 border border-dashed border-hairline rounded-2xl bg-white h-96 flex items-center justify-center">
+              <p className="text-base text-slate">Secure storage preview coming soon</p>
+            </div>
+            <div className="order-1 md:order-2">
+              <ShieldCheck size={28} className="text-coral mb-6" />
+              <h3 className="font-display text-3xl text-ink mb-5">Your data, kept safe</h3>
+              <p className="text-lg text-slate leading-relaxed max-w-md">
+                Every card is forgiving by design — edit, undo, or move entries freely without
+                fear of losing progress. Behind the scenes, your applications are stored securely,
+                so your job search stays private and intact.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="border border-hairline rounded-xl p-8 bg-white">
-          <Users size={28} className="text-coral mb-5" />
-          <h3 className="font-display text-xl text-ink mb-3">Interview rounds</h3>
-          <p className="text-base text-slate leading-relaxed">
-            Keep tabs on multiple interview rounds per company without losing track of where you stand.
-          </p>
+        
+        {/* Feature 1 — text left, preview right, white bg */}
+        <div className="bg-white px-8 py-32">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+            <div>
+              <Kanban size={28} className="text-coral mb-6" />
+              <h3 className="font-display text-3xl text-ink mb-5">Pipeline tracking</h3>
+              <p className="text-lg text-slate leading-relaxed max-w-md">
+                See every application's status at a glance: applied, interviewing, offered, or rejected on a simple Kanban board.
+              </p>
+            </div>
+            <div className="border border-dashed border-hairline rounded-2xl bg-sand h-96 flex items-center justify-center">
+              <p className="text-base text-slate">Pipeline tracking preview coming soon</p>
+            </div>
+          </div>
         </div>
-        <div className="border border-hairline rounded-xl p-8 bg-white">
-          <BarChart3 size={28} className="text-coral mb-5" />
-          <h3 className="font-display text-xl text-ink mb-3">Overview & analytics</h3>
-          <p className="text-base text-slate leading-relaxed">
-            Get a quick read on how your search is going — active count, response rate, and where you stand overall.
-          </p>
-        </div>
-      </section>
 
-      {/* Preview placeholder */}
-      <section className="px-8 pb-28 max-w-5xl mx-auto">
-        <div className="border border-dashed border-hairline rounded-2xl bg-white/50 h-72 flex items-center justify-center">
-          <p className="text-base text-slate">Dashboard preview coming soon</p>
+        {/* Feature 2 — preview left, text right, sand bg */}
+        <div className="bg-sand px-8 py-32">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+            <div className="order-2 md:order-1 border border-dashed border-hairline rounded-2xl bg-white h-96 flex items-center justify-center">
+              <p className="text-base text-slate">Interview rounds preview coming soon</p>
+            </div>
+            <div className="order-1 md:order-2">
+              <Users size={28} className="text-coral mb-6" />
+              <h3 className="font-display text-3xl text-ink mb-5">Interview rounds</h3>
+              <p className="text-lg text-slate leading-relaxed max-w-md">
+                Keep tabs on multiple interview rounds per company without losing track of where you stand.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature 3 — text left, preview right, white bg */}
+        <div className="bg-white px-8 py-32">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+            <div>
+              <BarChart3 size={28} className="text-coral mb-6" />
+              <h3 className="font-display text-3xl text-ink mb-5">Overview & analytics</h3>
+              <p className="text-lg text-slate leading-relaxed max-w-md">
+                Get a quick read on how your search is going with active count, response rate, and where you stand overall.
+              </p>
+            </div>
+            <div className="border border-dashed border-hairline rounded-2xl bg-sand h-96 flex items-center justify-center">
+              <p className="text-base text-slate">Overview & analytics preview coming soon</p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* About Us footer */}
-      <footer className="border-t border-hairline bg-white px-8 py-20">
+      <footer className="border-t border-hairline bg-paper px-8 py-20">
         <div className="max-w-5xl mx-auto">
-          <p className="text-sm uppercase tracking-widest text-slate mb-4">About this project</p>
-          <h2 className="font-display text-2xl text-ink mb-6">Application Tracker</h2>
-          <p className="text-base text-slate leading-relaxed max-w-2xl mb-14">
+          <p className="text-3xl font-bold uppercase tracking-widest text-black/70 mb-4">About this project</p>
+          <h2 className="font-display text-2xl text-black/50 mb-6">Application Tracker</h2>
+          <p className="text-base text-black/70 leading-relaxed max-w-2xl mb-14">
             Built as a Software Engineering 2 course project at St. Paul University at San Miguel,
             this system was created to help OJT and internship applicants stay on top of their job
-            search by replacing scattered spreadsheets with clear, organized view
+            search by replacing scattered spreadsheets with a clear, organized view
             of every application's progress.
           </p>
 
-          <p className="text-sm uppercase tracking-widest text-slate mb-6">The team</p>
+          <p className="text-sm uppercase tracking-widest text-black/70 mb-6">The team</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {team.map(({ name, year, role }) => (
+            {team.map(({ name, year, role, github }) => (
               <div key={name}>
-                <p className="font-display text-lg text-ink mb-1">{name}</p>
-                <p className="text-sm text-slate mb-1">{year} · St. Paul University at San Miguel</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="font-display text-lg text-black">{name}</p>
+                  <a href={github} target="_blank" rel="noopener noreferrer" aria-label={`${name} GitHub`}>
+                    <GithubIcon className="text-black hover:text-white transition-colors" />
+                  </a>
+                </div>
+                <p className="text-sm text-black/70 mb-1">{year} · St. Paul University at San Miguel</p>
                 <p className="text-sm text-coral font-semibold">{role}</p>
               </div>
             ))}
