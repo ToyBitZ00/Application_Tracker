@@ -7,9 +7,9 @@ import { Home, LayoutGrid, BarChart3, Settings } from 'lucide-react';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: Home },
-  { label: 'Applications', href: '/dashboard/applications', icon: LayoutGrid },
-  { label: 'Reports & Analytics', href: '/dashboard/reports', icon: BarChart3 },
-  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { label: 'Applications', href: '/applications', icon: LayoutGrid },
+  { label: 'Reports & Analytics', href: '/reports', icon: BarChart3 },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function SegmentedNav() {

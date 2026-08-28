@@ -1,6 +1,5 @@
-'use client';
-
 import Link from 'next/link';
+import { siGithub } from 'simple-icons';
 import {
   Kanban,
   Users,
@@ -16,18 +15,21 @@ const team = [
     year: 'BSCS 4',
     role: 'Project Manager, Lead Programmer',
     initials: 'AP',
+    github: 'https://github.com/ToyBitZ00',
   },
   {
     name: 'Cunanan, Rob King',
     year: 'BSCS 4',
     role: 'Backend Developer',
     initials: 'CR',
+    github: 'https://github.com/cunananrobking',
   },
   {
     name: 'Punzalan, Mark MJ',
     year: 'BSCS 4',
     role: 'Frontend Developer',
     initials: 'PM',
+    github: 'https://github.com/MarkPunzalan',
   },
 ];
 
@@ -49,23 +51,36 @@ const applications = [
   },
 ];
 
-const fadeUp = {
-  initial: { opacity: 0, y: 40 }, // offscreen
-  whileInView: { opacity: 1, y: 0 }, // onscreen
-  viewport: { once: true, amount: 0.3 }, // trigger when 30% of the component is visible
-  transition: { duration: 0.6, ease: 'easeOut' as const }, // easing function
-};
+function GithubIcon({ className }: { className?: string }) {
+  return (
+    <svg role="img" viewBox="0 0 24 24" width={20} height={20} className={className} fill="currentColor">
+      <path d={siGithub.path} />
+    </svg>
+  );
+}
 
 export default function LandingPage() {
-  useEffect(() => {
-    const lenis = new Lenis();
-    function raf(time: any) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf)
-  }, []);
+  return (
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900">
 
+      {/* Navbar */}
+      <nav className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
+          
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
+              <BriefcaseBusiness size={21} className="text-white" />
+            </div>
+
+            <div>
+              <p className="font-bold text-slate-900 leading-none">
+                Application Tracker
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                OJT & Internship
+              </p>
+            </div>
+          </Link>
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900">
@@ -407,8 +422,8 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {team.map(({ name, year, role, initials }) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {team.map(({ name, year, role, initials, github }) => (
               <div
                 key={name}
                 className="bg-white border border-slate-200 rounded-2xl p-7 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 transition-all"
@@ -419,8 +434,11 @@ export default function LandingPage() {
 
                 <h3 className="font-bold text-lg text-slate-900">
                   {name}
+                  <a href={github} target="_blank" rel="noopener noreferrer" aria-label={`${name} GitHub`}>
+                    <GithubIcon className="text-black hover:opacity-30 transition-colors" />
+                  </a>
                 </h3>
-
+        
                 <p className="text-sm text-slate-500 mt-1">
                   {year} · St. Paul University at San Miguel
                 </p>
@@ -434,6 +452,7 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+      </section>
 
       {/* CTA */}
       <section className="bg-white">
@@ -483,7 +502,7 @@ export default function LandingPage() {
               © 2026 Application Tracker. Software Engineering 2 Project.
             </p>
           </div>
-        </motion.div>
+        </div>
       </footer>
 
     </div>
