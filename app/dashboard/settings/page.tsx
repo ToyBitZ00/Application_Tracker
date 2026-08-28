@@ -95,14 +95,15 @@ const Icon = ({
         <path d="M9 3v15M15 6v15" {...common} />
       </>
     ),
+    alert: (
+      <>
+        <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" {...common} />
+      </>
+    ),
   };
 
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
       {paths[name]}
     </svg>
   );
@@ -145,6 +146,7 @@ function Field({
   disabled = false,
   type = "text",
   hint,
+  placeholder,
 }: {
   label: string;
   value: string;
@@ -152,6 +154,7 @@ function Field({
   disabled?: boolean;
   type?: string;
   hint?: string;
+  placeholder?: string;
 }) {
   return (
     <div>
@@ -161,9 +164,7 @@ function Field({
         </label>
 
         {hint && (
-          <span className="text-[11px] font-medium text-slate-400">
-            {hint}
-          </span>
+          <span className="text-[11px] font-medium text-slate-400">{hint}</span>
         )}
       </div>
 
@@ -171,6 +172,7 @@ function Field({
         type={type}
         disabled={disabled}
         value={value}
+        placeholder={placeholder}
         onChange={(e) => onChange?.(e.target.value)}
         className={`
           h-12 w-full rounded-xl border px-4 text-[14px] font-medium
@@ -199,60 +201,68 @@ export default function SettingsPage() {
 
   const [saved, setSaved] = useState(false);
 
-  const update = <K extends keyof Profile>(
-    key: K,
-    value: Profile[K]
-  ) => {
+  // Modal States
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Two-step Password Flow State
+  const [passwordStep, setPasswordStep] = useState<"otp" | "change">("otp");
+  const [otpCode, setOtpCode] = useState("");
+  const [passwordForm, setPasswordForm] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
+
+  const update = <K extends keyof Profile>(key: K, value: Profile[K]) => {
     setProfile((prev) => ({
       ...prev,
       [key]: value,
     }));
-
     setSaved(false);
   };
 
   const saveChanges = () => {
     setSaved(true);
-
     setTimeout(() => {
       setSaved(false);
     }, 2500);
   };
 
+  const closePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+    // Delay resetting the form so the user doesn't see it switch back while fading out
+    setTimeout(() => {
+      setPasswordStep("otp");
+      setOtpCode("");
+      setPasswordForm({ current: "", new: "", confirm: "" });
+    }, 300);
+  };
+
   return (
-    /* Removed top padding from main so the sticky wrapper can handle it */
     <main className="min-h-screen bg-[#F6F6F3] px-4 pb-32 font-sans text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-
         {/* STICKY PAGE HEADER WRAPPER */}
-        {/* Added solid background and top-0 to hide scrolling content */}
         <div className="sticky top-0 z-40 bg-[#F6F6F3] pt-5 pb-6">
           <header className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.06)]">
             <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
-              
               <div className="flex items-center gap-4">
-                {/* Avatar */}
                 <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-sm font-bold text-white sm:flex">
                   PA
                 </div>
-
                 <div>
                   <div className="mb-1 flex items-center gap-2">
                     <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
                       Settings
                     </span>
-
                     <span className="h-1 w-1 rounded-full bg-slate-300" />
-
                     <span className="text-[10px] font-semibold text-slate-400">
                       Account
                     </span>
                   </div>
-
                   <h1 className="text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">
                     Account Settings
                   </h1>
-
                   <p className="mt-1 hidden text-[13px] font-medium text-slate-400 sm:block">
                     Manage your profile, application defaults, and preferences.
                   </p>
@@ -268,7 +278,6 @@ export default function SettingsPage() {
                     Saved
                   </div>
                 )}
-
                 <button
                   onClick={saveChanges}
                   className="flex h-10 items-center gap-2 rounded-xl bg-slate-900 px-4 text-[12px] font-bold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.98]"
@@ -278,7 +287,6 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
-
             {/* Accent progress line */}
             <div className="h-[3px] bg-gradient-to-r from-slate-900 via-slate-600 to-slate-200" />
           </header>
@@ -286,10 +294,8 @@ export default function SettingsPage() {
 
         {/* MAIN CONTENT */}
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-
           {/* LEFT */}
           <div className="space-y-6 lg:col-span-7">
-
             {/* PROFILE */}
             <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_5px_25px_rgba(15,23,42,0.035)] sm:p-7">
               <SectionHeader
@@ -297,7 +303,6 @@ export default function SettingsPage() {
                 title="Account Profile"
                 description="Your personal and academic information."
               />
-
               <div className="mt-6 space-y-5">
                 <Field
                   label="Full Name"
@@ -305,12 +310,8 @@ export default function SettingsPage() {
                   onChange={(value) => update("fullName", value)}
                 />
 
-                <Field
-                  label="University Email"
-                  value={profile.email}
-                  disabled
-                  hint="Managed by university"
-                />
+                {/* Removed the hint="Managed by university" */}
+                <Field label="Email" value={profile.email} />
 
                 <Field
                   label="Program / Major"
@@ -328,8 +329,11 @@ export default function SettingsPage() {
                     Keep your account protected with a strong password.
                   </p>
                 </div>
-
-                <button className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50">
+                {/* Trigger Password Modal */}
+                <button
+                  onClick={() => setIsPasswordModalOpen(true)}
+                  className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50"
+                >
                   <Icon name="key" className="h-3.5 w-3.5" />
                   Reset Password
                 </button>
@@ -343,14 +347,12 @@ export default function SettingsPage() {
                 title="Application Defaults"
                 description="Pre-fill these preferences when creating applications."
               />
-
               <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <Field
                   label="Target Role"
                   value={profile.targetRole}
                   onChange={(value) => update("targetRole", value)}
                 />
-
                 <Field
                   label="Preferred Location"
                   value={profile.targetLocation}
@@ -362,18 +364,19 @@ export default function SettingsPage() {
               <div className="mt-6 rounded-xl border border-dashed border-slate-200 p-4">
                 <div className="mb-3 flex items-center gap-2">
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100">
-                    <Icon name="briefcase" className="h-3.5 w-3.5 text-slate-600" />
+                    <Icon
+                      name="briefcase"
+                      className="h-3.5 w-3.5 text-slate-600"
+                    />
                   </span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                     Application Preview
                   </span>
                 </div>
-
                 <div className="flex flex-col gap-1">
                   <span className="text-[14px] font-bold text-slate-800">
                     {profile.targetRole}
                   </span>
-
                   <span className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
                     <Icon name="map" className="h-3 w-3" />
                     {profile.targetLocation}
@@ -385,7 +388,6 @@ export default function SettingsPage() {
 
           {/* RIGHT */}
           <div className="space-y-6 lg:col-span-5">
-
             {/* PREFERENCES */}
             <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_5px_25px_rgba(15,23,42,0.035)] sm:p-7">
               <SectionHeader
@@ -393,15 +395,12 @@ export default function SettingsPage() {
                 title="System Preferences"
                 description="Customize how the application behaves."
               />
-
               <div className="mt-6 space-y-6">
-
                 {/* Appearance */}
                 <div>
                   <label className="mb-3 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
                     Appearance
                   </label>
-
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { value: "light", label: "Light" },
@@ -409,15 +408,11 @@ export default function SettingsPage() {
                       { value: "dark", label: "Dark" },
                     ].map((option) => {
                       const active = profile.theme === option.value;
-
                       return (
                         <button
                           key={option.value}
                           onClick={() =>
-                            update(
-                              "theme",
-                              option.value as Profile["theme"]
-                            )
+                            update("theme", option.value as Profile["theme"])
                           }
                           className={`
                             relative flex h-11 items-center justify-center rounded-xl border text-[11px] font-bold transition
@@ -429,7 +424,6 @@ export default function SettingsPage() {
                           `}
                         >
                           {option.label}
-
                           {active && (
                             <span className="absolute right-2 top-2">
                               <Icon name="check" className="h-3 w-3" />
@@ -446,21 +440,16 @@ export default function SettingsPage() {
                   <label className="mb-3 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
                     Default Landing Page
                   </label>
-
                   <div className="relative">
                     <select
                       value={profile.landingTab}
-                      onChange={(e) =>
-                        update("landingTab", e.target.value)
-                      }
+                      onChange={(e) => update("landingTab", e.target.value)}
                       className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-[#FAFAF8] px-4 pr-10 text-[13px] font-semibold text-slate-800 outline-none transition hover:border-slate-300 focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100"
                     >
                       <option>Dashboard</option>
                       <option>Applications</option>
-                      <option>Jobs</option>
-                      <option>Profile</option>
+                      <option>Reports & Analytics</option>
                     </select>
-
                     <Icon
                       name="chevron"
                       className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
@@ -480,11 +469,13 @@ export default function SettingsPage() {
                 />
 
                 <div className="mt-6 divide-y divide-slate-100">
-                  <button className="group flex w-full items-center gap-4 py-4 text-left">
+                  <button
+                    onClick={() => setIsPasswordModalOpen(true)}
+                    className="group flex w-full items-center gap-4 py-4 text-left"
+                  >
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition group-hover:bg-slate-100">
                       <Icon name="key" className="h-4 w-4" />
                     </div>
-
                     <div className="flex-1">
                       <p className="text-[13px] font-bold text-slate-800">
                         Change password
@@ -493,27 +484,6 @@ export default function SettingsPage() {
                         Update your account password
                       </p>
                     </div>
-
-                    <Icon
-                      name="arrow"
-                      className="h-4 w-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-600"
-                    />
-                  </button>
-
-                  <button className="group flex w-full items-center gap-4 py-4 text-left">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition group-hover:bg-slate-100">
-                      <Icon name="mail" className="h-4 w-4" />
-                    </div>
-
-                    <div className="flex-1">
-                      <p className="text-[13px] font-bold text-slate-800">
-                        Email & notifications
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-slate-400">
-                        Manage account notifications
-                      </p>
-                    </div>
-
                     <Icon
                       name="arrow"
                       className="h-4 w-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-600"
@@ -535,20 +505,21 @@ export default function SettingsPage() {
             <section className="rounded-2xl border border-red-100 bg-red-50/40 p-5 sm:p-6">
               <div className="flex gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-500">
-                  <Icon name="lock" className="h-4 w-4" />
+                  <Icon name="alert" className="h-5 w-5" />
                 </div>
-
                 <div className="flex-1">
                   <h3 className="text-[13px] font-bold text-red-800">
                     Delete account
                   </h3>
-
                   <p className="mt-1 text-[11px] leading-5 text-red-600/70">
                     Permanently delete your account and all associated
                     application data. This action cannot be undone.
                   </p>
 
-                  <button className="mt-4 rounded-lg border border-red-200 bg-white px-3 py-2 text-[11px] font-bold text-red-600 transition hover:bg-red-50">
+                  <button
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="mt-4 rounded-lg border border-red-200 bg-white px-3 py-2 text-[11px] font-bold text-red-600 transition hover:bg-red-50"
+                  >
                     Delete Account
                   </button>
                 </div>
@@ -556,28 +527,142 @@ export default function SettingsPage() {
             </section>
           </div>
         </div>
+      </div>
 
-        {/* MOBILE SAVE BAR */}
-        <div className="fixed bottom-4 left-4 right-4 z-50 lg:hidden">
-          <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_15px_40px_rgba(15,23,42,0.15)] backdrop-blur-xl">
-            <div>
-              <p className="text-[12px] font-bold text-slate-800">
-                Settings
-              </p>
-              <p className="text-[10px] text-slate-400">
-                Changes are saved manually
-              </p>
-            </div>
+      {/* --- MODALS --- */}
 
-            <button
-              onClick={saveChanges}
-              className="h-10 rounded-xl bg-slate-900 px-4 text-[11px] font-bold text-white"
-            >
-              Save Changes
-            </button>
+      {/* Change Password Modal (Two-Step: OTP -> New Password) */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            {passwordStep === "otp" ? (
+              // Step 1: OTP Verification
+              <>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Verify your identity
+                </h3>
+                <p className="mb-6 mt-1 text-[13px] leading-5 text-slate-500">
+                  We've sent a 6-digit security code to your email. Please enter it below to authorize this change.
+                </p>
+
+                <div className="space-y-4">
+                  <Field
+                    label="Authentication Code"
+                    type="text"
+                    placeholder="Enter 6-digit code"
+                    value={otpCode}
+                    onChange={setOtpCode}
+                  />
+                </div>
+
+                <div className="mt-8 flex flex-col-reverse justify-end gap-3 sm:flex-row">
+                  <button
+                    onClick={closePasswordModal}
+                    className="rounded-xl px-4 py-2.5 text-[13px] font-bold text-slate-600 transition hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => setPasswordStep("change")}
+                    className="rounded-xl bg-slate-900 px-6 py-2.5 text-[13px] font-bold text-white shadow-sm transition hover:bg-slate-800"
+                  >
+                    Verify OTP
+                  </button>
+                </div>
+              </>
+            ) : (
+              // Step 2: Set New Password
+              <>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Change Password
+                </h3>
+                <p className="mb-6 mt-1 text-[13px] text-slate-500">
+                  Create a new password that is at least 8 characters long.
+                </p>
+
+                <div className="space-y-4">
+                  <Field
+                    label="Current Password"
+                    type="password"
+                    value={passwordForm.current}
+                    onChange={(val) =>
+                      setPasswordForm({ ...passwordForm, current: val })
+                    }
+                  />
+                  <Field
+                    label="New Password"
+                    type="password"
+                    value={passwordForm.new}
+                    onChange={(val) =>
+                      setPasswordForm({ ...passwordForm, new: val })
+                    }
+                  />
+                  <Field
+                    label="Confirm New Password"
+                    type="password"
+                    value={passwordForm.confirm}
+                    onChange={(val) =>
+                      setPasswordForm({ ...passwordForm, confirm: val })
+                    }
+                  />
+                </div>
+
+                <div className="mt-8 flex flex-col-reverse justify-end gap-3 sm:flex-row">
+                  <button
+                    onClick={closePasswordModal}
+                    className="rounded-xl px-4 py-2.5 text-[13px] font-bold text-slate-600 transition hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={closePasswordModal}
+                    className="rounded-xl bg-slate-900 px-6 py-2.5 text-[13px] font-bold text-white shadow-sm transition hover:bg-slate-800"
+                  >
+                    Update Password
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-red-100 bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <Icon name="alert" className="h-5 w-5" />
+              </div>
+              <h3 className="text-lg font-bold text-red-600">
+                Delete Account?
+              </h3>
+            </div>
+            <p className="mb-6 leading-relaxed text-[13px] text-slate-600">
+              Are you absolutely sure you want to delete your account? All of
+              your tracked applications, interview notes, and profile data will
+              be <strong>permanently removed</strong>. This action cannot be
+              undone.
+            </p>
+
+            <div className="mt-8 flex flex-col-reverse justify-end gap-3 sm:flex-row">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="rounded-xl px-4 py-2.5 text-[13px] font-bold text-slate-600 transition hover:bg-slate-100"
+              >
+                No, keep my account
+              </button>
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="rounded-xl bg-red-600 px-6 py-2.5 text-[13px] font-bold text-white shadow-sm transition hover:bg-red-700"
+              >
+                Yes, delete it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
