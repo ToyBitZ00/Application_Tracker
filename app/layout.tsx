@@ -29,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} font-body bg-paper text-ink`}>
         {children}
       </body>
+      
     </html>
   );
 }

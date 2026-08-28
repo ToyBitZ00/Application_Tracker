@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Kanban,
@@ -47,7 +49,24 @@ const applications = [
   },
 ];
 
+const fadeUp = {
+  initial: { opacity: 0, y: 40 }, // offscreen
+  whileInView: { opacity: 1, y: 0 }, // onscreen
+  viewport: { once: true, amount: 0.3 }, // trigger when 30% of the component is visible
+  transition: { duration: 0.6, ease: 'easeOut' as const }, // easing function
+};
+
 export default function LandingPage() {
+  useEffect(() => {
+    const lenis = new Lenis();
+    function raf(time: any) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf)
+  }, []);
+
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900">
 
@@ -415,7 +434,6 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
 
       {/* CTA */}
       <section className="bg-white">
@@ -465,7 +483,7 @@ export default function LandingPage() {
               © 2026 Application Tracker. Software Engineering 2 Project.
             </p>
           </div>
-        </div>
+        </motion.div>
       </footer>
 
     </div>
