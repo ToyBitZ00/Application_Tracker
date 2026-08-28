@@ -11,17 +11,32 @@ import {
   MapPin,
 } from 'lucide-react';
 
+type ApplicationStatus =
+  | 'Applied'
+  | 'Interview'
+  | 'Offer'
+  | 'Rejected';
+
+type Application = {
+  company: string;
+  position: string;
+  location: string;
+  date: string;
+  status: ApplicationStatus;
+};
+
+/*
+ * Keep static data outside the component.
+ * This prevents the array from being recreated
+ * every time the component renders.
+ */
+const APPLICATIONS: Application[] = [];
+
 export default function ApplicationsPage() {
-  const applications: {
-    company: string;
-    position: string;
-    location: string;
-    date: string;
-    status: 'Applied' | 'Interview' | 'Offer' | 'Rejected';
-  }[] = [];
+  const applicationCount = APPLICATIONS.length;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f5f7fb]">
+    <div className="relative min-h-screen overflow-hidden bg-[#f5f7fb] scroll-smooth">
 
       {/* ================================================= */}
       {/* BACKGROUND DESIGN */}
@@ -106,14 +121,18 @@ export default function ApplicationsPage() {
 
       {/* Bottom-right dot pattern */}
       <div className="pointer-events-none fixed hidden lg:block right-[8%] bottom-[12%]">
+
         <div className="grid grid-cols-4 gap-2 opacity-30">
-          {Array.from({ length: 16 }).map((_, index) => (
+
+          {Array.from({ length: 16 }, (_, index) => (
             <div
               key={index}
               className="w-1.5 h-1.5 rounded-full bg-blue-400"
             />
           ))}
+
         </div>
+
       </div>
 
 
@@ -125,7 +144,7 @@ export default function ApplicationsPage() {
 
         {/* ================= HEADER ================= */}
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
 
           <div>
 
@@ -152,16 +171,22 @@ export default function ApplicationsPage() {
 
           <Link
             href="/applications/new"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-sm shadow-blue-600/20 hover:bg-blue-700 hover:shadow-md transition-all"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-sm shadow-blue-600/20 hover:bg-blue-700 hover:shadow-md transition-[background-color,box-shadow] duration-200"
           >
-            <Plus size={18} strokeWidth={2.5} />
+            <Plus
+              size={18}
+              strokeWidth={2.5}
+            />
+
             Add Application
           </Link>
 
-        </div>
+        </header>
 
 
-        {/* ================= TOOLBAR ================= */}
+        {/* ================================================= */}
+        {/* TOOLBAR */}
+        {/* ================================================= */}
 
         <section className="mt-8">
 
@@ -181,7 +206,7 @@ export default function ApplicationsPage() {
                 <input
                   type="text"
                   placeholder="Search company or position..."
-                  className="w-full h-11 pl-11 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                  className="w-full h-11 pl-11 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-[border-color,box-shadow] duration-200"
                 />
 
               </div>
@@ -191,10 +216,13 @@ export default function ApplicationsPage() {
 
               <button
                 type="button"
-                className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50 transition"
+                className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors duration-150"
               >
+
                 <SlidersHorizontal size={16} />
+
                 Filter
+
               </button>
 
 
@@ -202,7 +230,7 @@ export default function ApplicationsPage() {
 
               <button
                 type="button"
-                className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
+                className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors duration-150"
               >
                 Latest
               </button>
@@ -214,11 +242,13 @@ export default function ApplicationsPage() {
         </section>
 
 
-        {/* ================= APPLICATION CONTENT ================= */}
+        {/* ================================================= */}
+        {/* APPLICATION CONTENT */}
+        {/* ================================================= */}
 
         <section className="mt-6">
 
-          {applications.length === 0 ? (
+          {applicationCount === 0 ? (
 
             /* ================= EMPTY STATE ================= */
 
@@ -250,10 +280,13 @@ export default function ApplicationsPage() {
 
                 <Link
                   href="/applications/new"
-                  className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition"
+                  className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors duration-200"
                 >
+
                   <Plus size={17} />
+
                   Add Application
+
                 </Link>
 
               </div>
@@ -293,94 +326,12 @@ export default function ApplicationsPage() {
 
               {/* Application Rows */}
 
-              {applications.map((application) => (
+              {APPLICATIONS.map((application) => (
 
-                <div
+                <ApplicationRow
                   key={`${application.company}-${application.position}`}
-                  className="group grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_1fr_40px] gap-4 md:items-center px-6 py-5 border-b border-slate-100 last:border-0 hover:bg-slate-50/70 transition"
-                >
-
-                  {/* Company */}
-
-                  <div className="flex items-center gap-3">
-
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-semibold shrink-0">
-                      {application.company.charAt(0)}
-                    </div>
-
-                    <div className="min-w-0">
-
-                      <p className="text-sm font-semibold text-slate-900 truncate">
-                        {application.company}
-                      </p>
-
-                      <div className="flex items-center gap-1 mt-1 text-xs text-slate-400">
-
-                        <MapPin size={12} />
-
-                        {application.location}
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-
-                  {/* Position */}
-
-                  <div>
-
-                    <p className="text-sm text-slate-700">
-                      {application.position}
-                    </p>
-
-                  </div>
-
-
-                  {/* Date */}
-
-                  <div className="flex items-center gap-2 text-sm text-slate-500">
-
-                    <CalendarDays size={15} />
-
-                    {application.date}
-
-                  </div>
-
-
-                  {/* Status */}
-
-                  <div>
-
-                    <span
-                      className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold ${
-                        application.status === 'Applied'
-                          ? 'bg-blue-50 text-blue-700'
-                          : application.status === 'Interview'
-                          ? 'bg-amber-50 text-amber-700'
-                          : application.status === 'Offer'
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-red-50 text-red-600'
-                      }`}
-                    >
-                      {application.status}
-                    </span>
-
-                  </div>
-
-
-                  {/* Menu */}
-
-                  <button
-                    type="button"
-                    className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
-                    aria-label="Application options"
-                  >
-                    <MoreHorizontal size={18} />
-                  </button>
-
-                </div>
+                  application={application}
+                />
 
               ))}
 
@@ -391,13 +342,15 @@ export default function ApplicationsPage() {
         </section>
 
 
-        {/* ================= FOOTER HINT ================= */}
+        {/* ================================================= */}
+        {/* FOOTER HINT */}
+        {/* ================================================= */}
 
         <div className="mt-5 flex items-center justify-between text-xs text-slate-400">
 
           <span>
-            {applications.length} application
-            {applications.length !== 1 ? 's' : ''}
+            {applicationCount} application
+            {applicationCount !== 1 ? 's' : ''}
           </span>
 
           <span>
@@ -407,7 +360,9 @@ export default function ApplicationsPage() {
         </div>
 
 
-        {/* ================= FOOTER ================= */}
+        {/* ================================================= */}
+        {/* FOOTER */}
+        {/* ================================================= */}
 
         <footer className="text-center pt-8 pb-8">
 
@@ -429,6 +384,14 @@ export default function ApplicationsPage() {
       {/* ================================================= */}
 
       <style jsx global>{`
+        html {
+          scroll-behavior: smooth;
+        }
+
+        body {
+          scroll-behavior: smooth;
+        }
+
         @keyframes applicationFloat {
           0%,
           100% {
@@ -439,7 +402,124 @@ export default function ApplicationsPage() {
             transform: translateY(-12px) rotate(12deg);
           }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+          html,
+          body {
+            scroll-behavior: auto;
+          }
+
+          *,
+          *::before,
+          *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
       `}</style>
+
+    </div>
+  );
+}
+
+
+/* ================================================= */
+/* APPLICATION ROW */
+/* ================================================= */
+
+function ApplicationRow({
+  application,
+}: {
+  application: Application;
+}) {
+  const statusClass =
+    application.status === 'Applied'
+      ? 'bg-blue-50 text-blue-700'
+      : application.status === 'Interview'
+        ? 'bg-amber-50 text-amber-700'
+        : application.status === 'Offer'
+          ? 'bg-emerald-50 text-emerald-700'
+          : 'bg-red-50 text-red-600';
+
+  return (
+    <div
+      className="group grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_1fr_40px] gap-4 md:items-center px-6 py-5 border-b border-slate-100 last:border-0 hover:bg-slate-50/70 transition-colors duration-150"
+    >
+
+      {/* ================= COMPANY ================= */}
+
+      <div className="flex items-center gap-3">
+
+        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-semibold shrink-0">
+          {application.company.charAt(0)}
+        </div>
+
+        <div className="min-w-0">
+
+          <p className="text-sm font-semibold text-slate-900 truncate">
+            {application.company}
+          </p>
+
+          <div className="flex items-center gap-1 mt-1 text-xs text-slate-400">
+
+            <MapPin size={12} />
+
+            {application.location}
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* ================= POSITION ================= */}
+
+      <div>
+
+        <p className="text-sm text-slate-700">
+          {application.position}
+        </p>
+
+      </div>
+
+
+      {/* ================= DATE ================= */}
+
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+
+        <CalendarDays size={15} />
+
+        {application.date}
+
+      </div>
+
+
+      {/* ================= STATUS ================= */}
+
+      <div>
+
+        <span
+          className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold ${statusClass}`}
+        >
+          {application.status}
+        </span>
+
+      </div>
+
+
+      {/* ================= MENU ================= */}
+
+      <button
+        type="button"
+        className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors duration-150"
+        aria-label="Application options"
+      >
+
+        <MoreHorizontal size={18} />
+
+      </button>
 
     </div>
   );

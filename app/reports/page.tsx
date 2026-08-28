@@ -7,49 +7,69 @@ import {
   CheckCircle2,
   Clock3,
   TrendingUp,
-  FileText,
   Target,
 } from 'lucide-react';
 
+const STATS = [
+  {
+    label: 'Applications',
+    value: 0,
+    icon: BriefcaseBusiness,
+  },
+  {
+    label: 'Interviews',
+    value: 0,
+    icon: Clock3,
+  },
+  {
+    label: 'Offers',
+    value: 0,
+    icon: CheckCircle2,
+  },
+];
+
+const MONTHS = [
+  { month: 'Jan', value: 0 },
+  { month: 'Feb', value: 0 },
+  { month: 'Mar', value: 0 },
+  { month: 'Apr', value: 0 },
+  { month: 'May', value: 0 },
+  { month: 'Jun', value: 0 },
+  { month: 'Jul', value: 0 },
+  { month: 'Aug', value: 0 },
+];
+
+const STAGES = [
+  { name: 'Applied', value: 0 },
+  { name: 'Interview', value: 0 },
+  { name: 'Offer', value: 0 },
+  { name: 'Rejected', value: 0 },
+];
+
+const GRID_LINES = [1, 2, 3, 4];
+
+const STAGE_COLORS = {
+  Applied: {
+    dot: 'bg-blue-400',
+    bar: 'bg-blue-400',
+  },
+  Interview: {
+    dot: 'bg-amber-400',
+    bar: 'bg-amber-400',
+  },
+  Offer: {
+    dot: 'bg-emerald-400',
+    bar: 'bg-emerald-400',
+  },
+  Rejected: {
+    dot: 'bg-red-400',
+    bar: 'bg-red-400',
+  },
+} as const;
+
 export default function ReportsPage() {
-  const stats = [
-    {
-      label: 'Applications',
-      value: 0,
-      icon: BriefcaseBusiness,
-    },
-    {
-      label: 'Interviews',
-      value: 0,
-      icon: Clock3,
-    },
-    {
-      label: 'Offers',
-      value: 0,
-      icon: CheckCircle2,
-    },
-  ];
-
-  const months = [
-    { month: 'Jan', value: 0 },
-    { month: 'Feb', value: 0 },
-    { month: 'Mar', value: 0 },
-    { month: 'Apr', value: 0 },
-    { month: 'May', value: 0 },
-    { month: 'Jun', value: 0 },
-    { month: 'Jul', value: 0 },
-    { month: 'Aug', value: 0 },
-  ];
-
-  const stages = [
-    { name: 'Applied', value: 0 },
-    { name: 'Interview', value: 0 },
-    { name: 'Offer', value: 0 },
-    { name: 'Rejected', value: 0 },
-  ];
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f5f7fb]">
+    <div className="relative min-h-screen overflow-hidden bg-[#f5f7fb] scroll-smooth">
 
       {/* ================================================= */}
       {/* BACKGROUND DESIGN */}
@@ -58,9 +78,7 @@ export default function ReportsPage() {
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
 
         {/* Top-left blue glow */}
-        <div
-          className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-blue-500/10 blur-3xl animate-pulse"
-        />
+        <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-blue-500/10 blur-3xl animate-pulse" />
 
         {/* Bottom-right indigo glow */}
         <div
@@ -98,52 +116,13 @@ export default function ReportsPage() {
 
 
       {/* ================================================= */}
-      {/* DECORATIVE FLOATING ELEMENTS */}
-      {/* ================================================= */}
-
-      {/* Top-right decorative square */}
-      <div
-        className="pointer-events-none fixed hidden xl:block right-[7%] top-[15%] w-28 h-28 border border-blue-200/50 rounded-3xl rotate-12"
-        style={{
-          animation: 'reportFloat 7s ease-in-out infinite',
-        }}
-      >
-        <div className="absolute inset-4 border border-blue-200/40 rounded-2xl" />
-      </div>
-
-
-      {/* Left decorative square */}
-      <div
-        className="pointer-events-none fixed hidden xl:block left-[4%] top-[48%] w-20 h-20 border border-indigo-200/50 rounded-2xl -rotate-12"
-        style={{
-          animation: 'reportFloat 8s ease-in-out infinite',
-          animationDelay: '1.5s',
-        }}
-      >
-        <div className="absolute inset-3 border border-indigo-200/40 rounded-xl" />
-      </div>
-
-
-      {/* Bottom-right decorative dots */}
-      <div className="pointer-events-none fixed hidden lg:block right-[8%] bottom-[12%]">
-        <div className="grid grid-cols-4 gap-2 opacity-30">
-          {Array.from({ length: 16 }).map((_, index) => (
-            <div
-              key={index}
-              className="w-1.5 h-1.5 rounded-full bg-blue-400"
-            />
-          ))}
-        </div>
-      </div>
-
-
-      {/* ================================================= */}
       {/* MAIN CONTENT */}
       {/* ================================================= */}
 
       <main className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8 lg:py-10">
 
-        {/* Header */}
+        {/* ================= HEADER ================= */}
+
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
 
           <div>
@@ -175,14 +154,17 @@ export default function ReportsPage() {
         </header>
 
 
-        {/* Statistics */}
+        {/* ================================================= */}
+        {/* STATISTICS */}
+        {/* ================================================= */}
+
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
 
-          {stats.map(({ label, value, icon: Icon }) => (
+          {STATS.map(({ label, value, icon: Icon }) => (
 
             <div
               key={label}
-              className="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-5 md:p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+              className="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-5 md:p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             >
 
               <div className="flex items-center justify-between">
@@ -203,6 +185,7 @@ export default function ReportsPage() {
                 />
 
               </div>
+
 
               <div className="mt-5">
 
@@ -227,10 +210,14 @@ export default function ReportsPage() {
         </section>
 
 
-        {/* Main Analytics */}
+        {/* ================================================= */}
+        {/* MAIN ANALYTICS */}
+        {/* ================================================= */}
+
         <section className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 mt-8">
 
-          {/* Activity */}
+          {/* ================= ACTIVITY ================= */}
+
           <div className="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-sm">
 
             <div className="flex items-start justify-between">
@@ -264,14 +251,17 @@ export default function ReportsPage() {
             </div>
 
 
-            {/* Chart */}
+            {/* ================= CHART ================= */}
+
             <div className="mt-9">
 
               <div className="relative h-56">
 
+                {/* Grid lines */}
+
                 <div className="absolute inset-0 flex flex-col justify-between">
 
-                  {[1, 2, 3, 4].map((line) => (
+                  {GRID_LINES.map((line) => (
 
                     <div
                       key={line}
@@ -285,9 +275,11 @@ export default function ReportsPage() {
                 </div>
 
 
+                {/* Bars */}
+
                 <div className="absolute inset-0 flex items-end gap-2 sm:gap-4 px-1">
 
-                  {months.map(({ month, value }) => (
+                  {MONTHS.map(({ month, value }) => (
 
                     <div
                       key={month}
@@ -297,7 +289,7 @@ export default function ReportsPage() {
                       <div className="w-full max-w-[42px] flex justify-center">
 
                         <div
-                          className="w-full rounded-t-lg bg-blue-100 transition-all"
+                          className="w-full rounded-t-lg bg-blue-100 transition-[height] duration-300"
                           style={{
                             height: `${Math.max(value * 20, 5)}px`,
                           }}
@@ -314,9 +306,11 @@ export default function ReportsPage() {
               </div>
 
 
+              {/* Month labels */}
+
               <div className="flex gap-2 sm:gap-4 px-1 mt-3">
 
-                {months.map(({ month }) => (
+                {MONTHS.map(({ month }) => (
 
                   <div
                     key={month}
@@ -332,6 +326,8 @@ export default function ReportsPage() {
             </div>
 
 
+            {/* Legend */}
+
             <div className="mt-7 flex items-center gap-2">
 
               <span className="w-2 h-2 rounded-full bg-blue-500" />
@@ -345,7 +341,8 @@ export default function ReportsPage() {
           </div>
 
 
-          {/* Funnel */}
+          {/* ================= FUNNEL ================= */}
+
           <div className="bg-slate-950 rounded-2xl p-6 md:p-7 text-white shadow-xl shadow-slate-900/10">
 
             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
@@ -364,61 +361,52 @@ export default function ReportsPage() {
 
             <div className="mt-9 space-y-6">
 
-              {stages.map(({ name, value }, index) => (
+              {STAGES.map(({ name, value }) => {
 
-                <div key={name}>
+                const colors = STAGE_COLORS[
+                  name as keyof typeof STAGE_COLORS
+                ];
 
-                  <div className="flex items-center justify-between mb-2">
+                return (
 
-                    <div className="flex items-center gap-2">
+                  <div key={name}>
 
-                      <span
-                        className={`w-2 h-2 rounded-full ${
-                          index === 0
-                            ? 'bg-blue-400'
-                            : index === 1
-                            ? 'bg-amber-400'
-                            : index === 2
-                            ? 'bg-emerald-400'
-                            : 'bg-red-400'
-                        }`}
-                      />
+                    <div className="flex items-center justify-between mb-2">
 
-                      <span className="text-xs text-slate-300">
-                        {name}
+                      <div className="flex items-center gap-2">
+
+                        <span
+                          className={`w-2 h-2 rounded-full ${colors.dot}`}
+                        />
+
+                        <span className="text-xs text-slate-300">
+                          {name}
+                        </span>
+
+                      </div>
+
+                      <span className="text-xs font-semibold text-white">
+                        {value}
                       </span>
 
                     </div>
 
-                    <span className="text-xs font-semibold text-white">
-                      {value}
-                    </span>
+
+                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+
+                      <div
+                        className={`h-full rounded-full transition-[width] duration-300 ${colors.bar}`}
+                        style={{
+                          width: value === 0 ? '0%' : '100%',
+                        }}
+                      />
+
+                    </div>
 
                   </div>
 
-
-                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        index === 0
-                          ? 'bg-blue-400'
-                          : index === 1
-                          ? 'bg-amber-400'
-                          : index === 2
-                          ? 'bg-emerald-400'
-                          : 'bg-red-400'
-                      }`}
-                      style={{
-                        width: `${value === 0 ? 0 : 100}%`,
-                      }}
-                    />
-
-                  </div>
-
-                </div>
-
-              ))}
+                );
+              })}
 
             </div>
 
@@ -444,10 +432,14 @@ export default function ReportsPage() {
         </section>
 
 
-        {/* Insights */}
+        {/* ================================================= */}
+        {/* INSIGHTS */}
+        {/* ================================================= */}
+
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
 
-          {/* Response Rate */}
+          {/* ================= RESPONSE RATE ================= */}
+
           <div className="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-sm">
 
             <div className="flex items-start justify-between">
@@ -490,7 +482,7 @@ export default function ReportsPage() {
               <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
 
                 <div
-                  className="h-full bg-blue-600 rounded-full"
+                  className="h-full bg-blue-600 rounded-full transition-[width] duration-300"
                   style={{ width: '0%' }}
                 />
 
@@ -514,7 +506,8 @@ export default function ReportsPage() {
           </div>
 
 
-          {/* Next Step */}
+          {/* ================= NEXT STEP ================= */}
+
           <div className="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-sm">
 
             <div className="flex items-start justify-between gap-5">
@@ -564,7 +557,10 @@ export default function ReportsPage() {
         </section>
 
 
-        {/* Status Breakdown */}
+        {/* ================================================= */}
+        {/* STATUS BREAKDOWN */}
+        {/* ================================================= */}
+
         <section className="mt-6 bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
 
           <div className="px-6 md:px-7 py-5 border-b border-slate-100">
@@ -582,48 +578,50 @@ export default function ReportsPage() {
 
           <div className="divide-y divide-slate-100">
 
-            {stages.map(({ name, value }) => (
+            {STAGES.map(({ name, value }) => {
 
-              <div
-                key={name}
-                className="px-6 md:px-7 py-4.5 flex items-center justify-between hover:bg-slate-50/70 transition"
-              >
+              const colors = STAGE_COLORS[
+                name as keyof typeof STAGE_COLORS
+              ];
 
-                <div className="flex items-center gap-3">
+              return (
 
-                  <span
-                    className={`w-2.5 h-2.5 rounded-full ${
-                      name === 'Offer'
-                        ? 'bg-emerald-500'
-                        : name === 'Rejected'
-                        ? 'bg-red-400'
-                        : name === 'Interview'
-                        ? 'bg-amber-400'
-                        : 'bg-blue-500'
-                    }`}
-                  />
+                <div
+                  key={name}
+                  className="px-6 md:px-7 py-4.5 flex items-center justify-between hover:bg-slate-50/70 transition-colors duration-150"
+                >
 
-                  <span className="text-sm font-medium text-slate-700">
-                    {name}
+                  <div className="flex items-center gap-3">
+
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full ${colors.dot}`}
+                    />
+
+                    <span className="text-sm font-medium text-slate-700">
+                      {name}
+                    </span>
+
+                  </div>
+
+
+                  <span className="text-sm font-semibold text-slate-950">
+                    {value}
                   </span>
 
                 </div>
 
-
-                <span className="text-sm font-semibold text-slate-950">
-                  {value}
-                </span>
-
-              </div>
-
-            ))}
+              );
+            })}
 
           </div>
 
         </section>
 
 
-        {/* Footer */}
+        {/* ================================================= */}
+        {/* FOOTER */}
+        {/* ================================================= */}
+
         <footer className="text-center pt-8 pb-8">
 
           <p className="text-xs text-slate-400">
@@ -640,19 +638,16 @@ export default function ReportsPage() {
 
 
       {/* ================================================= */}
-      {/* FLOAT ANIMATION */}
+      {/* SMOOTH SCROLL */}
       {/* ================================================= */}
 
       <style jsx global>{`
-        @keyframes reportFloat {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(12deg);
-          }
+        html {
+          scroll-behavior: smooth;
+        }
 
-          50% {
-            transform: translateY(-12px) rotate(12deg);
-          }
+        body {
+          scroll-behavior: smooth;
         }
       `}</style>
 
