@@ -82,6 +82,28 @@ export default function LandingPage() {
             </div>
           </Link>
 
+  return (
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900">
+
+      {/* Navbar */}
+      <nav className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
+          
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
+              <BriefcaseBusiness size={21} className="text-white" />
+            </div>
+
+            <div>
+              <p className="font-bold text-slate-900 leading-none">
+                Application Tracker
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                OJT & Internship
+              </p>
+            </div>
+          </Link>
+
           <Link
             href="/login"
             className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition"
