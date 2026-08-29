@@ -25,11 +25,12 @@ export default function SegmentedNav() {
     <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
       <div className="flex items-center gap-1 bg-white rounded-full shadow-lg border border-hairline p-2">
         {navItems.map(({ label, href, icon: Icon }) => {
-          const isActive = pathname === href;
+          const isActive = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
               href={href}
+              aria-current={isActive ? 'page' : undefined}
               className="relative flex items-center gap-2 px-4 sm:px-6 py-3.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0"
             >
               {isActive && (
