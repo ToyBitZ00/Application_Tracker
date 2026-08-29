@@ -1,5 +1,6 @@
 import { Fraunces, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import SegmentedNav from '@/components/SegmentedNav';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} font-body bg-paper text-ink`}>
         {children}
+        <SegmentedNav />
       </body>
       
     </html>

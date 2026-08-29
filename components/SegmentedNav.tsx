@@ -12,8 +12,14 @@ const navItems = [
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
+const HIDDEN_ON = ['/', '/login', '/forgot-password', '/reset-password'];
+
 export default function SegmentedNav() {
   const pathname = usePathname();
+
+  if (HIDDEN_ON.includes(pathname)) {
+    return null;
+  }
 
   return (
     <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
