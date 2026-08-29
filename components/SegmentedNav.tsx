@@ -84,7 +84,7 @@ export default function SegmentedNav() {
                   opacity: isExpanded ? 1 : 0,
                   scaleX: isExpanded ? 1 : 0.8,
                 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                transition={{ duration: 0.1, ease: 'easeOut' }}
                 className="relative z-10 overflow-hidden whitespace-nowrap origin-left"
               >
                 <span className={isActive ? 'text-white' : 'text-ink'}>{label}</span>
