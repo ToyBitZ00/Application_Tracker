@@ -21,7 +21,7 @@ const team = [
   {
     name: 'Cunanan, Rob King',
     year: 'BSCS 4',
-    role: 'Backend Developer',
+    role: 'Full Stack Developer',
     initials: 'CR',
     github: 'https://github.com/cunananrobking',
     avatar: 'https://github.com/cunananrobking.png',
@@ -29,10 +29,10 @@ const team = [
   {
     name: 'Punzalan, Mark MJ',
     year: 'BSCS 4',
-    role: 'Frontend Developer',
+    role: 'Full Stack Developer',
     initials: 'PM',
-    github: 'https://github.com/MarkPunzalan',
-    avatar: 'https://github.com/MarkPunzalan.png',
+    github: 'https://github.com/markmjpunzalan',
+    avatar: 'https://github.com/markmjpunzalan.png',
   },
 ];
 
