@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Home, LayoutGrid, BarChart3, Settings } from 'lucide-react';
@@ -13,9 +14,29 @@ const navItems = [
 ];
 
 const HIDDEN_ON = ['/', '/login', '/forgot-password', '/reset-password'];
+const COLLAPSE_DELAY = 900;
 
 export default function SegmentedNav() {
   const pathname = usePathname();
+  const [isExpanded, setIsExpanded] = useState(true);
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCollapseTimer = useCallback(() => {
+    if (collapseTimerRef.current) {
+      clearTimeout(collapseTimerRef.current);
+      collapseTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleCollapse = useCallback(() => {
+    clearCollapseTimer();
+    collapseTimerRef.current = setTimeout(() => setIsExpanded(false), COLLAPSE_DELAY);
+  }, [clearCollapseTimer]);
+
+  useEffect(() => {
+    scheduleCollapse();
+    return () => clearCollapseTimer();
+  }, [clearCollapseTimer, scheduleCollapse]);
 
   if (HIDDEN_ON.includes(pathname)) {
     return null;
@@ -23,14 +44,27 @@ export default function SegmentedNav() {
 
   return (
     <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="flex items-center gap-1 bg-white rounded-full shadow-lg border border-hairline p-2">
+      <div
+        className="flex items-center gap-1 bg-white rounded-full shadow-lg border border-hairline p-2 transition-all duration-300 ease-out"
+        onMouseEnter={() => {
+          clearCollapseTimer();
+          setIsExpanded(true);
+        }}
+        onMouseLeave={scheduleCollapse}
+        onFocusCapture={() => {
+          clearCollapseTimer();
+          setIsExpanded(true);
+        }}
+        onBlurCapture={scheduleCollapse}
+      >
         {navItems.map(({ label, href, icon: Icon }) => {
           const isActive = pathname === href;
+
           return (
             <Link
               key={href}
               href={href}
-              className="relative flex items-center gap-2 px-4 sm:px-6 py-3.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0"
+              className={`relative flex items-center ${isExpanded ? 'gap-2 px-4 sm:px-6' : 'gap-0 px-3.5'} py-3.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-all duration-300 ease-out`}
             >
               {isActive && (
                 <motion.div
@@ -43,11 +77,18 @@ export default function SegmentedNav() {
                 size={18}
                 className={`relative z-10 transition-colors ${isActive ? 'text-white' : 'text-ink'}`}
               />
-              <span
-                className={`relative z-10 hidden sm:inline transition-colors ${isActive ? 'text-white' : 'text-ink'}`}
+              <motion.span
+                initial={false}
+                animate={{
+                  maxWidth: isExpanded ? 180 : 0,
+                  opacity: isExpanded ? 1 : 0,
+                  scaleX: isExpanded ? 1 : 0.8,
+                }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="relative z-10 overflow-hidden whitespace-nowrap origin-left"
               >
-                {label}
-              </span>
+                <span className={isActive ? 'text-white' : 'text-ink'}>{label}</span>
+              </motion.span>
             </Link>
           );
         })}
