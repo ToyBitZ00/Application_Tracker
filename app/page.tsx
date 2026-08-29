@@ -16,6 +16,7 @@ const team = [
     role: 'Project Manager, Lead Programmer',
     initials: 'AP',
     github: 'https://github.com/ToyBitZ00',
+    avatar: 'https://github.com/ToyBitZ00.png',
   },
   {
     name: 'Cunanan, Rob King',
@@ -23,6 +24,7 @@ const team = [
     role: 'Backend Developer',
     initials: 'CR',
     github: 'https://github.com/cunananrobking',
+    avatar: 'https://github.com/cunananrobking.png',
   },
   {
     name: 'Punzalan, Mark MJ',
@@ -30,6 +32,7 @@ const team = [
     role: 'Frontend Developer',
     initials: 'PM',
     github: 'https://github.com/MarkPunzalan',
+    avatar: 'https://github.com/MarkPunzalan.png',
   },
 ];
 
@@ -401,18 +404,32 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {team.map(({ name, year, role, initials, github }) => (
+            {team.map(({ name, year, role, initials, github, avatar }) => (
               <div
                 key={name}
                 className="bg-white border border-slate-200 rounded-2xl p-7 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 transition-all"
-              >
-                <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold mb-6">
-                  {initials}
+                >
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-blue-100 mb-6">
+                  <img
+                    src={avatar}
+                    alt={`${name} avatar`}
+                    className="w-full h-full object-cover"
+                    
+                  />
+                  <div className="hidden w-14 h-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                    {initials}
+                  </div>
                 </div>
 
-                <h3 className="font-bold text-lg text-slate-900">
-                  {name}
-                  <a href={github} target="_blank" rel="noopener noreferrer" aria-label={`${name} GitHub`}>
+                <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                  <span>{name}</span>
+                  <a
+                    href={github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${name} GitHub`}
+                    className="shrink-0"
+                    >
                     <GithubIcon className="text-black hover:opacity-30 transition-colors" />
                   </a>
                 </h3>
