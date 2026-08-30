@@ -63,7 +63,6 @@ const pipelineData = [
     value: 15, 
     color: '#f59e0b',
     companies: [
-      // Configured to store only the latest/recent interview round
       { name: 'Aster Cloud', role: 'Software Engineer', date: 'Jul 02', currentRound: '2nd Interview' },
       { name: 'Orbit Studio', role: 'Frontend Engineer', date: 'Jul 05', currentRound: '3rd Interview' },
       { name: 'Luna Digital', role: 'Product Designer', date: 'Jul 08', currentRound: '1st Interview' },
@@ -172,7 +171,9 @@ export default function ReportsPage() {
   return (
     <div className="relative h-screen w-full flex flex-col overflow-hidden bg-[#f5f7fb]">
       
-      {/* BACKGROUND DESIGN */}
+      {/* ================================================= */}
+      {/* BACKGROUND DESIGN (FIXED) */}
+      {/* ================================================= */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse" />
         <div
@@ -200,10 +201,12 @@ export default function ReportsPage() {
         }}
       />
 
-      {/* FIXED HEADER */}
+      {/* ================================================= */}
+      {/* FIXED HEADER (TRANSPARENT & UNIFORM) */}
+      {/* ================================================= */}
       <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
-          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
             
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -235,6 +238,7 @@ export default function ReportsPage() {
                 />
               </button>
 
+              {/* Dropdown Menu */}
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_12px_40px_rgba(15,23,42,0.12)] border border-slate-100 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
                   <div className="p-2 flex flex-col">
@@ -301,9 +305,11 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* SCROLLABLE CONTENT */}
+      {/* ================================================= */}
+      {/* SCROLLABLE CONTENT WITH MASK FOR FADE EFFECT */}
+      {/* ================================================= */}
       <main 
-        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide pt-4 pb-32"
+        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide pt-10 pb-32"
         style={{
           maskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
@@ -311,10 +317,10 @@ export default function ReportsPage() {
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           
-          {/* KPI CARDS */}
+          {/* ================= INTERACTIVE KPI CARDS ================= */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
             
-            {/* Response Rate */}
+            {/* Response Rate Button */}
             <button 
               type="button"
               onClick={() => setActiveKpiModal('responseRate')}
@@ -339,7 +345,7 @@ export default function ReportsPage() {
               </div>
             </button>
 
-            {/* Interview Conversion */}
+            {/* Interview Conversion Button */}
             <button 
               type="button"
               onClick={() => setActiveKpiModal('conversion')}
@@ -364,7 +370,7 @@ export default function ReportsPage() {
               </div>
             </button>
 
-            {/* Avg Time-to-Response */}
+            {/* Avg Time-to-Response Button */}
             <button 
               type="button"
               onClick={() => setActiveKpiModal('timeToResponse')}
@@ -388,10 +394,10 @@ export default function ReportsPage() {
 
           </div>
 
-          {/* CHARTS */}
+          {/* ================= CHARTS ================= */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             
-            {/* Bar Chart */}
+            {/* Bar Chart (8 cols) */}
             <div className="lg:col-span-8 bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
               <div className="mb-8">
                 <h2 className="text-base font-bold text-slate-950">Applications Over Time</h2>
@@ -429,7 +435,7 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            {/* Donut Chart */}
+            {/* Donut Chart (4 cols) */}
             <div className="lg:col-span-4 bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)] flex flex-col">
               <div className="mb-4">
                 <h2 className="text-base font-bold text-slate-950">Pipeline Funnel</h2>
@@ -470,7 +476,7 @@ export default function ReportsPage() {
 
           </div>
 
-          {/* INTERACTIVE STATUS BREAKDOWN */}
+          {/* ================= INTERACTIVE STATUS BREAKDOWN (Accordion) ================= */}
           <div className="mt-5 bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
             <div className="px-6 md:px-8 py-5 border-b border-slate-100">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
@@ -557,22 +563,30 @@ export default function ReportsPage() {
         </div>
       </main>
 
+      {/* ================================================= */}
       {/* BOTTOM FADE-IN EFFECT */}
-      <div className="fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
+      {/* ================================================= */}
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
 
+      {/* ================================================= */}
       {/* REDESIGNED LIGHT BLUE KPI BREAKDOWN MODAL */}
+      {/* ================================================= */}
       {activeKpiModal && KPI_DETAILS[activeKpiModal] && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+          {/* Blurred Backdrop */}
           <div 
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" 
             onClick={() => setActiveKpiModal(null)} 
           />
           
+          {/* Modal Container */}
           <div 
             role="dialog" 
             aria-modal="true"
             className="relative w-full max-w-lg bg-slate-50 rounded-3xl shadow-[0_32px_80px_rgba(15,23,42,0.2)] overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-slate-200"
           >
+            
+            {/* Dynamic Header (Light Blue Theme) */}
             <div className="relative px-6 py-6 bg-blue-50/80 border-b border-blue-100 flex items-start justify-between rounded-t-3xl">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-blue-100/50 flex shrink-0 items-center justify-center">
@@ -602,6 +616,7 @@ export default function ReportsPage() {
               </button>
             </div>
 
+            {/* List Body */}
             <div className="px-6 py-5 max-h-[55vh] overflow-y-auto">
               <p className="text-xs font-medium text-slate-500 mb-4 px-1">
                 {KPI_DETAILS[activeKpiModal].description}
@@ -613,15 +628,18 @@ export default function ReportsPage() {
                     key={index}
                     className="flex items-center p-3 sm:p-4 bg-white border border-slate-200/80 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all group"
                   >
+                    {/* Avatar */}
                     <div className={`w-10 h-10 rounded-full flex flex-shrink-0 items-center justify-center text-xs font-bold ${item.avatarBg}`}>
                       {item.avatar}
                     </div>
                     
+                    {/* Details */}
                     <div className="ml-3 flex-1">
                       <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{item.company}</p>
                       <p className="text-xs font-medium text-slate-500 mt-0.5">{item.detail}</p>
                     </div>
                     
+                    {/* Badge */}
                     <div className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${item.badgeColor} shrink-0 ml-2`}>
                       {item.badge}
                     </div>
@@ -630,6 +648,7 @@ export default function ReportsPage() {
               </div>
             </div>
 
+            {/* Subtle Bottom Fade for Scrollable Area */}
             <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-50 to-transparent pointer-events-none rounded-b-3xl" />
           </div>
         </div>
@@ -641,13 +660,30 @@ export default function ReportsPage() {
           scroll-behavior: smooth;
         }
 
+        /* Hide scrollbar for Chrome, Safari and Opera */
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
 
+        /* Hide scrollbar for IE, Edge and Firefox */
         .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+
+        @keyframes header-in {
+          from {
+            opacity: 0;
+            transform: translateY(-12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-header-in {
+          animation: header-in 0.4s ease-out forwards;
         }
       `}</style>
     </div>
