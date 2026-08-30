@@ -1068,8 +1068,7 @@ export default function ApplicationsPage() {
           }}
         >
 
-          <div className="max-w-[1500px] mx-auto px-5 sm:px-6 lg:px-8 pt-8 pb-32">
-
+          <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-8 pb-32">
 
             {/* ================================================= */}
             {/* TOOLBAR */}
