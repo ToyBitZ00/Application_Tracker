@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { siGithub } from 'simple-icons';
 import DashboardPreviewCarousel from '@/components/DashboardPreviewCarousel';
@@ -64,6 +66,14 @@ function GithubIcon({ className }: { className?: string }) {
 }
 
 export default function LandingPage() {
+  const handleExploreFeatures = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900">
 
@@ -137,6 +147,7 @@ export default function LandingPage() {
 
               <a
                 href="#features"
+                onClick={handleExploreFeatures}
                 className="w-full sm:w-auto inline-flex items-center justify-center px-7 py-3.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition"
               >
                 Explore Features
