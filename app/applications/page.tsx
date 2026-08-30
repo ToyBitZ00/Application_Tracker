@@ -24,7 +24,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 import {
-  Plus,
   Search,
   SlidersHorizontal,
   Trash2,
@@ -32,7 +31,6 @@ import {
   Check,
   GripVertical,
   StickyNote,
-  Palette,
 } from 'lucide-react';
 
 /* ================================================= */
@@ -210,15 +208,6 @@ export default function ApplicationsPage() {
   const [newCardText, setNewCardText] =
     useState('');
 
-  const [showAddColumn, setShowAddColumn] =
-    useState(false);
-
-  const [newColumnName, setNewColumnName] =
-    useState('');
-
-  const [newColumnColor, setNewColumnColor] =
-    useState<ColumnColor>(COLUMN_COLORS[0]);
-
   /* ================================================= */
   /* DRAG SENSOR */
   /* ================================================= */
@@ -282,45 +271,6 @@ export default function ApplicationsPage() {
             card.id === cardId
         )
     );
-  };
-
-  /* ================================================= */
-  /* ADD COLUMN */
-  /* ================================================= */
-
-  const addColumn = () => {
-    const name =
-      newColumnName.trim();
-
-    if (!name) return;
-
-    const column: Column = {
-      id:
-        `column-${Date.now()}`,
-
-      title:
-        name,
-
-      color:
-        newColumnColor,
-
-      cards: [],
-    };
-
-    setColumns(
-      previous => [
-        ...previous,
-        column,
-      ]
-    );
-
-    setNewColumnName('');
-
-    setNewColumnColor(
-      COLUMN_COLORS[0]
-    );
-
-    setShowAddColumn(false);
   };
 
   /* ================================================= */
@@ -954,11 +904,11 @@ export default function ApplicationsPage() {
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
 
           <div
-            className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse"
+            className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl blue-glow-animation"
           />
 
           <div
-            className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
+            className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl blue-glow-animation"
             style={{
               animationDelay:
                 '1.5s',
@@ -966,7 +916,7 @@ export default function ApplicationsPage() {
           />
 
           <div
-            className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl animate-pulse"
+            className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl blue-glow-animation"
             style={{
               animationDelay:
                 '3s',
@@ -1029,23 +979,6 @@ export default function ApplicationsPage() {
                 </p>
 
               </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowAddColumn(true)
-                }
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-sm shadow-blue-600/20 hover:bg-blue-700 hover:shadow-md transition-all"
-              >
-
-                <Plus
-                  size={18}
-                  strokeWidth={2.5}
-                />
-
-                Add Column
-
-              </button>
 
             </header>
 
@@ -1128,162 +1061,12 @@ export default function ApplicationsPage() {
             </section>
 
             {/* ================================================= */}
-            {/* CREATE COLUMN */}
-            {/* ================================================= */}
-
-            {showAddColumn && (
-
-              <section className="mb-6">
-
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-
-                  <div className="flex items-center gap-2 mb-4">
-
-                    <Palette
-                      size={18}
-                      className="text-blue-600"
-                    />
-
-                    <h2 className="text-sm font-bold text-slate-800">
-                      Create New Column
-                    </h2>
-
-                  </div>
-
-                  <input
-                    autoFocus
-                    type="text"
-                    value={
-                      newColumnName
-                    }
-                    onChange={event =>
-                      setNewColumnName(
-                        event.target.value
-                      )
-                    }
-                    onKeyDown={event => {
-
-                      if (
-                        event.key ===
-                        'Enter'
-                      ) {
-                        addColumn();
-                      }
-
-                      if (
-                        event.key ===
-                        'Escape'
-                      ) {
-                        setShowAddColumn(
-                          false
-                        );
-                      }
-
-                    }}
-                    placeholder="Column name, e.g. For Follow-up"
-                    className="w-full h-11 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-                  />
-
-                  <div className="mt-4">
-
-                    <p className="text-xs font-semibold text-slate-500 mb-2">
-                      Choose column color
-                    </p>
-
-                    <div className="flex flex-wrap gap-2">
-
-                      {COLUMN_COLORS.map(
-                        color => (
-
-                          <button
-                            key={
-                              color.name
-                            }
-                            type="button"
-                            onClick={() =>
-                              setNewColumnColor(
-                                color
-                              )
-                            }
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
-                              newColumnColor.name ===
-                              color.name
-
-                                ? `${color.header} ${color.border} ring-2 ring-blue-500/20`
-
-                                : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                            }`}
-                          >
-
-                            <span
-                              className={`w-3 h-3 rounded-full ${color.dot}`}
-                            />
-
-                            {
-                              color.name
-                            }
-
-                          </button>
-
-                        )
-                      )}
-
-                    </div>
-
-                  </div>
-
-                  <div className="flex justify-end gap-2 mt-5">
-
-                    <button
-                      type="button"
-                      onClick={() => {
-
-                        setShowAddColumn(
-                          false
-                        );
-
-                        setNewColumnName(
-                          ''
-                        );
-
-                      }}
-                      className="h-10 px-4 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50"
-                    >
-                      Cancel
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={
-                        addColumn
-                      }
-                      className="h-10 px-5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
-                    >
-
-                      <Plus
-                        size={15}
-                        className="inline mr-1"
-                      />
-
-                      Create Column
-
-                    </button>
-
-                  </div>
-
-                </div>
-
-              </section>
-
-            )}
-
-            {/* ================================================= */}
             {/* BOARD */}
             {/* ================================================= */}
 
             <section>
 
-              <div className="overflow-x-auto pb-8">
+              <div className="overflow-x-auto overflow-y-visible pb-8 scrollbar-hide">
 
                 <SortableContext
                   items={
@@ -1298,14 +1081,7 @@ export default function ApplicationsPage() {
                 >
 
                   <div
-                    className="flex gap-4 items-start"
-                    style={{
-                      minWidth:
-                        columns.length *
-                          286 +
-                        286 +
-                        'px',
-                    }}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start"
                   >
 
                     {columns.map(
@@ -1401,38 +1177,11 @@ export default function ApplicationsPage() {
                           deleteCard={
                             deleteCard
                           }
+
                         />
 
                       )
                     )}
-
-                    {/* ================================================= */}
-                    {/* ADD COLUMN BUTTON */}
-                    {/* ================================================= */}
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowAddColumn(
-                          true
-                        )
-                      }
-                      className="w-[270px] shrink-0 min-h-[150px] rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 hover:bg-white hover:border-blue-300 flex flex-col items-center justify-center text-slate-400 hover:text-blue-600 transition-all"
-                    >
-
-                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-
-                        <Plus
-                          size={20}
-                        />
-
-                      </div>
-
-                      <span className="mt-3 text-sm font-semibold">
-                        Add another column
-                      </span>
-
-                    </button>
 
                   </div>
 
@@ -1499,7 +1248,7 @@ export default function ApplicationsPage() {
 
           {activeCard ? (
 
-            <div className="w-[250px] bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xl rotate-2 cursor-grabbing">
+            <div className="w-[280px] bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xl rotate-2 cursor-grabbing">
 
               <div className="flex items-start gap-2">
 
@@ -1521,7 +1270,7 @@ export default function ApplicationsPage() {
           ) : activeColumn ? (
 
             <div
-              className={`w-[270px] rounded-2xl border shadow-2xl rotate-1 overflow-hidden ${activeColumn.color.background} ${activeColumn.color.border}`}
+              className={`w-[300px] rounded-2xl border shadow-2xl rotate-1 overflow-hidden ${activeColumn.color.background} ${activeColumn.color.border}`}
             >
 
               <div
@@ -1583,6 +1332,8 @@ export default function ApplicationsPage() {
             scroll-behavior: smooth;
           }
 
+          /* HIDE ALL SCROLLBARS */
+
           .scrollbar-hide::-webkit-scrollbar {
             display: none;
           }
@@ -1623,13 +1374,15 @@ export default function ApplicationsPage() {
             0%,
             100% {
               opacity: 0.45;
-              transform: scale(1)
+              transform:
+                scale(1)
                 translate(0, 0);
             }
 
             50% {
               opacity: 0.85;
-              transform: scale(1.08)
+              transform:
+                scale(1.08)
                 translate(20px, -15px);
             }
 
@@ -1670,6 +1423,7 @@ export default function ApplicationsPage() {
         `}</style>
 
       </div>
+
     </DndContext>
   );
 }
@@ -1818,8 +1572,10 @@ function SortableColumn({
         setDropRef(node);
 
       }}
+
       style={style}
-      className={`w-[270px] shrink-0 transition-all ${
+
+      className={`w-full min-w-0 transition-all ${
         isDragging
           ? 'opacity-30'
           : ''
@@ -2229,9 +1985,9 @@ function SortableColumn({
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-white/50 transition-all"
             >
 
-              <Plus
-                size={16}
-              />
+              <span className="text-lg leading-none">
+                +
+              </span>
 
               Add sticky note
 
@@ -2358,7 +2114,7 @@ function SortableCard({
 
               if (
                 event.key ===
-                'Enter' &&
+                  'Enter' &&
                 event.ctrlKey
               ) {
                 saveCard();
