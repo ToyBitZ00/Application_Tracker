@@ -16,6 +16,7 @@ import {
   Check,
   AlertCircle,
   Key,
+  X, // <-- Added X icon for the modals
 } from 'lucide-react';
 
 /* ================================================= */
@@ -220,7 +221,7 @@ function ActionRow({ icon, title, description, onClick }: {
 }
 
 /* ================================================= */
-/* MODALS */
+/* PREMIUM UNIFORM MODALS */
 /* ================================================= */
 
 function ChangePasswordModal({ onCancel, onSuccess }: { onCancel: () => void; onSuccess: () => void }) {
@@ -241,112 +242,136 @@ function ChangePasswordModal({ onCancel, onSuccess }: { onCancel: () => void; on
   }, [onCancel]);
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
-      <button
-        type="button"
-        aria-label="Close dialog"
-        onClick={onCancel}
-        className="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px]"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:p-6">
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" 
+        onClick={onCancel} 
       />
+      
       <div
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-[440px] rounded-2xl bg-white p-6 sm:p-7 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+        className="relative w-full max-w-[460px] bg-slate-50 rounded-3xl shadow-[0_32px_80px_rgba(15,23,42,0.2)] overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-slate-200"
       >
-        {step === 'otp' ? (
-          <>
-            <h2 className="text-xl font-bold text-slate-950">Verify your identity</h2>
-            <p className="mt-2 text-sm text-slate-500 mb-6 leading-relaxed">
-              We've sent a 6-digit security code to your email. Please enter it below to authorize this change.
-            </p>
-            <div className="mb-6">
-              <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
-                Authentication Code
-              </label>
-              <input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 6-digit code"
-                className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-              />
+        {/* Dynamic Header (Light Blue Theme) */}
+        <div className="relative px-6 py-6 bg-blue-50/80 border-b border-blue-100 flex items-start justify-between rounded-t-3xl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-blue-100/50 flex shrink-0 items-center justify-center">
+              <Key size={24} className="text-blue-600" strokeWidth={2} />
             </div>
-            <div className="flex items-center justify-end gap-3 mt-8">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="text-sm font-semibold text-slate-600 hover:text-slate-950 px-3 py-2 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => setStep('change')}
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
-              >
-                Verify OTP
-              </button>
+            <div>
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-blue-400 mb-0.5 mt-1">
+                Security
+              </h3>
+              <span className="text-2xl font-extrabold text-blue-950 leading-none block">
+                {step === 'otp' ? 'Verify Identity' : 'Change Password'}
+              </span>
             </div>
-          </>
-        ) : (
-          <>
-            <h2 className="text-xl font-bold text-slate-950">Change Password</h2>
-            <p className="mt-2 text-sm text-slate-500 mb-6 leading-relaxed">
-              Create a new password that is at least 8 characters long.
-            </p>
-            <div className="space-y-4 mb-6">
-              <div>
+          </div>
+          <button 
+            type="button" 
+            onClick={onCancel}
+            className="w-8 h-8 rounded-full bg-white border border-blue-200/60 flex shrink-0 items-center justify-center text-blue-400 hover:bg-blue-100 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-200 mt-1 shadow-sm"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="px-6 py-6">
+          {step === 'otp' ? (
+            <div className="animate-in fade-in duration-300">
+              <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                We've sent a 6-digit security code to your email. Please enter it below to authorize this change.
+              </p>
+              <div className="mb-6">
                 <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
-                  Current Password
+                  Authentication Code
                 </label>
                 <input
-                  type="password"
-                  value={currentPass}
-                  onChange={(e) => setCurrentPass(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter 6-digit code"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                 />
               </div>
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  value={newPass}
-                  onChange={(e) => setNewPass(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  value={confirmPass}
-                  onChange={(e) => setConfirmPass(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-                />
+              <div className="flex items-center justify-end gap-3 mt-8">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="text-sm font-semibold text-slate-600 hover:text-slate-950 px-3 py-2 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep('change')}
+                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition active:scale-[0.98]"
+                >
+                  Verify OTP
+                </button>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 mt-8">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="text-sm font-semibold text-slate-600 hover:text-slate-950 px-3 py-2 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={onSuccess}
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
-              >
-                Update Password
-              </button>
+          ) : (
+            <div className="animate-in fade-in duration-300">
+              <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                Create a new password that is at least 8 characters long.
+              </p>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPass}
+                    onChange={(e) => setCurrentPass(e.target.value)}
+                    className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPass}
+                    onChange={(e) => setNewPass(e.target.value)}
+                    className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPass}
+                    onChange={(e) => setConfirmPass(e.target.value)}
+                    className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-3 mt-8">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="text-sm font-semibold text-slate-600 hover:text-slate-950 px-3 py-2 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={onSuccess}
+                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition active:scale-[0.98]"
+                >
+                  Update Password
+                </button>
+              </div>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -364,45 +389,63 @@ function SignOutModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm
   }, [onCancel]);
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
-      <button
-        type="button"
-        aria-label="Close dialog"
-        onClick={onCancel}
-        className="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px]"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:p-6">
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" 
+        onClick={onCancel} 
       />
+      
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="sign-out-title"
-        className="relative w-full max-w-[440px] rounded-2xl bg-white p-6 sm:p-7 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+        className="relative w-full max-w-[420px] bg-slate-50 rounded-3xl shadow-[0_32px_80px_rgba(15,23,42,0.2)] overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-slate-200"
       >
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50">
-            <LogOut size={20} className="text-slate-500" />
+        {/* Dynamic Header (Slate Theme) */}
+        <div className="relative px-6 py-6 bg-slate-100/80 border-b border-slate-200 flex items-start justify-between rounded-t-3xl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-200/50 flex shrink-0 items-center justify-center">
+              <LogOut size={24} className="text-slate-600" strokeWidth={2} />
+            </div>
+            <div>
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 mb-0.5 mt-1">
+                Session
+              </h3>
+              <span id="sign-out-title" className="text-2xl font-extrabold text-slate-950 leading-none block">
+                Sign Out
+              </span>
+            </div>
           </div>
-          <h2 id="sign-out-title" className="text-lg font-bold text-slate-950">
-            Sign Out?
-          </h2>
-        </div>
-        <p className="mt-4 text-sm leading-relaxed text-slate-500">
-          Are you sure you want to sign out of your account? You will need to enter your credentials to log back in.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-end gap-4">
-          <button
-            type="button"
+          <button 
+            type="button" 
             onClick={onCancel}
-            className="text-sm font-semibold text-slate-600 hover:text-slate-950 transition"
+            className="w-8 h-8 rounded-full bg-white border border-slate-300/60 flex shrink-0 items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 mt-1 shadow-sm"
           >
-            Cancel
+            <X size={16} />
           </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition"
-          >
-            Sign out
-          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="px-6 py-6">
+          <p className="text-sm leading-relaxed text-slate-500">
+            Are you sure you want to sign out of your account? You will need to enter your credentials to log back in.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="text-sm font-semibold text-slate-600 hover:text-slate-950 px-3 py-2 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition active:scale-[0.98]"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -421,51 +464,69 @@ function DeleteAccountModal({ onCancel, onConfirm }: { onCancel: () => void; onC
   }, [onCancel]);
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
-      <button
-        type="button"
-        aria-label="Close dialog"
-        onClick={onCancel}
-        className="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px]"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:p-6">
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" 
+        onClick={onCancel} 
       />
+      
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-account-title"
-        className="relative w-full max-w-[440px] rounded-2xl bg-white p-6 sm:p-7 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+        className="relative w-full max-w-[460px] bg-slate-50 rounded-3xl shadow-[0_32px_80px_rgba(15,23,42,0.2)] overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-slate-200"
       >
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50">
-            <AlertCircle size={20} className="text-red-500" />
+        {/* Dynamic Header (Red/Danger Theme) */}
+        <div className="relative px-6 py-6 bg-red-50/80 border-b border-red-100 flex items-start justify-between rounded-t-3xl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-red-100/50 flex shrink-0 items-center justify-center">
+              <AlertCircle size={24} className="text-red-600" strokeWidth={2} />
+            </div>
+            <div>
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-red-400 mb-0.5 mt-1">
+                Danger Zone
+              </h3>
+              <span id="delete-account-title" className="text-2xl font-extrabold text-red-950 leading-none block">
+                Delete Account
+              </span>
+            </div>
           </div>
-          <h2 id="delete-account-title" className="text-lg font-bold text-red-500">
-            Delete Account?
-          </h2>
-        </div>
-        <p className="mt-4 text-sm leading-relaxed text-slate-500">
-          Are you absolutely sure you want to delete your account? All of
-          your tracked applications, interview notes, and profile data will
-          be{' '}
-          <span className="font-semibold text-slate-800">
-            permanently removed
-          </span>
-          . This action cannot be undone.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-end gap-5">
-          <button
-            type="button"
+          <button 
+            type="button" 
             onClick={onCancel}
-            className="text-sm font-semibold text-slate-800 hover:text-slate-950 transition"
+            className="w-8 h-8 rounded-full bg-white border border-red-200/60 flex shrink-0 items-center justify-center text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-200 mt-1 shadow-sm"
           >
-            No, keep my account
+            <X size={16} />
           </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-600 transition"
-          >
-            Yes, delete it
-          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="px-6 py-6">
+          <p className="text-sm leading-relaxed text-slate-600">
+            Are you absolutely sure you want to delete your account? All of
+            your tracked applications, interview notes, and profile data will
+            be{' '}
+            <span className="font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">
+              permanently removed
+            </span>
+            . This action cannot be undone.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="text-sm font-semibold text-slate-700 hover:text-slate-950 px-3 py-2 transition"
+            >
+              No, keep my account
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 transition active:scale-[0.98]"
+            >
+              Yes, delete it
+            </button>
+          </div>
         </div>
       </div>
     </div>
