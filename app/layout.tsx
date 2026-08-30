@@ -27,14 +27,13 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} font-body bg-paper text-ink`}>
         <PageTransition>
           {children}
         </PageTransition>
         <SegmentedNav />
       </body>
-      
     </html>
   );
 }
