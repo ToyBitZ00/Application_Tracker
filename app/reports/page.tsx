@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   Calendar,
   ChevronDown,
+  X,
 } from 'lucide-react';
 import {
   BarChart,
@@ -90,6 +91,50 @@ const pipelineData = [
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEARS = ['2026', '2025', '2024', '2023'];
 
+// Upgraded Data for the Light Blue Header Modals
+const KPI_DETAILS: Record<string, any> = {
+  responseRate: {
+    title: 'Response Rate',
+    value: '42.5%',
+    trend: '+4.2%',
+    trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
+    icon: <Activity size={24} className="text-blue-600" strokeWidth={2} />,
+    description: 'Detailed breakdown of companies that have replied to your applications.',
+    items: [
+      { company: 'Northstar Labs', avatar: 'NL', avatarBg: 'bg-blue-100 text-blue-700', detail: 'Replied in 2 days', badge: 'Interview', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200' },
+      { company: 'Pixel Harbor', avatar: 'PH', avatarBg: 'bg-indigo-100 text-indigo-700', detail: 'Replied in 5 days', badge: 'Screening', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200' },
+      { company: 'Clearline', avatar: 'CL', avatarBg: 'bg-slate-200 text-slate-700', detail: 'Replied in 12 days', badge: 'Rejected', badgeColor: 'bg-red-50 text-red-700 border-red-200' },
+    ]
+  },
+  conversion: {
+    title: 'Interview Conversion',
+    value: '18.0%',
+    trend: '+2.1%',
+    trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
+    icon: <Target size={24} className="text-blue-600" strokeWidth={2} />,
+    description: 'Applications that successfully moved from applied to the interview stage.',
+    items: [
+      { company: 'Aster Cloud', avatar: 'AC', avatarBg: 'bg-purple-100 text-purple-700', detail: 'Software Engineer', badge: 'Technical', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+      { company: 'Orbit Studio', avatar: 'OS', avatarBg: 'bg-orange-100 text-orange-700', detail: 'Frontend Engineer', badge: 'Panel', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200' },
+      { company: 'Luna Digital', avatar: 'LD', avatarBg: 'bg-emerald-100 text-emerald-700', detail: 'Product Designer', badge: 'Hiring Mgr', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    ]
+  },
+  timeToResponse: {
+    title: 'Avg Time-to-Response',
+    value: '8.4 Days',
+    trend: '-1.2 Days', 
+    trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
+    icon: <Clock size={24} className="text-blue-600" strokeWidth={2} />,
+    description: 'The average wait time before initial contact, sorted by fastest response.',
+    items: [
+      { company: 'Northstar Labs', avatar: 'NL', avatarBg: 'bg-blue-100 text-blue-700', detail: 'Frontend Developer Intern', badge: '2 Days', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+      { company: 'Pixel Harbor', avatar: 'PH', avatarBg: 'bg-indigo-100 text-indigo-700', detail: 'UI Engineer', badge: '5 Days', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+      { company: 'Clearline', avatar: 'CL', avatarBg: 'bg-slate-200 text-slate-700', detail: 'Junior QA Analyst', badge: '12 Days', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200' },
+      { company: 'Delta Forge', avatar: 'DF', avatarBg: 'bg-red-100 text-red-700', detail: 'Business Analyst', badge: '14 Days', badgeColor: 'bg-red-50 text-red-700 border-red-200' },
+    ]
+  }
+};
+
 /* ================================================= */
 /* MAIN COMPONENT */
 /* ================================================= */
@@ -101,8 +146,11 @@ export default function ReportsPage() {
   const [customMonth, setCustomMonth] = useState('Dec');
   const [customYear, setCustomYear] = useState('2025');
   
-  // State for the expandable breakdown rows
+  // State for the expandable breakdown rows (bottom accordion)
   const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
+
+  // State for Premium KPI Modals
+  const [activeKpiModal, setActiveKpiModal] = useState<string | null>(null);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -115,6 +163,15 @@ export default function ReportsPage() {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActiveKpiModal(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -153,7 +210,7 @@ export default function ReportsPage() {
       {/* ================================================= */}
       {/* FIXED HEADER (TRANSPARENT & UNIFORM) */}
       {/* ================================================= */}
-      <div className="relative z-50 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
+      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
           <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
             
@@ -266,16 +323,20 @@ export default function ReportsPage() {
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           
-          {/* ================= HYBRID KPI CARDS ================= */}
+          {/* ================= INTERACTIVE KPI CARDS ================= */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
             
-            {/* Response Rate */}
-            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 transition-transform duration-200">
+            {/* Response Rate Button */}
+            <button 
+              type="button"
+              onClick={() => setActiveKpiModal('responseRate')}
+              className="text-left bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-900/5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500/10 group"
+            >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Activity size={21} className="text-blue-600" strokeWidth={2} />
+                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                  <Activity size={21} className="text-blue-600 group-hover:text-white transition-colors" strokeWidth={2} />
                 </div>
-                <ArrowUpRight size={18} className="text-slate-300" />
+                <ArrowUpRight size={18} className="text-slate-300 group-hover:text-blue-400 transition-colors" />
               </div>
               <div className="mt-5">
                 <p className="text-sm font-semibold text-slate-500">Response Rate</p>
@@ -288,15 +349,19 @@ export default function ReportsPage() {
                 </div>
                 <p className="mt-1.5 text-xs font-medium text-slate-400">Of total applications received a reply.</p>
               </div>
-            </div>
+            </button>
 
-            {/* Interview Conversion */}
-            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 transition-transform duration-200">
+            {/* Interview Conversion Button */}
+            <button 
+              type="button"
+              onClick={() => setActiveKpiModal('conversion')}
+              className="text-left bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-900/5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500/10 group"
+            >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Target size={21} className="text-blue-600" strokeWidth={2} />
+                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                  <Target size={21} className="text-blue-600 group-hover:text-white transition-colors" strokeWidth={2} />
                 </div>
-                <ArrowUpRight size={18} className="text-slate-300" />
+                <ArrowUpRight size={18} className="text-slate-300 group-hover:text-blue-400 transition-colors" />
               </div>
               <div className="mt-5">
                 <p className="text-sm font-semibold text-slate-500">Interview Conversion</p>
@@ -309,15 +374,19 @@ export default function ReportsPage() {
                 </div>
                 <p className="mt-1.5 text-xs font-medium text-slate-400">Converted from applied to interview.</p>
               </div>
-            </div>
+            </button>
 
-            {/* Avg Time-to-Response */}
-            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 transition-transform duration-200">
+            {/* Avg Time-to-Response Button */}
+            <button 
+              type="button"
+              onClick={() => setActiveKpiModal('timeToResponse')}
+              className="text-left bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-900/5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500/10 group"
+            >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Clock size={21} className="text-blue-600" strokeWidth={2} />
+                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                  <Clock size={21} className="text-blue-600 group-hover:text-white transition-colors" strokeWidth={2} />
                 </div>
-                <ArrowUpRight size={18} className="text-slate-300" />
+                <ArrowUpRight size={18} className="text-slate-300 group-hover:text-blue-400 transition-colors" />
               </div>
               <div className="mt-5">
                 <p className="text-sm font-semibold text-slate-500">Avg Time-to-Response</p>
@@ -327,7 +396,7 @@ export default function ReportsPage() {
                 </div>
                 <p className="mt-1.5 text-xs font-medium text-slate-400">Average wait time for initial contact.</p>
               </div>
-            </div>
+            </button>
 
           </div>
 
@@ -413,7 +482,7 @@ export default function ReportsPage() {
 
           </div>
 
-          {/* ================= INTERACTIVE STATUS BREAKDOWN ================= */}
+          {/* ================= INTERACTIVE STATUS BREAKDOWN (Accordion) ================= */}
           <div className="mt-5 bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
             <div className="px-6 md:px-8 py-5 border-b border-slate-100">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
@@ -430,8 +499,6 @@ export default function ReportsPage() {
 
                 return (
                   <div key={index} className="flex flex-col">
-                    
-                    {/* Clickable Row */}
                     <button
                       type="button"
                       onClick={() => setExpandedStatus(isExpanded ? null : item.name)}
@@ -457,7 +524,6 @@ export default function ReportsPage() {
                       </div>
                     </button>
 
-                    {/* Expandable Company List */}
                     {isExpanded && (
                       <div className="bg-slate-50/50 px-6 md:px-8 py-3 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
                         <div 
@@ -494,10 +560,97 @@ export default function ReportsPage() {
       </main>
 
       {/* ================================================= */}
-      {/* BOTTOM FADE-IN EFFECT & GLOBAL STYLES */}
+      {/* BOTTOM FADE-IN EFFECT */}
       {/* ================================================= */}
       <div className="fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
 
+      {/* ================================================= */}
+      {/* REDESIGNED LIGHT BLUE KPI BREAKDOWN MODAL */}
+      {/* ================================================= */}
+      {activeKpiModal && KPI_DETAILS[activeKpiModal] && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+          {/* Blurred Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => setActiveKpiModal(null)} 
+          />
+          
+          {/* Modal Container */}
+          <div 
+            role="dialog" 
+            aria-modal="true"
+            className="relative w-full max-w-lg bg-slate-50 rounded-3xl shadow-[0_32px_80px_rgba(15,23,42,0.2)] overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-slate-200"
+          >
+            
+            {/* Dynamic Header (Light Blue Theme) */}
+            <div className="relative px-6 py-6 bg-blue-50/80 border-b border-blue-100 flex items-start justify-between rounded-t-3xl">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-blue-100/50 flex shrink-0 items-center justify-center">
+                  {KPI_DETAILS[activeKpiModal].icon}
+                </div>
+                <div>
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-blue-400 mb-0.5 mt-1">
+                    {KPI_DETAILS[activeKpiModal].title}
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-blue-950 leading-none">
+                      {KPI_DETAILS[activeKpiModal].value}
+                    </span>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${KPI_DETAILS[activeKpiModal].trendColor}`}>
+                      {KPI_DETAILS[activeKpiModal].trend}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                onClick={() => setActiveKpiModal(null)}
+                className="w-8 h-8 rounded-full bg-white border border-blue-200/60 flex shrink-0 items-center justify-center text-blue-400 hover:bg-blue-100 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-200 mt-1 shadow-sm"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* List Body */}
+            <div className="px-6 py-5 max-h-[55vh] overflow-y-auto">
+              <p className="text-xs font-medium text-slate-500 mb-4 px-1">
+                {KPI_DETAILS[activeKpiModal].description}
+              </p>
+              
+              <div className="space-y-3">
+                {KPI_DETAILS[activeKpiModal].items.map((item: any, index: number) => (
+                  <div 
+                    key={index}
+                    className="flex items-center p-3 sm:p-4 bg-white border border-slate-200/80 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all group"
+                  >
+                    {/* Avatar */}
+                    <div className={`w-10 h-10 rounded-full flex flex-shrink-0 items-center justify-center text-xs font-bold ${item.avatarBg}`}>
+                      {item.avatar}
+                    </div>
+                    
+                    {/* Details */}
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{item.company}</p>
+                      <p className="text-xs font-medium text-slate-500 mt-0.5">{item.detail}</p>
+                    </div>
+                    
+                    {/* Badge */}
+                    <div className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${item.badgeColor} shrink-0 ml-2`}>
+                      {item.badge}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Subtle Bottom Fade for Scrollable Area */}
+            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-50 to-transparent pointer-events-none rounded-b-3xl" />
+          </div>
+        </div>
+      )}
+
+      {/* GLOBAL STYLES */}
       <style jsx global>{`
         html, body {
           scroll-behavior: smooth;
