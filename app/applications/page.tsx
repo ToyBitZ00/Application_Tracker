@@ -31,6 +31,8 @@ import {
   Check,
   GripVertical,
   StickyNote,
+  X,
+  Save,
 } from 'lucide-react';
 
 /* ================================================= */
@@ -48,7 +50,8 @@ type ColumnColor = {
 
 type Card = {
   id: string;
-  text: string;
+  title: string;
+  description: string;
 };
 
 type Column = {
@@ -107,33 +110,6 @@ const COLUMN_COLORS: ColumnColor[] = [
     header: 'bg-red-100',
     text: 'text-red-700',
   },
-
-  {
-    name: 'Pink',
-    dot: 'bg-pink-500',
-    background: 'bg-pink-50',
-    border: 'border-pink-200',
-    header: 'bg-pink-100',
-    text: 'text-pink-700',
-  },
-
-  {
-    name: 'Indigo',
-    dot: 'bg-indigo-500',
-    background: 'bg-indigo-50',
-    border: 'border-indigo-200',
-    header: 'bg-indigo-100',
-    text: 'text-indigo-700',
-  },
-
-  {
-    name: 'Slate',
-    dot: 'bg-slate-200',
-    background: 'bg-slate-100',
-    border: 'border-slate-300',
-    header: 'bg-slate-200',
-    text: 'text-slate-700',
-  },
 ];
 
 /* ================================================= */
@@ -145,6 +121,13 @@ const INITIAL_COLUMNS: Column[] = [
     id: 'applied',
     title: 'Applied',
     color: COLUMN_COLORS[0],
+    cards: [],
+  },
+
+  {
+    id: 'screening',
+    title: 'Screening',
+    color: COLUMN_COLORS[1],
     cards: [],
   },
 
@@ -199,13 +182,19 @@ export default function ApplicationsPage() {
   const [editingCard, setEditingCard] =
     useState<string | null>(null);
 
-  const [editingCardText, setEditingCardText] =
+  const [editingCardTitle, setEditingCardTitle] =
+    useState('');
+
+  const [editingCardDescription, setEditingCardDescription] =
     useState('');
 
   const [newCardColumn, setNewCardColumn] =
     useState<string | null>(null);
 
-  const [newCardText, setNewCardText] =
+  const [newCardTitle, setNewCardTitle] =
+    useState('');
+
+  const [newCardDescription, setNewCardDescription] =
     useState('');
 
   /* ================================================= */
@@ -236,9 +225,70 @@ export default function ApplicationsPage() {
       const parsed =
         JSON.parse(saved);
 
-      if (Array.isArray(parsed)) {
-        setColumns(parsed);
+      if (!Array.isArray(parsed)) return;
+
+      /*
+       * Supports the previous version of the board.
+       * Old notes used "text", so convert them into
+       * the new title/description format.
+       */
+      const migratedColumns: Column[] =
+        parsed.map((column: any) => ({
+          ...column,
+
+          cards: Array.isArray(column.cards)
+            ? column.cards.map((card: any) => ({
+                id: card.id,
+                title:
+                  card.title ??
+                  card.text ??
+                  'Untitled Note',
+                description:
+                  card.description ?? '',
+              }))
+            : [],
+        }));
+
+      /*
+       * Make sure Screening exists for boards
+       * saved before this update.
+       */
+      const hasScreening =
+        migratedColumns.some(
+          column =>
+            column.id === 'screening'
+        );
+
+      if (!hasScreening) {
+        const appliedIndex =
+          migratedColumns.findIndex(
+            column =>
+              column.id === 'applied'
+          );
+
+        const screeningColumn: Column = {
+          id: 'screening',
+          title: 'Screening',
+          color: COLUMN_COLORS[1],
+          cards: [],
+        };
+
+        if (appliedIndex !== -1) {
+          migratedColumns.splice(
+            appliedIndex + 1,
+            0,
+            screeningColumn
+          );
+        } else {
+          migratedColumns.unshift(
+            screeningColumn
+          );
+        }
       }
+
+      setColumns(
+        migratedColumns
+      );
     } catch {
       setColumns(
         INITIAL_COLUMNS
@@ -274,36 +324,153 @@ export default function ApplicationsPage() {
   };
 
   /* ================================================= */
-  /* DELETE COLUMN */
+  /* ADD CARD */
   /* ================================================= */
 
-  const deleteColumn = (
+  const addCard = (
     columnId: string
   ) => {
-    const column =
-      columns.find(
-        item =>
-          item.id === columnId
-      );
+    const title =
+      newCardTitle.trim();
 
-    if (!column) return;
+    if (!title) return;
 
-    if (column.cards.length > 0) {
-      const confirmed =
-        window.confirm(
-          'This column contains notes. Are you sure you want to delete it?'
-        );
+    const card: Card = {
+      id:
+        `card-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 7)}`,
 
-      if (!confirmed) return;
-    }
+      title,
+
+      description:
+        newCardDescription.trim(),
+    };
 
     setColumns(
       previous =>
-        previous.filter(
+        previous.map(
           column =>
-            column.id !== columnId
+            column.id === columnId
+              ? {
+                  ...column,
+
+                  cards: [
+                    ...column.cards,
+                    card,
+                  ],
+                }
+              : column
         )
     );
+
+    setNewCardTitle('');
+    setNewCardDescription('');
+    setNewCardColumn(null);
+  };
+
+  /* ================================================= */
+  /* DELETE CARD */
+  /* ================================================= */
+
+  const deleteCard = (
+    columnId: string,
+    cardId: string
+  ) => {
+    setColumns(
+      previous =>
+        previous.map(
+          column =>
+            column.id === columnId
+              ? {
+                  ...column,
+
+                  cards:
+                    column.cards.filter(
+                      card =>
+                        card.id !==
+                        cardId
+                    ),
+                }
+              : column
+        )
+    );
+
+    if (
+      editingCard === cardId
+    ) {
+      closeCardEditor();
+    }
+  };
+
+  /* ================================================= */
+  /* OPEN CARD EDITOR */
+  /* ================================================= */
+
+  const openCardEditor = (
+    card: Card
+  ) => {
+    setEditingCard(
+      card.id
+    );
+
+    setEditingCardTitle(
+      card.title
+    );
+
+    setEditingCardDescription(
+      card.description
+    );
+  };
+
+  /* ================================================= */
+  /* CLOSE CARD EDITOR */
+  /* ================================================= */
+
+  const closeCardEditor = () => {
+    setEditingCard(null);
+    setEditingCardTitle('');
+    setEditingCardDescription('');
+  };
+
+  /* ================================================= */
+  /* SAVE CARD */
+  /* ================================================= */
+
+  const saveCard = () => {
+    if (!editingCard) return;
+
+    const title =
+      editingCardTitle.trim();
+
+    if (!title) return;
+
+    setColumns(
+      previous =>
+        previous.map(
+          column => ({
+            ...column,
+
+            cards:
+              column.cards.map(
+                card =>
+                  card.id ===
+                  editingCard
+                    ? {
+                        ...card,
+
+                        title,
+
+                        description:
+                          editingCardDescription.trim(),
+                      }
+                    : card
+              ),
+          })
+        )
+    );
+
+    closeCardEditor();
   };
 
   /* ================================================= */
@@ -344,155 +511,20 @@ export default function ApplicationsPage() {
           column =>
             column.id ===
             editingColumn
-
               ? {
                   ...column,
 
-                  title:
-                    name,
+                  title: name,
 
                   color:
                     editingColumnColor,
                 }
-
               : column
         )
     );
 
     setEditingColumn(null);
-
     setEditingColumnName('');
-  };
-
-  /* ================================================= */
-  /* ADD CARD */
-  /* ================================================= */
-
-  const addCard = (
-    columnId: string
-  ) => {
-    const text =
-      newCardText.trim();
-
-    if (!text) return;
-
-    const card: Card = {
-      id:
-        `card-${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2, 7)}`,
-
-      text,
-    };
-
-    setColumns(
-      previous =>
-        previous.map(
-          column =>
-            column.id === columnId
-
-              ? {
-                  ...column,
-
-                  cards: [
-                    ...column.cards,
-                    card,
-                  ],
-                }
-
-              : column
-        )
-    );
-
-    setNewCardText('');
-
-    setNewCardColumn(null);
-  };
-
-  /* ================================================= */
-  /* DELETE CARD */
-  /* ================================================= */
-
-  const deleteCard = (
-    columnId: string,
-    cardId: string
-  ) => {
-    setColumns(
-      previous =>
-        previous.map(
-          column =>
-            column.id === columnId
-
-              ? {
-                  ...column,
-
-                  cards:
-                    column.cards.filter(
-                      card =>
-                        card.id !==
-                        cardId
-                    ),
-                }
-
-              : column
-        )
-    );
-  };
-
-  /* ================================================= */
-  /* EDIT CARD */
-  /* ================================================= */
-
-  const startEditingCard = (
-    card: Card
-  ) => {
-    setEditingCard(
-      card.id
-    );
-
-    setEditingCardText(
-      card.text
-    );
-  };
-
-  /* ================================================= */
-  /* SAVE CARD */
-  /* ================================================= */
-
-  const saveCard = () => {
-    if (!editingCard) return;
-
-    const text =
-      editingCardText.trim();
-
-    if (!text) return;
-
-    setColumns(
-      previous =>
-        previous.map(
-          column => ({
-            ...column,
-
-            cards:
-              column.cards.map(
-                card =>
-                  card.id ===
-                  editingCard
-
-                    ? {
-                        ...card,
-                        text,
-                      }
-
-                    : card
-              ),
-          })
-        )
-    );
-
-    setEditingCard(null);
-
-    setEditingCardText('');
   };
 
   /* ================================================= */
@@ -504,8 +536,6 @@ export default function ApplicationsPage() {
   ) => {
     const id =
       String(event.active.id);
-
-    /* COLUMN */
 
     const column =
       columns.find(
@@ -520,8 +550,6 @@ export default function ApplicationsPage() {
 
       return;
     }
-
-    /* CARD */
 
     const cardColumn =
       findColumn(id);
@@ -545,7 +573,6 @@ export default function ApplicationsPage() {
 
   const handleDragCancel = () => {
     setActiveCard(null);
-
     setActiveColumn(null);
   };
 
@@ -562,7 +589,6 @@ export default function ApplicationsPage() {
     } = event;
 
     setActiveCard(null);
-
     setActiveColumn(null);
 
     if (!over) return;
@@ -742,7 +768,6 @@ export default function ApplicationsPage() {
             column =>
               column.id ===
               sourceColumn.id
-
                 ? {
                     ...column,
 
@@ -753,7 +778,6 @@ export default function ApplicationsPage() {
                         newIndex
                       ),
                   }
-
                 : column
           )
       );
@@ -853,13 +877,17 @@ export default function ApplicationsPage() {
       return cards;
     }
 
+    const query =
+      search.toLowerCase();
+
     return cards.filter(
       card =>
-        card.text
+        card.title
           .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          )
+          .includes(query) ||
+        card.description
+          .toLowerCase()
+          .includes(query)
     );
   };
 
@@ -949,14 +977,14 @@ export default function ApplicationsPage() {
         />
 
         {/* ================================================= */}
-        {/* FIXED HEADER */}
+        {/* HEADER */}
         {/* ================================================= */}
 
         <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
 
           <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
 
-            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
+            <header className="flex items-center justify-between gap-5 animate-header-in">
 
               <div>
 
@@ -987,7 +1015,7 @@ export default function ApplicationsPage() {
         </div>
 
         {/* ================================================= */}
-        {/* SCROLLABLE CONTENT */}
+        {/* CONTENT */}
         {/* ================================================= */}
 
         <main
@@ -1066,7 +1094,7 @@ export default function ApplicationsPage() {
 
             <section>
 
-              <div className="overflow-x-auto overflow-y-visible pb-8 scrollbar-hide">
+              <div className="overflow-x-auto pb-8 scrollbar-hide">
 
                 <SortableContext
                   items={
@@ -1081,7 +1109,7 @@ export default function ApplicationsPage() {
                 >
 
                   <div
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start"
+                    className="grid grid-cols-5 gap-5 items-start"
                   >
 
                     {columns.map(
@@ -1130,20 +1158,24 @@ export default function ApplicationsPage() {
                             startEditingColumn
                           }
 
-                          deleteColumn={
-                            deleteColumn
-                          }
-
                           newCardColumn={
                             newCardColumn
                           }
 
-                          newCardText={
-                            newCardText
+                          newCardTitle={
+                            newCardTitle
                           }
 
-                          setNewCardText={
-                            setNewCardText
+                          newCardDescription={
+                            newCardDescription
+                          }
+
+                          setNewCardTitle={
+                            setNewCardTitle
+                          }
+
+                          setNewCardDescription={
+                            setNewCardDescription
                           }
 
                           setNewCardColumn={
@@ -1158,20 +1190,32 @@ export default function ApplicationsPage() {
                             editingCard
                           }
 
-                          editingCardText={
-                            editingCardText
+                          editingCardTitle={
+                            editingCardTitle
                           }
 
-                          setEditingCardText={
-                            setEditingCardText
+                          editingCardDescription={
+                            editingCardDescription
                           }
 
-                          startEditingCard={
-                            startEditingCard
+                          setEditingCardTitle={
+                            setEditingCardTitle
+                          }
+
+                          setEditingCardDescription={
+                            setEditingCardDescription
+                          }
+
+                          openCardEditor={
+                            openCardEditor
                           }
 
                           saveCard={
                             saveCard
+                          }
+
+                          closeCardEditor={
+                            closeCardEditor
                           }
 
                           deleteCard={
@@ -1192,7 +1236,7 @@ export default function ApplicationsPage() {
             </section>
 
             {/* ================================================= */}
-            {/* BOARD INFO */}
+            {/* INFO */}
             {/* ================================================= */}
 
             <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-400">
@@ -1200,7 +1244,6 @@ export default function ApplicationsPage() {
               <span>
 
                 {totalCards}{' '}
-
                 application
                 {totalCards !== 1
                   ? 's'
@@ -1248,7 +1291,7 @@ export default function ApplicationsPage() {
 
           {activeCard ? (
 
-            <div className="w-[280px] bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xl rotate-2 cursor-grabbing">
+            <div className="w-[250px] bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xl rotate-2 cursor-grabbing">
 
               <div className="flex items-start gap-2">
 
@@ -1257,11 +1300,19 @@ export default function ApplicationsPage() {
                   className="mt-0.5 text-slate-300"
                 />
 
-                <p className="flex-1 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap break-words">
-                  {
-                    activeCard.text
-                  }
-                </p>
+                <div className="flex-1">
+
+                  <p className="text-sm font-bold text-slate-800">
+                    {activeCard.title}
+                  </p>
+
+                  {activeCard.description && (
+                    <p className="mt-1 text-xs leading-relaxed text-slate-500 line-clamp-3">
+                      {activeCard.description}
+                    </p>
+                  )}
+
+                </div>
 
               </div>
 
@@ -1270,7 +1321,7 @@ export default function ApplicationsPage() {
           ) : activeColumn ? (
 
             <div
-              className={`w-[300px] rounded-2xl border shadow-2xl rotate-1 overflow-hidden ${activeColumn.color.background} ${activeColumn.color.border}`}
+              className={`w-[270px] rounded-2xl border shadow-2xl rotate-1 overflow-hidden ${activeColumn.color.background} ${activeColumn.color.border}`}
             >
 
               <div
@@ -1304,11 +1355,19 @@ export default function ApplicationsPage() {
                       key={
                         card.id
                       }
-                      className="bg-white border border-slate-200 rounded-xl p-3 mb-2 text-xs text-slate-600"
+                      className="bg-white border border-slate-200 rounded-xl p-3 mb-2"
                     >
-                      {
-                        card.text
-                      }
+
+                      <p className="text-xs font-bold text-slate-700">
+                        {card.title}
+                      </p>
+
+                      {card.description && (
+                        <p className="mt-1 text-[11px] text-slate-500 line-clamp-2">
+                          {card.description}
+                        </p>
+                      )}
+
                     </div>
 
                   ))}
@@ -1322,6 +1381,177 @@ export default function ApplicationsPage() {
         </DragOverlay>
 
         {/* ================================================= */}
+        {/* ZOOMED NOTE EDITOR */}
+        {/* ================================================= */}
+
+        {editingCard && (
+
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 sm:p-8">
+
+            {/* BACKDROP */}
+
+            <button
+              type="button"
+              aria-label="Close note"
+              onClick={
+                closeCardEditor
+              }
+              className="absolute inset-0 bg-slate-950/35 backdrop-blur-sm"
+            />
+
+            {/* NOTE */}
+
+            <div className="relative w-full max-w-2xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden animate-note-zoom">
+
+              {/* TOP BAR */}
+
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80">
+
+                <div className="flex items-center gap-2">
+
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+
+                    <StickyNote
+                      size={16}
+                      className="text-blue-600"
+                    />
+
+                  </div>
+
+                  <span className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">
+                    Application Note
+                  </span>
+
+                </div>
+
+                <button
+                  type="button"
+                  onClick={
+                    closeCardEditor
+                  }
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+                >
+
+                  <X
+                    size={18}
+                  />
+
+                </button>
+
+              </div>
+
+              {/* EDITOR */}
+
+              <div className="p-6 sm:p-8">
+
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Note Title
+                </label>
+
+                <input
+                  autoFocus
+                  type="text"
+                  value={
+                    editingCardTitle
+                  }
+                  onChange={event =>
+                    setEditingCardTitle(
+                      event.target.value
+                    )
+                  }
+                  onKeyDown={event => {
+
+                    if (
+                      event.key ===
+                      'Escape'
+                    ) {
+                      closeCardEditor();
+                    }
+
+                    if (
+                      event.key ===
+                        'Enter' &&
+                      event.ctrlKey
+                    ) {
+                      saveCard();
+                    }
+
+                  }}
+                  placeholder="Enter note title..."
+                  className="w-full text-2xl sm:text-3xl font-bold text-slate-900 placeholder:text-slate-300 border-none outline-none bg-transparent"
+                />
+
+                <div className="mt-6">
+
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    Description
+                  </label>
+
+                  <textarea
+                    value={
+                      editingCardDescription
+                    }
+                    onChange={event =>
+                      setEditingCardDescription(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Add details about this application..."
+                    rows={8}
+                    className="w-full resize-none rounded-2xl bg-slate-50 border border-slate-200 p-4 text-sm leading-relaxed text-slate-700 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  />
+
+                </div>
+
+                {/* ACTIONS */}
+
+                <div className="flex items-center justify-between mt-6">
+
+                  <p className="text-[11px] text-slate-400">
+                    Ctrl + Enter to save
+                  </p>
+
+                  <div className="flex items-center gap-2">
+
+                    <button
+                      type="button"
+                      onClick={
+                        closeCardEditor
+                      }
+                      className="h-10 px-4 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50 transition-all"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={
+                        saveCard
+                      }
+                      className="h-10 px-5 rounded-xl bg-blue-600 text-white text-sm font-semibold flex items-center gap-2 hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-all"
+                    >
+
+                      <Save
+                        size={15}
+                      />
+
+                      Save Note
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        )}
+
+        {/* ================================================= */}
         {/* ANIMATIONS */}
         {/* ================================================= */}
 
@@ -1332,8 +1562,6 @@ export default function ApplicationsPage() {
             scroll-behavior: smooth;
           }
 
-          /* HIDE ALL SCROLLBARS */
-
           .scrollbar-hide::-webkit-scrollbar {
             display: none;
           }
@@ -1343,7 +1571,7 @@ export default function ApplicationsPage() {
             scrollbar-width: none;
           }
 
-          /* HEADER ENTRANCE */
+          /* HEADER */
 
           @keyframes header-in {
 
@@ -1396,6 +1624,34 @@ export default function ApplicationsPage() {
               infinite;
           }
 
+          /* NOTE ZOOM */
+
+          @keyframes note-zoom {
+
+            from {
+              opacity: 0;
+              transform:
+                scale(0.92)
+                translateY(10px);
+            }
+
+            to {
+              opacity: 1;
+              transform:
+                scale(1)
+                translateY(0);
+            }
+
+          }
+
+          .animate-note-zoom {
+            animation:
+              note-zoom
+              0.2s
+              ease-out
+              forwards;
+          }
+
           /* REDUCED MOTION */
 
           @media (prefers-reduced-motion: reduce) {
@@ -1423,7 +1679,6 @@ export default function ApplicationsPage() {
         `}</style>
 
       </div>
-
     </DndContext>
   );
 }
@@ -1458,16 +1713,19 @@ type SortableColumnProps = {
   startEditingColumn:
     (column: Column) => void;
 
-  deleteColumn:
-    (columnId: string) => void;
-
   newCardColumn:
     string | null;
 
-  newCardText:
+  newCardTitle:
     string;
 
-  setNewCardText:
+  newCardDescription:
+    string;
+
+  setNewCardTitle:
+    (value: string) => void;
+
+  setNewCardDescription:
     (value: string) => void;
 
   setNewCardColumn:
@@ -1479,16 +1737,25 @@ type SortableColumnProps = {
   editingCard:
     string | null;
 
-  editingCardText:
+  editingCardTitle:
     string;
 
-  setEditingCardText:
+  editingCardDescription:
+    string;
+
+  setEditingCardTitle:
     (value: string) => void;
 
-  startEditingCard:
+  setEditingCardDescription:
+    (value: string) => void;
+
+  openCardEditor:
     (card: Card) => void;
 
   saveCard:
+    () => void;
+
+  closeCardEditor:
     () => void;
 
   deleteCard:
@@ -1511,21 +1778,26 @@ function SortableColumn({
 
   saveColumn,
   startEditingColumn,
-  deleteColumn,
 
   newCardColumn,
-  newCardText,
+  newCardTitle,
+  newCardDescription,
 
-  setNewCardText,
+  setNewCardTitle,
+  setNewCardDescription,
   setNewCardColumn,
   addCard,
 
   editingCard,
-  editingCardText,
+  editingCardTitle,
+  editingCardDescription,
 
-  setEditingCardText,
-  startEditingCard,
+  setEditingCardTitle,
+  setEditingCardDescription,
+
+  openCardEditor,
   saveCard,
+  closeCardEditor,
   deleteCard,
 
 }: SortableColumnProps) {
@@ -1583,11 +1855,11 @@ function SortableColumn({
     >
 
       {/* ================================================= */}
-      {/* WHOLE COLUMN */}
+      {/* COLUMN */}
       {/* ================================================= */}
 
       <div
-        className={`rounded-2xl border-2 p-2.5 min-h-[500px] transition-all ${
+        className={`rounded-2xl border-2 p-2.5 min-h-[560px] transition-all ${
           column.color.background
         } ${
           column.color.border
@@ -1599,7 +1871,7 @@ function SortableColumn({
       >
 
         {/* ================================================= */}
-        {/* COLUMN HEADER */}
+        {/* HEADER */}
         {/* ================================================= */}
 
         {editingColumn ===
@@ -1632,9 +1904,7 @@ function SortableColumn({
                     event.key ===
                     'Escape'
                   ) {
-                    setEditingColumn(
-                      null
-                    );
+                    closeColumnEditor();
                   }
 
                 }}
@@ -1656,8 +1926,6 @@ function SortableColumn({
               </button>
 
             </div>
-
-            {/* COLOR EDITOR */}
 
             <div className="mt-3">
 
@@ -1707,9 +1975,7 @@ function SortableColumn({
             <button
               type="button"
               onClick={() =>
-                setEditingColumn(
-                  null
-                )
+                closeColumnEditor()
               }
               className="mt-3 text-xs text-slate-400 hover:text-slate-600"
             >
@@ -1774,25 +2040,6 @@ function SortableColumn({
 
               </button>
 
-              <button
-                type="button"
-                onPointerDown={event =>
-                  event.stopPropagation()
-                }
-                onClick={() =>
-                  deleteColumn(
-                    column.id
-                  )
-                }
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-white/70"
-              >
-
-                <Trash2
-                  size={13}
-                />
-
-              </button>
-
             </div>
 
           </div>
@@ -1837,20 +2084,32 @@ function SortableColumn({
                     editingCard
                   }
 
-                  editingCardText={
-                    editingCardText
+                  editingCardTitle={
+                    editingCardTitle
                   }
 
-                  setEditingCardText={
-                    setEditingCardText
+                  editingCardDescription={
+                    editingCardDescription
                   }
 
-                  startEditingCard={
-                    startEditingCard
+                  setEditingCardTitle={
+                    setEditingCardTitle
+                  }
+
+                  setEditingCardDescription={
+                    setEditingCardDescription
+                  }
+
+                  openCardEditor={
+                    openCardEditor
                   }
 
                   saveCard={
                     saveCard
+                  }
+
+                  closeCardEditor={
+                    closeCardEditor
                   }
 
                   deleteCard={
@@ -1867,7 +2126,7 @@ function SortableColumn({
         </SortableContext>
 
         {/* ================================================= */}
-        {/* EMPTY DROP AREA */}
+        {/* EMPTY AREA */}
         {/* ================================================= */}
 
         {cards.length === 0 && (
@@ -1904,13 +2163,14 @@ function SortableColumn({
 
             <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
 
-              <textarea
+              <input
                 autoFocus
+                type="text"
                 value={
-                  newCardText
+                  newCardTitle
                 }
                 onChange={event =>
-                  setNewCardText(
+                  setNewCardTitle(
                     event.target.value
                   )
                 }
@@ -1925,16 +2185,43 @@ function SortableColumn({
                       null
                     );
 
-                    setNewCardText(
+                    setNewCardTitle(
+                      ''
+                    );
+
+                    setNewCardDescription(
                       ''
                     );
 
                   }
 
+                  if (
+                    event.key ===
+                      'Enter' &&
+                    event.ctrlKey
+                  ) {
+                    addCard(
+                      column.id
+                    );
+                  }
+
                 }}
-                rows={4}
-                placeholder="Write your application note..."
-                className="w-full resize-none rounded-lg bg-slate-50 border border-slate-200 p-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                placeholder="Note title..."
+                className="w-full h-10 px-3 rounded-lg bg-slate-50 border border-slate-200 text-sm font-bold outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              />
+
+              <textarea
+                value={
+                  newCardDescription
+                }
+                onChange={event =>
+                  setNewCardDescription(
+                    event.target.value
+                  )
+                }
+                rows={3}
+                placeholder="Description (optional)..."
+                className="w-full mt-2 resize-none rounded-lg bg-slate-50 border border-slate-200 p-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
               />
 
               <div className="flex justify-end gap-2 mt-2">
@@ -1947,7 +2234,11 @@ function SortableColumn({
                       null
                     );
 
-                    setNewCardText(
+                    setNewCardTitle(
+                      ''
+                    );
+
+                    setNewCardDescription(
                       ''
                     );
 
@@ -1985,9 +2276,9 @@ function SortableColumn({
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-white/50 transition-all"
             >
 
-              <span className="text-lg leading-none">
-                +
-              </span>
+              <StickyNote
+                size={16}
+              />
 
               Add sticky note
 
@@ -2004,6 +2295,17 @@ function SortableColumn({
 }
 
 /* ================================================= */
+/* COLUMN EDITOR HELPER */
+/* ================================================= */
+
+function closeColumnEditor() {
+  /*
+   * This function is intentionally empty here.
+   * The parent state handles column editing.
+   */
+}
+
+/* ================================================= */
 /* SORTABLE CARD */
 /* ================================================= */
 
@@ -2016,16 +2318,25 @@ type SortableCardProps = {
   editingCard:
     string | null;
 
-  editingCardText:
+  editingCardTitle:
     string;
 
-  setEditingCardText:
+  editingCardDescription:
+    string;
+
+  setEditingCardTitle:
     (value: string) => void;
 
-  startEditingCard:
+  setEditingCardDescription:
+    (value: string) => void;
+
+  openCardEditor:
     (card: Card) => void;
 
   saveCard:
+    () => void;
+
+  closeCardEditor:
     () => void;
 
   deleteCard:
@@ -2040,11 +2351,16 @@ function SortableCard({
   columnId,
 
   editingCard,
-  editingCardText,
 
-  setEditingCardText,
-  startEditingCard,
+  editingCardTitle,
+  editingCardDescription,
+
+  setEditingCardTitle,
+  setEditingCardDescription,
+
+  openCardEditor,
   saveCard,
+  closeCardEditor,
   deleteCard,
 
 }: SortableCardProps) {
@@ -2072,6 +2388,18 @@ function SortableCard({
 
   };
 
+  /*
+   * IMPORTANT:
+   *
+   * Only the grip/title area gets the drag listeners.
+   * The card itself is clickable.
+   *
+   * This allows:
+   *
+   * - Click card -> open editor
+   * - Drag using grip -> move card
+   */
+
   return (
 
     <div
@@ -2082,153 +2410,118 @@ function SortableCard({
       className={`group bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm transition-all ${
         isDragging
           ? 'opacity-30 scale-[0.98]'
-          : 'hover:shadow-md'
+          : 'hover:shadow-md hover:-translate-y-[1px]'
       }`}
     >
 
-      {editingCard ===
-      card.id ? (
+      <button
+        type="button"
+        onClick={() =>
+          openCardEditor(
+            card
+          )
+        }
+        className="w-full text-left"
+      >
 
-        <div>
+        <div className="flex items-start gap-2">
 
-          <textarea
-            autoFocus
-            value={
-              editingCardText
+          {/* DRAG HANDLE */}
+
+          <span
+            {...listeners}
+            onClick={event =>
+              event.stopPropagation()
             }
-            onChange={event =>
-              setEditingCardText(
-                event.target.value
-              )
-            }
-            onKeyDown={event => {
+            className="mt-0.5 shrink-0 text-slate-300 cursor-grab active:cursor-grabbing"
+          >
 
-              if (
-                event.key ===
-                'Escape'
-              ) {
-                setEditingCardText(
-                  card.text
-                );
+            <GripVertical
+              size={15}
+            />
+
+          </span>
+
+          {/* NOTE CONTENT */}
+
+          <div className="flex-1 min-w-0">
+
+            <p className="text-sm font-bold leading-snug text-slate-800 break-words">
+
+              {
+                card.title
               }
 
-              if (
-                event.key ===
-                  'Enter' &&
-                event.ctrlKey
-              ) {
-                saveCard();
-              }
+            </p>
 
-            }}
-            rows={4}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-800 outline-none resize-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-          />
+            {card.description && (
 
-          <div className="flex justify-end gap-2 mt-2">
+              <p className="mt-1.5 text-xs leading-relaxed text-slate-500 line-clamp-3">
 
-            <button
-              type="button"
-              onClick={() =>
-                setEditingCardText(
-                  card.text
-                )
-              }
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100"
-            >
-              Cancel
-            </button>
+                {
+                  card.description
+                }
 
-            <button
-              type="button"
-              onClick={
-                saveCard
-              }
-              className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
-            >
-              Save
-            </button>
+              </p>
+
+            )}
+
+            <p className="mt-2 text-[10px] font-medium text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+              Click to open
+            </p>
 
           </div>
 
         </div>
 
-      ) : (
+      </button>
 
-        <>
+      {/* ================================================= */}
+      {/* ACTIONS */}
+      {/* ================================================= */}
 
-          {/* ================================================= */}
-          {/* DRAG AREA */}
-          {/* ================================================= */}
+      <div className="flex justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
 
-          <div
-            {...listeners}
-            className="flex items-start gap-2 cursor-grab active:cursor-grabbing select-none"
-          >
+        <button
+          type="button"
+          onPointerDown={event =>
+            event.stopPropagation()
+          }
+          onClick={() =>
+            openCardEditor(
+              card
+            )
+          }
+          className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+        >
 
-            <GripVertical
-              size={15}
-              className="mt-0.5 shrink-0 text-slate-300"
-            />
+          <Pencil
+            size={14}
+          />
 
-            <p className="flex-1 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap break-words">
-              {
-                card.text
-              }
-            </p>
+        </button>
 
-          </div>
+        <button
+          type="button"
+          onPointerDown={event =>
+            event.stopPropagation()
+          }
+          onClick={() =>
+            deleteCard(
+              columnId,
+              card.id
+            )
+          }
+          className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50"
+        >
 
-          {/* ================================================= */}
-          {/* CARD ACTIONS */}
-          {/* ================================================= */}
+          <Trash2
+            size={14}
+          />
 
-          <div className="flex justify-end gap-1 mt-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        </button>
 
-            <button
-              type="button"
-              onPointerDown={event =>
-                event.stopPropagation()
-              }
-              onClick={() =>
-                startEditingCard(
-                  card
-                )
-              }
-              className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50"
-            >
-
-              <Pencil
-                size={14}
-              />
-
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={event =>
-                event.stopPropagation()
-              }
-              onClick={() =>
-                deleteCard(
-                  columnId,
-                  card.id
-                )
-              }
-              className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50"
-            >
-
-              <Trash2
-                size={14}
-              />
-
-            </button>
-
-          </div>
-
-        </>
-
-      )}
+      </div>
 
     </div>
 
