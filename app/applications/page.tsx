@@ -35,49 +35,36 @@ import {
   Palette,
 } from 'lucide-react';
 
-
 /* ================================================= */
 /* TYPES */
 /* ================================================= */
 
 type ColumnColor = {
   name: string;
-
   dot: string;
-
   background: string;
-
   border: string;
-
   header: string;
-
   text: string;
 };
-
 
 type Card = {
   id: string;
   text: string;
 };
 
-
 type Column = {
   id: string;
-
   title: string;
-
   color: ColumnColor;
-
   cards: Card[];
 };
-
 
 /* ================================================= */
 /* COLUMN COLORS */
 /* ================================================= */
 
 const COLUMN_COLORS: ColumnColor[] = [
-
   {
     name: 'Blue',
     dot: 'bg-blue-500',
@@ -149,16 +136,13 @@ const COLUMN_COLORS: ColumnColor[] = [
     header: 'bg-slate-200',
     text: 'text-slate-700',
   },
-
 ];
-
 
 /* ================================================= */
 /* INITIAL BOARD */
 /* ================================================= */
 
 const INITIAL_COLUMNS: Column[] = [
-
   {
     id: 'applied',
     title: 'Applied',
@@ -186,16 +170,13 @@ const INITIAL_COLUMNS: Column[] = [
     color: COLUMN_COLORS[4],
     cards: [],
   },
-
 ];
-
 
 /* ================================================= */
 /* MAIN PAGE */
 /* ================================================= */
 
 export default function ApplicationsPage() {
-
   const [columns, setColumns] =
     useState<Column[]>(INITIAL_COLUMNS);
 
@@ -238,118 +219,84 @@ export default function ApplicationsPage() {
   const [newColumnColor, setNewColumnColor] =
     useState<ColumnColor>(COLUMN_COLORS[0]);
 
-
   /* ================================================= */
   /* DRAG SENSOR */
   /* ================================================= */
 
   const sensors = useSensors(
-
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
       },
     })
-
   );
-
 
   /* ================================================= */
   /* LOAD BOARD */
   /* ================================================= */
 
   useEffect(() => {
-
-    const saved =
-      localStorage.getItem(
-        'application-kanban'
-      );
+    const saved = localStorage.getItem(
+      'application-kanban'
+    );
 
     if (!saved) return;
 
     try {
-
-      const parsed =
-        JSON.parse(saved);
+      const parsed = JSON.parse(saved);
 
       setColumns(parsed);
-
     } catch {
-
-      setColumns(
-        INITIAL_COLUMNS
-      );
-
+      setColumns(INITIAL_COLUMNS);
     }
-
   }, []);
-
 
   /* ================================================= */
   /* SAVE BOARD */
   /* ================================================= */
 
   useEffect(() => {
-
     localStorage.setItem(
       'application-kanban',
       JSON.stringify(columns)
     );
-
   }, [columns]);
-
 
   /* ================================================= */
   /* FIND CARD COLUMN */
   /* ================================================= */
 
-  const findColumn = (
-    cardId: string
-  ) => {
-
-    return columns.find(
-      column =>
-        column.cards.some(
-          card =>
-            card.id === cardId
-        )
+  const findColumn = (cardId: string) => {
+    return columns.find((column) =>
+      column.cards.some(
+        (card) => card.id === cardId
+      )
     );
-
   };
-
 
   /* ================================================= */
   /* ADD COLUMN */
   /* ================================================= */
 
   const addColumn = () => {
-
-    const name =
-      newColumnName.trim();
+    const name = newColumnName.trim();
 
     if (!name) return;
 
     const column: Column = {
+      id: `column-${Date.now()}`,
 
-      id:
-        `column-${Date.now()}`,
+      title: name,
 
-      title:
-        name,
-
-      color:
-        newColumnColor,
+      color: newColumnColor,
 
       cards: [],
-
     };
 
-    setColumns(
-      previous => [
-        ...previous,
-        column,
-      ]
-    );
+    setColumns((previous) => [
+      ...previous,
+      column,
+    ]);
 
     setNewColumnName('');
 
@@ -358,9 +305,7 @@ export default function ApplicationsPage() {
     );
 
     setShowAddColumn(false);
-
   };
-
 
   /* ================================================= */
   /* DELETE COLUMN */
@@ -369,36 +314,27 @@ export default function ApplicationsPage() {
   const deleteColumn = (
     columnId: string
   ) => {
-
-    const column =
-      columns.find(
-        item =>
-          item.id === columnId
-      );
+    const column = columns.find(
+      (item) => item.id === columnId
+    );
 
     if (!column) return;
 
     if (column.cards.length > 0) {
-
-      const confirmed =
-        window.confirm(
-          'This column contains notes. Are you sure you want to delete it?'
-        );
+      const confirmed = window.confirm(
+        'This column contains notes. Are you sure you want to delete it?'
+      );
 
       if (!confirmed) return;
-
     }
 
-    setColumns(
-      previous =>
-        previous.filter(
-          column =>
-            column.id !== columnId
-        )
+    setColumns((previous) =>
+      previous.filter(
+        (column) =>
+          column.id !== columnId
+      )
     );
-
   };
-
 
   /* ================================================= */
   /* START EDIT COLUMN */
@@ -407,10 +343,7 @@ export default function ApplicationsPage() {
   const startEditingColumn = (
     column: Column
   ) => {
-
-    setEditingColumn(
-      column.id
-    );
+    setEditingColumn(column.id);
 
     setEditingColumnName(
       column.title
@@ -419,16 +352,13 @@ export default function ApplicationsPage() {
     setEditingColumnColor(
       column.color
     );
-
   };
-
 
   /* ================================================= */
   /* SAVE COLUMN */
   /* ================================================= */
 
   const saveColumn = () => {
-
     if (!editingColumn) return;
 
     const name =
@@ -436,33 +366,25 @@ export default function ApplicationsPage() {
 
     if (!name) return;
 
-    setColumns(
-      previous =>
-        previous.map(
-          column =>
-            column.id ===
-            editingColumn
+    setColumns((previous) =>
+      previous.map((column) =>
+        column.id === editingColumn
+          ? {
+              ...column,
 
-              ? {
-                  ...column,
+              title: name,
 
-                  title:
-                    name,
-
-                  color:
-                    editingColumnColor,
-                }
-
-              : column
-        )
+              color:
+                editingColumnColor,
+            }
+          : column
+      )
     );
 
     setEditingColumn(null);
 
     setEditingColumnName('');
-
   };
-
 
   /* ================================================= */
   /* ADD CARD */
@@ -471,46 +393,36 @@ export default function ApplicationsPage() {
   const addCard = (
     columnId: string
   ) => {
-
     const text =
       newCardText.trim();
 
     if (!text) return;
 
     const card: Card = {
-
-      id:
-        `card-${Date.now()}`,
+      id: `card-${Date.now()}`,
 
       text,
-
     };
 
-    setColumns(
-      previous =>
-        previous.map(
-          column =>
-            column.id === columnId
+    setColumns((previous) =>
+      previous.map((column) =>
+        column.id === columnId
+          ? {
+              ...column,
 
-              ? {
-                  ...column,
-
-                  cards: [
-                    ...column.cards,
-                    card,
-                  ],
-                }
-
-              : column
-        )
+              cards: [
+                ...column.cards,
+                card,
+              ],
+            }
+          : column
+      )
     );
 
     setNewCardText('');
 
     setNewCardColumn(null);
-
   };
-
 
   /* ================================================= */
   /* DELETE CARD */
@@ -520,30 +432,22 @@ export default function ApplicationsPage() {
     columnId: string,
     cardId: string
   ) => {
+    setColumns((previous) =>
+      previous.map((column) =>
+        column.id === columnId
+          ? {
+              ...column,
 
-    setColumns(
-      previous =>
-        previous.map(
-          column =>
-            column.id === columnId
-
-              ? {
-                  ...column,
-
-                  cards:
-                    column.cards.filter(
-                      card =>
-                        card.id !==
-                        cardId
-                    ),
-                }
-
-              : column
-        )
+              cards:
+                column.cards.filter(
+                  (card) =>
+                    card.id !== cardId
+                ),
+            }
+          : column
+      )
     );
-
   };
-
 
   /* ================================================= */
   /* EDIT CARD */
@@ -552,24 +456,18 @@ export default function ApplicationsPage() {
   const startEditingCard = (
     card: Card
   ) => {
-
-    setEditingCard(
-      card.id
-    );
+    setEditingCard(card.id);
 
     setEditingCardText(
       card.text
     );
-
   };
-
 
   /* ================================================= */
   /* SAVE CARD */
   /* ================================================= */
 
   const saveCard = () => {
-
     if (!editingCard) return;
 
     const text =
@@ -577,37 +475,27 @@ export default function ApplicationsPage() {
 
     if (!text) return;
 
-    setColumns(
-      previous =>
-        previous.map(
-          column => ({
+    setColumns((previous) =>
+      previous.map((column) => ({
+        ...column,
 
-            ...column,
-
-            cards:
-              column.cards.map(
-                card =>
-                  card.id ===
-                  editingCard
-
-                    ? {
-                        ...card,
-                        text,
-                      }
-
-                    : card
-              ),
-
-          })
-        )
+        cards:
+          column.cards.map(
+            (card) =>
+              card.id === editingCard
+                ? {
+                    ...card,
+                    text,
+                  }
+                : card
+          ),
+      }))
     );
 
     setEditingCard(null);
 
     setEditingCardText('');
-
   };
-
 
   /* ================================================= */
   /* DRAG START */
@@ -616,29 +504,22 @@ export default function ApplicationsPage() {
   const handleDragStart = (
     event: any
   ) => {
-
     const id =
       String(event.active.id);
-
 
     /* COLUMN */
 
     const column =
       columns.find(
-        item =>
+        (item) =>
           item.id === id
       );
 
     if (column) {
-
-      setActiveColumn(
-        column
-      );
+      setActiveColumn(column);
 
       return;
-
     }
-
 
     /* CARD */
 
@@ -647,33 +528,24 @@ export default function ApplicationsPage() {
 
     const card =
       cardColumn?.cards.find(
-        item =>
+        (item) =>
           item.id === id
       );
 
     if (card) {
-
-      setActiveCard(
-        card
-      );
-
+      setActiveCard(card);
     }
-
   };
-
 
   /* ================================================= */
   /* DRAG CANCEL */
   /* ================================================= */
 
   const handleDragCancel = () => {
-
     setActiveCard(null);
 
     setActiveColumn(null);
-
   };
-
 
   /* ================================================= */
   /* DRAG END */
@@ -682,7 +554,6 @@ export default function ApplicationsPage() {
   const handleDragEnd = (
     event: DragEndEvent
   ) => {
-
     const {
       active,
       over,
@@ -700,50 +571,41 @@ export default function ApplicationsPage() {
     const overId =
       String(over.id);
 
-
     /* ================================================= */
     /* COLUMN DRAG */
     /* ================================================= */
 
     const oldColumnIndex =
       columns.findIndex(
-        column =>
-          column.id ===
-          activeId
+        (column) =>
+          column.id === activeId
       );
 
     const newColumnIndex =
       columns.findIndex(
-        column =>
-          column.id ===
-          overId
+        (column) =>
+          column.id === overId
       );
 
     if (
       oldColumnIndex !== -1 &&
       newColumnIndex !== -1
     ) {
-
       if (
         oldColumnIndex !==
         newColumnIndex
       ) {
-
-        setColumns(
-          previous =>
-            arrayMove(
-              previous,
-              oldColumnIndex,
-              newColumnIndex
-            )
+        setColumns((previous) =>
+          arrayMove(
+            previous,
+            oldColumnIndex,
+            newColumnIndex
+          )
         );
-
       }
 
       return;
-
     }
-
 
     /* ================================================= */
     /* CARD DRAG */
@@ -754,93 +616,70 @@ export default function ApplicationsPage() {
 
     if (!sourceColumn) return;
 
-
     /* ================================================= */
     /* DROPPED ON COLUMN */
     /* ================================================= */
 
     const destinationColumn =
       columns.find(
-        column =>
-          column.id ===
-          overId
+        (column) =>
+          column.id === overId
       );
 
     if (destinationColumn) {
-
       if (
         sourceColumn.id ===
         destinationColumn.id
       ) {
-
         return;
-
       }
 
       const card =
         sourceColumn.cards.find(
-          item =>
-            item.id ===
-            activeId
+          (item) =>
+            item.id === activeId
         );
 
       if (!card) return;
 
-      setColumns(
-        previous =>
-          previous.map(
-            column => {
+      setColumns((previous) =>
+        previous.map((column) => {
+          if (
+            column.id ===
+            sourceColumn.id
+          ) {
+            return {
+              ...column,
 
-              if (
-                column.id ===
-                sourceColumn.id
-              ) {
+              cards:
+                column.cards.filter(
+                  (item) =>
+                    item.id !==
+                    activeId
+                ),
+            };
+          }
 
-                return {
+          if (
+            column.id ===
+            destinationColumn.id
+          ) {
+            return {
+              ...column,
 
-                  ...column,
+              cards: [
+                ...column.cards,
+                card,
+              ],
+            };
+          }
 
-                  cards:
-                    column.cards.filter(
-                      item =>
-                        item.id !==
-                        activeId
-                    ),
-
-                };
-
-              }
-
-
-              if (
-                column.id ===
-                destinationColumn.id
-              ) {
-
-                return {
-
-                  ...column,
-
-                  cards: [
-                    ...column.cards,
-                    card,
-                  ],
-
-                };
-
-              }
-
-
-              return column;
-
-            }
-          )
+          return column;
+        })
       );
 
       return;
-
     }
-
 
     /* ================================================= */
     /* DROPPED ON CARD */
@@ -851,7 +690,6 @@ export default function ApplicationsPage() {
 
     if (!destination) return;
 
-
     /* ================================================= */
     /* SAME COLUMN */
     /* ================================================= */
@@ -860,67 +698,51 @@ export default function ApplicationsPage() {
       sourceColumn.id ===
       destination.id
     ) {
-
       const oldIndex =
         sourceColumn.cards.findIndex(
-          card =>
-            card.id ===
-            activeId
+          (card) =>
+            card.id === activeId
         );
 
       const newIndex =
         sourceColumn.cards.findIndex(
-          card =>
-            card.id ===
-            overId
+          (card) =>
+            card.id === overId
         );
 
       if (
         oldIndex === -1 ||
         newIndex === -1
       ) {
-
         return;
-
       }
 
       if (
-        oldIndex ===
-        newIndex
+        oldIndex === newIndex
       ) {
-
         return;
-
       }
 
-      setColumns(
-        previous =>
-          previous.map(
-            column =>
-              column.id ===
-              sourceColumn.id
+      setColumns((previous) =>
+        previous.map((column) =>
+          column.id ===
+          sourceColumn.id
+            ? {
+                ...column,
 
-                ? {
-
-                    ...column,
-
-                    cards:
-                      arrayMove(
-                        column.cards,
-                        oldIndex,
-                        newIndex
-                      ),
-
-                  }
-
-                : column
-          )
+                cards:
+                  arrayMove(
+                    column.cards,
+                    oldIndex,
+                    newIndex
+                  ),
+              }
+            : column
+        )
       );
 
       return;
-
     }
-
 
     /* ================================================= */
     /* MOVE BETWEEN COLUMNS */
@@ -928,98 +750,74 @@ export default function ApplicationsPage() {
 
     const card =
       sourceColumn.cards.find(
-        item =>
-          item.id ===
-          activeId
+        (item) =>
+          item.id === activeId
       );
 
     if (!card) return;
 
-    setColumns(
-      previous => {
+    setColumns((previous) => {
+      const next =
+        previous.map(
+          (column) => ({
+            ...column,
 
-        const next =
-          previous.map(
-            column => ({
-              ...column,
+            cards: [
+              ...column.cards,
+            ],
+          })
+        );
 
-              cards: [
-                ...column.cards,
-              ],
+      const source =
+        next.find(
+          (column) =>
+            column.id ===
+            sourceColumn.id
+        );
 
-            })
-          );
+      const destinationColumn =
+        next.find(
+          (column) =>
+            column.id ===
+            destination.id
+        );
 
-
-        const source =
-          next.find(
-            column =>
-              column.id ===
-              sourceColumn.id
-          );
-
-
-        const destinationColumn =
-          next.find(
-            column =>
-              column.id ===
-              destination.id
-          );
-
-
-        if (
-          !source ||
-          !destinationColumn
-        ) {
-
-          return previous;
-
-        }
-
-
-        source.cards =
-          source.cards.filter(
-            item =>
-              item.id !==
-              activeId
-          );
-
-
-        const destinationIndex =
-          destinationColumn.cards.findIndex(
-            item =>
-              item.id ===
-              overId
-          );
-
-
-        if (
-          destinationIndex ===
-          -1
-        ) {
-
-          destinationColumn.cards.push(
-            card
-          );
-
-        } else {
-
-          destinationColumn.cards.splice(
-            destinationIndex,
-            0,
-            card
-          );
-
-        }
-
-
-        return next;
-
+      if (
+        !source ||
+        !destinationColumn
+      ) {
+        return previous;
       }
-    );
 
+      source.cards =
+        source.cards.filter(
+          (item) =>
+            item.id !== activeId
+        );
+
+      const destinationIndex =
+        destinationColumn.cards.findIndex(
+          (item) =>
+            item.id === overId
+        );
+
+      if (
+        destinationIndex === -1
+      ) {
+        destinationColumn.cards.push(
+          card
+        );
+      } else {
+        destinationColumn.cards.splice(
+          destinationIndex,
+          0,
+          card
+        );
+      }
+
+      return next;
+    });
   };
-
 
   /* ================================================= */
   /* SEARCH */
@@ -1028,24 +826,18 @@ export default function ApplicationsPage() {
   const filteredCards = (
     cards: Card[]
   ) => {
-
     if (!search.trim()) {
-
       return cards;
-
     }
 
-    return cards.filter(
-      card =>
-        card.text
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          )
+    return cards.filter((card) =>
+      card.text
+        .toLowerCase()
+        .includes(
+          search.toLowerCase()
+        )
     );
-
   };
-
 
   /* ================================================= */
   /* TOTAL */
@@ -1059,13 +851,11 @@ export default function ApplicationsPage() {
       0
     );
 
-
   /* ================================================= */
   /* RETURN */
   /* ================================================= */
 
   return (
-
     <DndContext
       sensors={sensors}
       collisionDetection={
@@ -1081,332 +871,153 @@ export default function ApplicationsPage() {
         handleDragEnd
       }
     >
-
       <div className="relative min-h-screen overflow-hidden bg-[#f5f7fb]">
 
-
         {/* ================================================= */}
-        {/* BACKGROUND */}
+        {/* BACKGROUND DESIGN */}
         {/* ================================================= */}
 
-        <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl" />
 
-          <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-blue-500/10 blur-3xl animate-pulse" />
+          <div className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl" />
 
-          <div
-            className="absolute -bottom-48 -right-40 w-[600px] h-[600px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
-            style={{
-              animationDelay:
-                '1.5s',
-            }}
-          />
-
-          <div
-            className="absolute top-[35%] left-[45%] w-96 h-96 rounded-full bg-blue-400/5 blur-3xl animate-pulse"
-            style={{
-              animationDelay:
-                '3s',
-            }}
-          />
-
+          <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl" />
         </div>
 
-
-        {/* ================================================= */}
-        {/* GRID */}
-        {/* ================================================= */}
-
         <div
-          className="pointer-events-none fixed inset-0 opacity-[0.35]"
+          className="absolute inset-0 pointer-events-none opacity-[0.35] z-0"
           style={{
             backgroundImage: `
               linear-gradient(to right, #cbd5e1 1px, transparent 1px),
               linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)
             `,
+
             backgroundSize:
               '48px 48px',
 
             maskImage:
-              'linear-gradient(to bottom, transparent, black 12%, black 88%, transparent)',
+              'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
 
             WebkitMaskImage:
-              'linear-gradient(to bottom, transparent, black 12%, black 88%, transparent)',
+              'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
           }}
         />
 
-
         {/* ================================================= */}
-        {/* MAIN */}
+        {/* FIXED HEADER - SAME AS DASHBOARD */}
         {/* ================================================= */}
 
-        <main className="relative z-10 max-w-[1500px] mx-auto px-5 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
+          <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
 
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
 
-          {/* ================================================= */}
-          {/* HEADER */}
-          {/* ================================================= */}
+              <div>
 
-          <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                <div className="flex items-center gap-2 mb-2">
 
-            <div>
+                  <div className="w-2 h-2 rounded-full bg-blue-600" />
 
-              <div className="flex items-center gap-2 mb-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+                    Applications
+                  </p>
 
-                <div className="w-2 h-2 rounded-full bg-blue-600" />
+                </div>
 
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
-                  Applications
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
+                  Application Board
+                </h1>
+
+                <p className="mt-2 text-sm md:text-base text-slate-500">
+                  Organize and track your OJT and internship applications.
                 </p>
 
               </div>
 
-
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
-                Application Board
-              </h1>
-
-
-              <p className="mt-2 text-sm md:text-base text-slate-500">
-                Organize and track your OJT and internship applications.
-              </p>
-
-            </div>
-
-
-            <button
-              type="button"
-              onClick={() =>
-                setShowAddColumn(
-                  true
-                )
-              }
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-sm shadow-blue-600/20 hover:bg-blue-700 hover:shadow-md transition-all"
-            >
-
-              <Plus
-                size={18}
-              />
-
-              Add Column
-
-            </button>
-
-          </header>
-
-
-          {/* ================================================= */}
-          {/* TOOLBAR */}
-          {/* ================================================= */}
-
-          <section className="mt-8">
-
-            <div className="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-4 shadow-sm">
-
-              <div className="flex flex-col lg:flex-row gap-3">
-
-                <div className="relative flex-1">
-
-                  <Search
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={event =>
-                      setSearch(
-                        event.target.value
-                      )
-                    }
-                    placeholder="Search applications or notes..."
-                    className="w-full h-11 pl-11 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-                  />
-
-                </div>
-
-
-                <button
-                  type="button"
-                  className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50"
-                >
-
-                  <SlidersHorizontal
-                    size={16}
-                  />
-
-                  Filter
-
-                </button>
-
-
-                <button
-                  type="button"
-                  className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50"
-                >
-
-                  Latest
-
-                </button>
-
-              </div>
-
-            </div>
-
-          </section>
-
-
-          {/* ================================================= */}
-          {/* CREATE COLUMN */}
-          {/* ================================================= */}
-
-          {showAddColumn && (
-
-            <section className="mt-5">
-
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-
-                <div className="flex items-center gap-2 mb-4">
-
-                  <Palette
-                    size={18}
-                    className="text-blue-600"
-                  />
-
-                  <h2 className="text-sm font-bold text-slate-800">
-                    Create New Column
-                  </h2>
-
-                </div>
-
-
-                <input
-                  autoFocus
-                  type="text"
-                  value={
-                    newColumnName
-                  }
-                  onChange={event =>
-                    setNewColumnName(
-                      event.target.value
-                    )
-                  }
-                  onKeyDown={event => {
-
-                    if (
-                      event.key ===
-                      'Enter'
-                    ) {
-
-                      addColumn();
-
-                    }
-
-                    if (
-                      event.key ===
-                      'Escape'
-                    ) {
-
-                      setShowAddColumn(
-                        false
-                      );
-
-                    }
-
-                  }}
-                  placeholder="Column name, e.g. For Follow-up"
-                  className="w-full h-11 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              <button
+                type="button"
+                onClick={() =>
+                  setShowAddColumn(true)
+                }
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-sm shadow-blue-600/20 hover:bg-blue-700 hover:shadow-md transition-all"
+              >
+                <Plus
+                  size={18}
+                  strokeWidth={2.5}
                 />
 
+                Add Column
+              </button>
 
-                <div className="mt-4">
+            </header>
 
-                  <p className="text-xs font-semibold text-slate-500 mb-2">
-                    Choose column color
-                  </p>
+          </div>
+        </div>
 
+        {/* ================================================= */}
+        {/* MAIN CONTENT */}
+        {/* ================================================= */}
 
-                  <div className="flex flex-wrap gap-2">
+        <main className="relative z-10 w-full">
 
-                    {COLUMN_COLORS.map(
-                      color => (
+          <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8 lg:py-10">
 
-                        <button
-                          key={
-                            color.name
-                          }
-                          type="button"
-                          onClick={() =>
-                            setNewColumnColor(
-                              color
-                            )
-                          }
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
-                            newColumnColor.name ===
-                            color.name
+            {/* ================================================= */}
+            {/* TOOLBAR */}
+            {/* ================================================= */}
 
-                              ? `${color.header} ${color.border} ring-2 ring-blue-500/20`
+            <section className="mt-0">
 
-                              : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                          }`}
-                        >
+              <div className="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-4 shadow-sm">
 
-                          <span
-                            className={`w-3 h-3 rounded-full ${color.dot}`}
-                          />
+                <div className="flex flex-col lg:flex-row gap-3">
 
-                          {
-                            color.name
-                          }
+                  {/* SEARCH */}
 
-                        </button>
+                  <div className="relative flex-1">
 
-                      )
-                    )}
+                    <Search
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={(event) =>
+                        setSearch(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Search applications or notes..."
+                      className="w-full h-11 pl-11 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                    />
 
                   </div>
 
-                </div>
-
-
-                <div className="flex justify-end gap-2 mt-5">
+                  {/* FILTER */}
 
                   <button
                     type="button"
-                    onClick={() => {
-
-                      setShowAddColumn(
-                        false
-                      );
-
-                      setNewColumnName(
-                        ''
-                      );
-
-                    }}
-                    className="h-10 px-4 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50"
+                    className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50"
                   >
 
-                    Cancel
+                    <SlidersHorizontal
+                      size={16}
+                    />
+
+                    Filter
 
                   </button>
 
+                  {/* LATEST */}
 
                   <button
                     type="button"
-                    onClick={
-                      addColumn
-                    }
-                    className="h-10 px-5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+                    className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50"
                   >
-
-                    <Plus
-                      size={15}
-                      className="inline mr-1"
-                    />
-
-                    Create Column
-
+                    Latest
                   </button>
 
                 </div>
@@ -1415,217 +1026,360 @@ export default function ApplicationsPage() {
 
             </section>
 
-          )}
+            {/* ================================================= */}
+            {/* CREATE COLUMN */}
+            {/* ================================================= */}
 
+            {showAddColumn && (
+              <section className="mt-5">
 
-          {/* ================================================= */}
-          {/* KANBAN BOARD */}
-          {/* ================================================= */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
 
-          <section className="mt-6">
+                  <div className="flex items-center gap-2 mb-4">
 
-            <div className="overflow-x-auto pb-8">
+                    <Palette
+                      size={18}
+                      className="text-blue-600"
+                    />
 
-              <SortableContext
-                items={
-                  columns.map(
-                    column =>
-                      column.id
-                  )
-                }
-                strategy={
-                  horizontalListSortingStrategy
-                }
-              >
+                    <h2 className="text-sm font-bold text-slate-800">
+                      Create New Column
+                    </h2>
 
-                <div
-                  className="flex gap-5 items-start"
-                  style={{
-                    minWidth:
-                      columns.length *
-                        310 +
-                      310 +
-                      'px',
-                  }}
-                >
+                  </div>
 
-                  {columns.map(
-                    column => (
-
-                      <SortableColumn
-                        key={
-                          column.id
-                        }
-                        column={
-                          column
-                        }
-                        cards={
-                          filteredCards(
-                            column.cards
-                          )
-                        }
-
-                        editingColumn={
-                          editingColumn
-                        }
-
-                        editingColumnName={
-                          editingColumnName
-                        }
-
-                        editingColumnColor={
-                          editingColumnColor
-                        }
-
-                        setEditingColumnName={
-                          setEditingColumnName
-                        }
-
-                        setEditingColumnColor={
-                          setEditingColumnColor
-                        }
-
-                        saveColumn={
-                          saveColumn
-                        }
-
-                        startEditingColumn={
-                          startEditingColumn
-                        }
-
-                        deleteColumn={
-                          deleteColumn
-                        }
-
-                        newCardColumn={
-                          newCardColumn
-                        }
-
-                        newCardText={
-                          newCardText
-                        }
-
-                        setNewCardText={
-                          setNewCardText
-                        }
-
-                        setNewCardColumn={
-                          setNewCardColumn
-                        }
-
-                        addCard={
-                          addCard
-                        }
-
-                        editingCard={
-                          editingCard
-                        }
-
-                        editingCardText={
-                          editingCardText
-                        }
-
-                        setEditingCardText={
-                          setEditingCardText
-                        }
-
-                        startEditingCard={
-                          startEditingCard
-                        }
-
-                        saveCard={
-                          saveCard
-                        }
-
-                        deleteCard={
-                          deleteCard
-                        }
-                      />
-
-                    )
-                  )}
-
-
-                  {/* ===================================== */}
-                  {/* ADD COLUMN */}
-                  {/* ===================================== */}
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowAddColumn(
-                        true
+                  <input
+                    autoFocus
+                    type="text"
+                    value={
+                      newColumnName
+                    }
+                    onChange={(event) =>
+                      setNewColumnName(
+                        event.target.value
                       )
                     }
-                    className="w-[290px] shrink-0 min-h-[150px] rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 hover:bg-white hover:border-blue-300 flex flex-col items-center justify-center text-slate-400 hover:text-blue-600 transition-all"
-                  >
+                    onKeyDown={(event) => {
 
-                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+                      if (
+                        event.key ===
+                        'Enter'
+                      ) {
+                        addColumn();
+                      }
 
-                      <Plus
-                        size={20}
-                      />
+                      if (
+                        event.key ===
+                        'Escape'
+                      ) {
+                        setShowAddColumn(
+                          false
+                        );
+                      }
+
+                    }}
+                    placeholder="Column name, e.g. For Follow-up"
+                    className="w-full h-11 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  />
+
+                  {/* COLORS */}
+
+                  <div className="mt-4">
+
+                    <p className="text-xs font-semibold text-slate-500 mb-2">
+                      Choose column color
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+
+                      {COLUMN_COLORS.map(
+                        (color) => (
+
+                          <button
+                            key={
+                              color.name
+                            }
+                            type="button"
+                            onClick={() =>
+                              setNewColumnColor(
+                                color
+                              )
+                            }
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+                              newColumnColor.name ===
+                              color.name
+
+                                ? `${color.header} ${color.border} ring-2 ring-blue-500/20`
+
+                                : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                            }`}
+                          >
+
+                            <span
+                              className={`w-3 h-3 rounded-full ${color.dot}`}
+                            />
+
+                            {
+                              color.name
+                            }
+
+                          </button>
+
+                        )
+                      )}
 
                     </div>
 
+                  </div>
 
-                    <span className="mt-3 text-sm font-semibold">
-                      Add another column
-                    </span>
+                  {/* ACTIONS */}
 
-                  </button>
+                  <div className="flex justify-end gap-2 mt-5">
+
+                    <button
+                      type="button"
+                      onClick={() => {
+
+                        setShowAddColumn(
+                          false
+                        );
+
+                        setNewColumnName(
+                          ''
+                        );
+
+                      }}
+                      className="h-10 px-4 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={
+                        addColumn
+                      }
+                      className="h-10 px-5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+                    >
+
+                      <Plus
+                        size={15}
+                        className="inline mr-1"
+                      />
+
+                      Create Column
+
+                    </button>
+
+                  </div>
 
                 </div>
 
-              </SortableContext>
+              </section>
+            )}
+
+            {/* ================================================= */}
+            {/* KANBAN BOARD */}
+            {/* ================================================= */}
+
+            <section className="mt-6">
+
+              <div className="overflow-x-auto pb-8">
+
+                <SortableContext
+                  items={columns.map(
+                    (column) =>
+                      column.id
+                  )}
+                  strategy={
+                    horizontalListSortingStrategy
+                  }
+                >
+
+                  <div
+                    className="flex gap-5 items-start"
+                    style={{
+                      minWidth:
+                        columns.length *
+                          310 +
+                        310 +
+                        'px',
+                    }}
+                  >
+
+                    {columns.map(
+                      (column) => (
+
+                        <SortableColumn
+                          key={
+                            column.id
+                          }
+
+                          column={
+                            column
+                          }
+
+                          cards={
+                            filteredCards(
+                              column.cards
+                            )
+                          }
+
+                          editingColumn={
+                            editingColumn
+                          }
+
+                          editingColumnName={
+                            editingColumnName
+                          }
+
+                          editingColumnColor={
+                            editingColumnColor
+                          }
+
+                          setEditingColumnName={
+                            setEditingColumnName
+                          }
+
+                          setEditingColumnColor={
+                            setEditingColumnColor
+                          }
+
+                          saveColumn={
+                            saveColumn
+                          }
+
+                          startEditingColumn={
+                            startEditingColumn
+                          }
+
+                          deleteColumn={
+                            deleteColumn
+                          }
+
+                          newCardColumn={
+                            newCardColumn
+                          }
+
+                          newCardText={
+                            newCardText
+                          }
+
+                          setNewCardText={
+                            setNewCardText
+                          }
+
+                          setNewCardColumn={
+                            setNewCardColumn
+                          }
+
+                          addCard={
+                            addCard
+                          }
+
+                          editingCard={
+                            editingCard
+                          }
+
+                          editingCardText={
+                            editingCardText
+                          }
+
+                          setEditingCardText={
+                            setEditingCardText
+                          }
+
+                          startEditingCard={
+                            startEditingCard
+                          }
+
+                          saveCard={
+                            saveCard
+                          }
+
+                          deleteCard={
+                            deleteCard
+                          }
+                        />
+
+                      )
+                    )}
+
+                    {/* ================================================= */}
+                    {/* ADD COLUMN CARD */}
+                    {/* ================================================= */}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowAddColumn(
+                          true
+                        )
+                      }
+                      className="w-[290px] shrink-0 min-h-[150px] rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 hover:bg-white hover:border-blue-300 flex flex-col items-center justify-center text-slate-400 hover:text-blue-600 transition-all"
+                    >
+
+                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+
+                        <Plus
+                          size={20}
+                        />
+
+                      </div>
+
+                      <span className="mt-3 text-sm font-semibold">
+                        Add another column
+                      </span>
+
+                    </button>
+
+                  </div>
+
+                </SortableContext>
+
+              </div>
+
+            </section>
+
+            {/* ================================================= */}
+            {/* INFO */}
+            {/* ================================================= */}
+
+            <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-400">
+
+              <span>
+                {totalCards}{' '}
+                application
+                {totalCards !== 1
+                  ? 's'
+                  : ''}
+              </span>
+
+              <span>
+                Drag columns to rearrange them · Drag notes to change status.
+              </span>
 
             </div>
 
-          </section>
+            {/* ================================================= */}
+            {/* FOOTER */}
+            {/* ================================================= */}
 
+            <footer className="text-center pt-8 pb-8">
 
-          {/* ================================================= */}
-          {/* INFO */}
-          {/* ================================================= */}
+              <p className="text-xs text-slate-400">
+                Application Tracker · Software Engineering 2
+              </p>
 
-          <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-400">
+              <p className="text-[11px] text-slate-300 mt-1">
+                Version 1.0.0
+              </p>
 
-            <span>
-
-              {totalCards}{' '}
-              application
-              {totalCards !== 1
-                ? 's'
-                : ''}
-
-            </span>
-
-
-            <span>
-              Drag columns to rearrange them · Drag notes to change status.
-            </span>
+            </footer>
 
           </div>
 
-
-          {/* ================================================= */}
-          {/* FOOTER */}
-          {/* ================================================= */}
-
-          <footer className="text-center pt-8 pb-8">
-
-            <p className="text-xs text-slate-400">
-              Application Tracker · Software Engineering 2
-            </p>
-
-            <p className="text-[11px] text-slate-300 mt-1">
-              Version 1.0.0
-            </p>
-
-          </footer>
-
         </main>
-
 
         {/* ================================================= */}
         {/* DRAG OVERLAY */}
@@ -1681,12 +1435,11 @@ export default function ApplicationsPage() {
 
               </div>
 
-
               <div className="p-3">
 
                 {activeColumn.cards
                   .slice(0, 2)
-                  .map(card => (
+                  .map((card) => (
 
                     <div
                       key={
@@ -1694,11 +1447,9 @@ export default function ApplicationsPage() {
                       }
                       className="bg-white border border-slate-200 rounded-xl p-3 mb-2 text-xs text-slate-600"
                     >
-
                       {
                         card.text
                       }
-
                     </div>
 
                   ))}
@@ -1711,40 +1462,34 @@ export default function ApplicationsPage() {
 
         </DragOverlay>
 
-
         {/* ================================================= */}
         {/* ANIMATION */}
         {/* ================================================= */}
 
         <style jsx global>{`
 
-          html {
-            scroll-behavior: smooth;
-          }
-
+          html,
           body {
             scroll-behavior: smooth;
           }
 
-          @keyframes applicationFloat {
-
-            0%,
-            100% {
-              transform:
-                translateY(0px)
-                rotate(12deg);
+          @keyframes header-in {
+            from {
+              opacity: 0;
+              transform: translateY(-12px);
             }
 
-            50% {
-              transform:
-                translateY(-12px)
-                rotate(12deg);
+            to {
+              opacity: 1;
+              transform: translateY(0);
             }
+          }
 
+          .animate-header-in {
+            animation: header-in 0.4s ease-out forwards;
           }
 
           @media (prefers-reduced-motion: reduce) {
-
             html,
             body {
               scroll-behavior: auto;
@@ -1753,34 +1498,24 @@ export default function ApplicationsPage() {
             *,
             *::before,
             *::after {
-              animation-duration:
-                0.01ms !important;
-
-              animation-iteration-count:
-                1 !important;
-
-              transition-duration:
-                0.01ms !important;
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
             }
-
           }
 
         `}</style>
 
       </div>
-
     </DndContext>
-
   );
 }
-
 
 /* ================================================= */
 /* SORTABLE COLUMN */
 /* ================================================= */
 
 type SortableColumnProps = {
-
   column: Column;
 
   cards: Card[];
@@ -1846,7 +1581,6 @@ type SortableColumnProps = {
     ) => void;
 };
 
-
 function SortableColumn({
   column,
   cards,
@@ -1876,9 +1610,7 @@ function SortableColumn({
   startEditingCard,
   saveCard,
   deleteCard,
-
 }: SortableColumnProps) {
-
 
   const {
     attributes,
@@ -1892,44 +1624,32 @@ function SortableColumn({
       id: column.id,
     });
 
-
   const style = {
-
     transform:
       CSS.Transform.toString(
         transform
       ),
 
     transition,
-
   };
-
 
   const {
     setNodeRef:
       setDropRef,
 
     isOver,
-
   } =
     useDroppable({
       id: column.id,
     });
 
-
   return (
-
     <div
-      ref={node => {
-
+      ref={(node) => {
         setNodeRef(node);
-
         setDropRef(node);
-
       }}
-
       style={style}
-
       className={`w-[290px] shrink-0 transition-all ${
         isDragging
           ? 'opacity-30'
@@ -1953,7 +1673,6 @@ function SortableColumn({
         }`}
       >
 
-
         {/* ================================================= */}
         {/* COLUMN HEADER */}
         {/* ================================================= */}
@@ -1970,26 +1689,23 @@ function SortableColumn({
                 value={
                   editingColumnName
                 }
-                onChange={event =>
+                onChange={(event) =>
                   setEditingColumnName(
                     event.target.value
                   )
                 }
-                onKeyDown={event => {
+                onKeyDown={(event) => {
 
                   if (
                     event.key ===
                     'Enter'
                   ) {
-
                     saveColumn();
-
                   }
 
                 }}
                 className="flex-1 h-9 px-3 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold outline-none focus:border-blue-500"
               />
-
 
               <button
                 type="button"
@@ -2007,7 +1723,6 @@ function SortableColumn({
 
             </div>
 
-
             {/* COLOR EDITOR */}
 
             <div className="mt-3">
@@ -2016,11 +1731,10 @@ function SortableColumn({
                 Column Color
               </p>
 
-
               <div className="flex flex-wrap gap-1.5">
 
                 {COLUMN_COLORS.map(
-                  color => (
+                  (color) => (
 
                     <button
                       key={
@@ -2056,7 +1770,6 @@ function SortableColumn({
 
             </div>
 
-
             <button
               type="button"
               onClick={() =>
@@ -2066,9 +1779,7 @@ function SortableColumn({
               }
               className="mt-3 text-xs text-slate-400 hover:text-slate-600"
             >
-
               Cancel
-
             </button>
 
           </div>
@@ -2088,11 +1799,9 @@ function SortableColumn({
                 className="text-slate-500 shrink-0"
               />
 
-
               <span
                 className={`w-2.5 h-2.5 rounded-full ${column.color.dot}`}
               />
-
 
               <h2
                 className={`text-sm font-bold truncate ${column.color.text}`}
@@ -2102,7 +1811,6 @@ function SortableColumn({
                 }
               </h2>
 
-
               <span className="min-w-6 h-6 px-1.5 rounded-full bg-white/70 border border-white flex items-center justify-center text-[11px] font-semibold text-slate-500">
                 {
                   column.cards.length
@@ -2111,12 +1819,13 @@ function SortableColumn({
 
             </div>
 
-
             <div className="flex items-center shrink-0">
 
               <button
                 type="button"
-                onPointerDown={event =>
+                onPointerDown={(
+                  event
+                ) =>
                   event.stopPropagation()
                 }
                 onClick={() =>
@@ -2133,10 +1842,11 @@ function SortableColumn({
 
               </button>
 
-
               <button
                 type="button"
-                onPointerDown={event =>
+                onPointerDown={(
+                  event
+                ) =>
                   event.stopPropagation()
                 }
                 onClick={() =>
@@ -2159,18 +1869,15 @@ function SortableColumn({
 
         )}
 
-
         {/* ================================================= */}
         {/* CARDS */}
         {/* ================================================= */}
 
         <SortableContext
-          items={
-            cards.map(
-              card =>
-                card.id
-            )
-          }
+          items={cards.map(
+            (card) =>
+              card.id
+          )}
           strategy={
             verticalListSortingStrategy
           }
@@ -2179,7 +1886,7 @@ function SortableColumn({
           <div className="space-y-3">
 
             {cards.map(
-              card => (
+              (card) => (
 
                 <SortableCard
                   key={
@@ -2217,7 +1924,6 @@ function SortableColumn({
                   deleteCard={
                     deleteCard
                   }
-
                 />
 
               )
@@ -2226,7 +1932,6 @@ function SortableColumn({
           </div>
 
         </SortableContext>
-
 
         {/* ================================================= */}
         {/* EMPTY DROP AREA */}
@@ -2247,7 +1952,6 @@ function SortableColumn({
               className="text-slate-400/60"
             />
 
-
             <p className="mt-2 text-xs text-slate-400">
               Drop notes here
             </p>
@@ -2255,7 +1959,6 @@ function SortableColumn({
           </div>
 
         )}
-
 
         {/* ================================================= */}
         {/* ADD NOTE */}
@@ -2273,7 +1976,7 @@ function SortableColumn({
                 value={
                   newCardText
                 }
-                onChange={event =>
+                onChange={(event) =>
                   setNewCardText(
                     event.target.value
                   )
@@ -2282,7 +1985,6 @@ function SortableColumn({
                 placeholder="Write your application note..."
                 className="w-full resize-none rounded-lg bg-slate-50 border border-slate-200 p-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
               />
-
 
               <div className="flex justify-end gap-2 mt-2">
 
@@ -2301,11 +2003,8 @@ function SortableColumn({
                   }}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100"
                 >
-
                   Cancel
-
                 </button>
-
 
                 <button
                   type="button"
@@ -2316,9 +2015,7 @@ function SortableColumn({
                   }
                   className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
                 >
-
                   Add Note
-
                 </button>
 
               </div>
@@ -2352,17 +2049,14 @@ function SortableColumn({
       </div>
 
     </div>
-
   );
 }
-
 
 /* ================================================= */
 /* SORTABLE CARD */
 /* ================================================= */
 
 type SortableCardProps = {
-
   card: Card;
 
   columnId: string;
@@ -2389,7 +2083,6 @@ type SortableCardProps = {
     ) => void;
 };
 
-
 function SortableCard({
   card,
   columnId,
@@ -2401,9 +2094,7 @@ function SortableCard({
   startEditingCard,
   saveCard,
   deleteCard,
-
 }: SortableCardProps) {
-
 
   const {
     attributes,
@@ -2412,23 +2103,19 @@ function SortableCard({
     transform,
     transition,
     isDragging,
-
-  } = useSortable({
-    id: card.id,
-  });
-
+  } =
+    useSortable({
+      id: card.id,
+    });
 
   const style = {
-
     transform:
       CSS.Transform.toString(
         transform
       ),
 
     transition,
-
   };
-
 
   return (
 
@@ -2453,7 +2140,7 @@ function SortableCard({
             value={
               editingCardText
             }
-            onChange={event =>
+            onChange={(event) =>
               setEditingCardText(
                 event.target.value
               )
@@ -2461,7 +2148,6 @@ function SortableCard({
             rows={4}
             className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-800 outline-none resize-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
           />
-
 
           <div className="flex justify-end gap-2 mt-2">
 
@@ -2474,11 +2160,8 @@ function SortableCard({
               }
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100"
             >
-
               Cancel
-
             </button>
-
 
             <button
               type="button"
@@ -2487,9 +2170,7 @@ function SortableCard({
               }
               className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
             >
-
               Save
-
             </button>
 
           </div>
@@ -2500,9 +2181,9 @@ function SortableCard({
 
         <>
 
-          {/* ======================================= */}
+          {/* ================================================= */}
           {/* DRAG AREA */}
-          {/* ======================================= */}
+          {/* ================================================= */}
 
           <div
             {...listeners}
@@ -2514,7 +2195,6 @@ function SortableCard({
               className="mt-0.5 shrink-0 text-slate-300"
             />
 
-
             <p className="flex-1 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap break-words">
               {
                 card.text
@@ -2523,10 +2203,9 @@ function SortableCard({
 
           </div>
 
-
-          {/* ======================================= */}
+          {/* ================================================= */}
           {/* CARD ACTIONS */}
-          {/* ======================================= */}
+          {/* ================================================= */}
 
           <div className="flex justify-end gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
 
@@ -2545,7 +2224,6 @@ function SortableCard({
               />
 
             </button>
-
 
             <button
               type="button"
