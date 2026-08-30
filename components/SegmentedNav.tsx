@@ -30,7 +30,7 @@ const adminNavItems = [
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
-const HIDDEN_ON = ['/', '/login', '/forgot-password', '/reset-password'];
+const HIDDEN_ON = ['/', '/login', '/onboarding', '/forgot-password', '/reset-password'];
 const COLLAPSE_DELAY = 900;
 
 export default function SegmentedNav() {
