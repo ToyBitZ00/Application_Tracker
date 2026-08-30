@@ -568,12 +568,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="relative h-screen w-full flex flex-col overflow-hidden bg-[#f5f7fb]">
+    // LOKCED VIEWPORT (Standardized Layout)
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#f5f7fb]">
       
       {/* ================================================= */}
       {/* BACKGROUND DESIGN (FIXED) */}
       {/* ================================================= */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
         <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse" />
         <div
           className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
@@ -586,7 +587,7 @@ export default function SettingsPage() {
       </div>
 
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.35] z-0"
+        className="pointer-events-none absolute inset-0 opacity-[0.35] z-0"
         style={{
           backgroundImage: `
             linear-gradient(to right, #cbd5e1 1px, transparent 1px),
@@ -605,23 +606,22 @@ export default function SettingsPage() {
       {/* ================================================= */}
       <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
-          <header>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-600" />
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
-                    Settings
-                  </p>
-                </div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
-                  Account Settings
-                </h1>
-                <p className="mt-2 text-sm md:text-base text-slate-500 max-w-xl">
-                  Manage your profile, application preferences,
-                  and account data.
+          {/* HEADER ANIMATION APPLIED HERE */}
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-blue-600" />
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+                  Settings
                 </p>
               </div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
+                Account Settings
+              </h1>
+              <p className="mt-2 text-sm md:text-base text-slate-500 max-w-xl">
+                Manage your profile, application preferences,
+                and account data.
+              </p>
             </div>
           </header>
         </div>
@@ -633,8 +633,9 @@ export default function SettingsPage() {
       <main 
         className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
         style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
+          // PERFECTED FADE MASK (Standardized to Dashboard)
+          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
         }}
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-4 pb-32">
@@ -668,7 +669,7 @@ export default function SettingsPage() {
                         onChange={(v) => handleUpdateProfile('fullName', v)}
                       />
                       
-                      {/* MODIFIED: Editable Email Field */}
+                      {/* Editable Email Field */}
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
                           Email Address
@@ -688,7 +689,7 @@ export default function SettingsPage() {
                         </div>
                       </div>
 
-                      {/* MODIFIED: Horizontal Button Row with Checkmark & Premium Shadows */}
+                      {/* Horizontal Button Row with Checkmark & Premium Shadows */}
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
                           Course / Program
@@ -917,6 +918,7 @@ export default function SettingsPage() {
         />
       )}
 
+      {/* GLOBAL STYLES INCLUDING KEYFRAMES */}
       <style jsx global>{`
         html, body {
           scroll-behavior: smooth;
@@ -931,6 +933,21 @@ export default function SettingsPage() {
         .scrollbar-hide {
           -ms-overflow-style: none;  /* IE and Edge */
           scrollbar-width: none;  /* Firefox */
+        }
+
+        @keyframes header-in {
+          from {
+            opacity: 0;
+            transform: translateY(-12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-header-in {
+          animation: header-in 0.4s ease-out forwards;
         }
       `}</style>
     </div>
