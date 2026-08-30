@@ -50,7 +50,7 @@ const recentUsers = [
   { name: 'Paul Nerie B. Aguirre', course: 'BSCS', date: 'Just now', status: 'Active' },
   { name: 'Mark MJ Punzalan', course: 'BSCS', date: '2 mins ago', status: 'Active' },
   { name: 'Rob King Cunanan', course: 'BSCS', date: '15 mins ago', status: 'Active' },
-  { name: 'Maria Santos', course: 'BSBA', date: '1 hour ago', status: 'Pending' },
+  { name: 'Maria Santos', course: 'BSBA', date: '1 hour ago', status: 'Active' },
   { name: 'Juan Dela Cruz', course: 'BSHM', date: '3 hours ago', status: 'Suspended' },
 ];
 
@@ -237,9 +237,9 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="px-4 py-3 sm:px-5 text-right">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          user.status === 'Active' ? 'bg-emerald-50 text-emerald-700' :
-                          user.status === 'Suspended' ? 'bg-red-50 text-red-700' :
-                          'bg-amber-50 text-amber-700'
+                          user.status === 'Active' 
+                            ? 'bg-emerald-50 text-emerald-700' 
+                            : 'bg-red-50 text-red-700'
                         }`}>
                           {user.status}
                         </span>
