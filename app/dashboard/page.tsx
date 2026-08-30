@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
 import {
   BriefcaseBusiness,
   Clock3,
@@ -15,16 +16,34 @@ import {
 
 type StatusKey = 'Applied' | 'Interview' | 'Offer' | 'Rejected';
 
+type InterviewRoundState = 'completed' | 'active' | 'upcoming';
+
+type InterviewRound = {
+  label: string;
+  state: InterviewRoundState;
+};
+
 type ApplicationTableRow = {
   company: string;
   role: string;
   date: string;
   status: string;
   note: string;
-  rounds?: string[];
+  rounds?: InterviewRound[];
 };
 
-const statuses: StatusKey[] = ['Applied', 'Interview', 'Offer', 'Rejected'];
+const getOrdinalLabel = (value: number) => {
+  const mod100 = value % 100;
+  const mod10 = value % 10;
+
+  if (mod10 === 1 && mod100 !== 11) return `${value}st`;
+  if (mod10 === 2 && mod100 !== 12) return `${value}nd`;
+  if (mod10 === 3 && mod100 !== 13) return `${value}rd`;
+
+  return `${value}th`;
+};
+
+const getInterviewRoundLabel = (roundNumber: number) => `${getOrdinalLabel(roundNumber)} Interview Round`;
 
 const stats = [
   {
@@ -96,27 +115,39 @@ const dashboardData: Record<
         company: 'Aster Cloud',
         role: 'Software Engineer',
         date: 'Jul 02',
-        status: 'Technical round',
-        note: 'System design questions and coding challenge',
-        rounds: ['Screening', 'Technical', 'Panel'],
-      },
-      {
-        company: 'Orbit Studio',
-        role: 'Frontend Engineer',
-        date: 'Jul 05',
-        status: 'Panel interview',
-        note: 'Live UI review with engineering leads',
-        rounds: ['Screening', 'Portfolio', 'Panel'],
-      },
-      {
-        company: 'Luna Digital',
-        role: 'Product Designer',
-        date: 'Jul 08',
-        status: 'Hiring manager',
-        note: 'Design critique and role fit discussion',
-        rounds: ['Screening', 'Case', 'Hiring Manager'],
-      },
-    ],
+       status: '2nd Interview Round',
+       note: 'System design questions and coding challenge',
+       rounds: [
+         { label: getInterviewRoundLabel(1), state: 'completed' },
+         { label: getInterviewRoundLabel(2), state: 'active' },
+         { label: getInterviewRoundLabel(3), state: 'upcoming' },
+       ],
+     },
+     {
+       company: 'Orbit Studio',
+       role: 'Frontend Engineer',
+       date: 'Jul 05',
+       status: '3rd Interview Round',
+       note: 'Live UI review with engineering leads',
+       rounds: [
+         { label: getInterviewRoundLabel(1), state: 'completed' },
+         { label: getInterviewRoundLabel(2), state: 'completed' },
+         { label: getInterviewRoundLabel(3), state: 'active' },
+       ],
+     },
+     {
+       company: 'Luna Digital',
+       role: 'Product Designer',
+       date: 'Jul 08',
+       status: '1st Interview Round',
+       note: 'Design critique and role fit discussion',
+       rounds: [
+         { label: getInterviewRoundLabel(1), state: 'active' },
+         { label: getInterviewRoundLabel(2), state: 'upcoming' },
+         { label: getInterviewRoundLabel(3), state: 'upcoming' },
+       ],
+     },
+   ],
   },
   Offer: {
     title: 'Offer Stage',
@@ -176,39 +207,10 @@ const dashboardData: Record<
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<StatusKey>('Applied');
-  const carouselRef = useRef<HTMLDivElement | null>(null);
-  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const activePanel = dashboardData[activeTab];
 
   const handleTabChange = (tab: StatusKey) => {
     setActiveTab(tab);
-
-    const index = statuses.indexOf(tab);
-    const slide = cardRefs.current[index];
-    const container = carouselRef.current;
-
-    if (!slide || !container) return;
-
-    const left = slide.offsetLeft - (container.clientWidth - slide.offsetWidth) / 2;
-
-    container.scrollTo({
-      left: Math.max(0, left),
-      behavior: 'smooth',
-    });
-  };
-
-  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
-
-    if (Math.abs(delta) < 18) return;
-
-    event.preventDefault();
-
-    const currentIndex = statuses.indexOf(activeTab);
-    const nextIndex = delta > 0 ? Math.min(statuses.length - 1, currentIndex + 1) : Math.max(0, currentIndex - 1);
-
-    if (nextIndex !== currentIndex) {
-      handleTabChange(statuses[nextIndex]);
-    }
   };
 
   return (
