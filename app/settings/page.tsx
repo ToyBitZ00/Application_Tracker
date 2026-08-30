@@ -637,7 +637,7 @@ export default function SettingsPage() {
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-2 pb-32">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-4 pb-32">
           <div className="space-y-5">
             {/* PROFILE */}
             <SettingsSection>

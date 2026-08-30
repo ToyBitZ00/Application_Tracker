@@ -236,18 +236,24 @@ export default function ApplicationsPage() {
   /* ================================================= */
 
   useEffect(() => {
-    const saved = localStorage.getItem(
-      'application-kanban'
-    );
+    const saved =
+      localStorage.getItem(
+        'application-kanban'
+      );
 
     if (!saved) return;
 
     try {
-      const parsed = JSON.parse(saved);
+      const parsed =
+        JSON.parse(saved);
 
-      setColumns(parsed);
+      if (Array.isArray(parsed)) {
+        setColumns(parsed);
+      }
     } catch {
-      setColumns(INITIAL_COLUMNS);
+      setColumns(
+        INITIAL_COLUMNS
+      );
     }
   }, []);
 
@@ -266,11 +272,15 @@ export default function ApplicationsPage() {
   /* FIND CARD COLUMN */
   /* ================================================= */
 
-  const findColumn = (cardId: string) => {
-    return columns.find((column) =>
-      column.cards.some(
-        (card) => card.id === cardId
-      )
+  const findColumn = (
+    cardId: string
+  ) => {
+    return columns.find(
+      column =>
+        column.cards.some(
+          card =>
+            card.id === cardId
+        )
     );
   };
 
@@ -279,24 +289,30 @@ export default function ApplicationsPage() {
   /* ================================================= */
 
   const addColumn = () => {
-    const name = newColumnName.trim();
+    const name =
+      newColumnName.trim();
 
     if (!name) return;
 
     const column: Column = {
-      id: `column-${Date.now()}`,
+      id:
+        `column-${Date.now()}`,
 
-      title: name,
+      title:
+        name,
 
-      color: newColumnColor,
+      color:
+        newColumnColor,
 
       cards: [],
     };
 
-    setColumns((previous) => [
-      ...previous,
-      column,
-    ]);
+    setColumns(
+      previous => [
+        ...previous,
+        column,
+      ]
+    );
 
     setNewColumnName('');
 
@@ -314,25 +330,29 @@ export default function ApplicationsPage() {
   const deleteColumn = (
     columnId: string
   ) => {
-    const column = columns.find(
-      (item) => item.id === columnId
-    );
+    const column =
+      columns.find(
+        item =>
+          item.id === columnId
+      );
 
     if (!column) return;
 
     if (column.cards.length > 0) {
-      const confirmed = window.confirm(
-        'This column contains notes. Are you sure you want to delete it?'
-      );
+      const confirmed =
+        window.confirm(
+          'This column contains notes. Are you sure you want to delete it?'
+        );
 
       if (!confirmed) return;
     }
 
-    setColumns((previous) =>
-      previous.filter(
-        (column) =>
-          column.id !== columnId
-      )
+    setColumns(
+      previous =>
+        previous.filter(
+          column =>
+            column.id !== columnId
+        )
     );
   };
 
@@ -343,7 +363,9 @@ export default function ApplicationsPage() {
   const startEditingColumn = (
     column: Column
   ) => {
-    setEditingColumn(column.id);
+    setEditingColumn(
+      column.id
+    );
 
     setEditingColumnName(
       column.title
@@ -366,19 +388,25 @@ export default function ApplicationsPage() {
 
     if (!name) return;
 
-    setColumns((previous) =>
-      previous.map((column) =>
-        column.id === editingColumn
-          ? {
-              ...column,
+    setColumns(
+      previous =>
+        previous.map(
+          column =>
+            column.id ===
+            editingColumn
 
-              title: name,
+              ? {
+                  ...column,
 
-              color:
-                editingColumnColor,
-            }
-          : column
-      )
+                  title:
+                    name,
+
+                  color:
+                    editingColumnColor,
+                }
+
+              : column
+        )
     );
 
     setEditingColumn(null);
@@ -399,24 +427,31 @@ export default function ApplicationsPage() {
     if (!text) return;
 
     const card: Card = {
-      id: `card-${Date.now()}`,
+      id:
+        `card-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 7)}`,
 
       text,
     };
 
-    setColumns((previous) =>
-      previous.map((column) =>
-        column.id === columnId
-          ? {
-              ...column,
+    setColumns(
+      previous =>
+        previous.map(
+          column =>
+            column.id === columnId
 
-              cards: [
-                ...column.cards,
-                card,
-              ],
-            }
-          : column
-      )
+              ? {
+                  ...column,
+
+                  cards: [
+                    ...column.cards,
+                    card,
+                  ],
+                }
+
+              : column
+        )
     );
 
     setNewCardText('');
@@ -432,20 +467,25 @@ export default function ApplicationsPage() {
     columnId: string,
     cardId: string
   ) => {
-    setColumns((previous) =>
-      previous.map((column) =>
-        column.id === columnId
-          ? {
-              ...column,
+    setColumns(
+      previous =>
+        previous.map(
+          column =>
+            column.id === columnId
 
-              cards:
-                column.cards.filter(
-                  (card) =>
-                    card.id !== cardId
-                ),
-            }
-          : column
-      )
+              ? {
+                  ...column,
+
+                  cards:
+                    column.cards.filter(
+                      card =>
+                        card.id !==
+                        cardId
+                    ),
+                }
+
+              : column
+        )
     );
   };
 
@@ -456,7 +496,9 @@ export default function ApplicationsPage() {
   const startEditingCard = (
     card: Card
   ) => {
-    setEditingCard(card.id);
+    setEditingCard(
+      card.id
+    );
 
     setEditingCardText(
       card.text
@@ -475,21 +517,27 @@ export default function ApplicationsPage() {
 
     if (!text) return;
 
-    setColumns((previous) =>
-      previous.map((column) => ({
-        ...column,
+    setColumns(
+      previous =>
+        previous.map(
+          column => ({
+            ...column,
 
-        cards:
-          column.cards.map(
-            (card) =>
-              card.id === editingCard
-                ? {
-                    ...card,
-                    text,
-                  }
-                : card
-          ),
-      }))
+            cards:
+              column.cards.map(
+                card =>
+                  card.id ===
+                  editingCard
+
+                    ? {
+                        ...card,
+                        text,
+                      }
+
+                    : card
+              ),
+          })
+        )
     );
 
     setEditingCard(null);
@@ -511,12 +559,14 @@ export default function ApplicationsPage() {
 
     const column =
       columns.find(
-        (item) =>
+        item =>
           item.id === id
       );
 
     if (column) {
-      setActiveColumn(column);
+      setActiveColumn(
+        column
+      );
 
       return;
     }
@@ -528,12 +578,14 @@ export default function ApplicationsPage() {
 
     const card =
       cardColumn?.cards.find(
-        (item) =>
+        item =>
           item.id === id
       );
 
     if (card) {
-      setActiveCard(card);
+      setActiveCard(
+        card
+      );
     }
   };
 
@@ -577,14 +629,16 @@ export default function ApplicationsPage() {
 
     const oldColumnIndex =
       columns.findIndex(
-        (column) =>
-          column.id === activeId
+        column =>
+          column.id ===
+          activeId
       );
 
     const newColumnIndex =
       columns.findIndex(
-        (column) =>
-          column.id === overId
+        column =>
+          column.id ===
+          overId
       );
 
     if (
@@ -595,12 +649,13 @@ export default function ApplicationsPage() {
         oldColumnIndex !==
         newColumnIndex
       ) {
-        setColumns((previous) =>
-          arrayMove(
-            previous,
-            oldColumnIndex,
-            newColumnIndex
-          )
+        setColumns(
+          previous =>
+            arrayMove(
+              previous,
+              oldColumnIndex,
+              newColumnIndex
+            )
         );
       }
 
@@ -622,8 +677,9 @@ export default function ApplicationsPage() {
 
     const destinationColumn =
       columns.find(
-        (column) =>
-          column.id === overId
+        column =>
+          column.id ===
+          overId
       );
 
     if (destinationColumn) {
@@ -636,46 +692,50 @@ export default function ApplicationsPage() {
 
       const card =
         sourceColumn.cards.find(
-          (item) =>
-            item.id === activeId
+          item =>
+            item.id ===
+            activeId
         );
 
       if (!card) return;
 
-      setColumns((previous) =>
-        previous.map((column) => {
-          if (
-            column.id ===
-            sourceColumn.id
-          ) {
-            return {
-              ...column,
+      setColumns(
+        previous =>
+          previous.map(
+            column => {
+              if (
+                column.id ===
+                sourceColumn.id
+              ) {
+                return {
+                  ...column,
 
-              cards:
-                column.cards.filter(
-                  (item) =>
-                    item.id !==
-                    activeId
-                ),
-            };
-          }
+                  cards:
+                    column.cards.filter(
+                      item =>
+                        item.id !==
+                        activeId
+                    ),
+                };
+              }
 
-          if (
-            column.id ===
-            destinationColumn.id
-          ) {
-            return {
-              ...column,
+              if (
+                column.id ===
+                destinationColumn.id
+              ) {
+                return {
+                  ...column,
 
-              cards: [
-                ...column.cards,
-                card,
-              ],
-            };
-          }
+                  cards: [
+                    ...column.cards,
+                    card,
+                  ],
+                };
+              }
 
-          return column;
-        })
+              return column;
+            }
+          )
       );
 
       return;
@@ -700,14 +760,16 @@ export default function ApplicationsPage() {
     ) {
       const oldIndex =
         sourceColumn.cards.findIndex(
-          (card) =>
-            card.id === activeId
+          card =>
+            card.id ===
+            activeId
         );
 
       const newIndex =
         sourceColumn.cards.findIndex(
-          (card) =>
-            card.id === overId
+          card =>
+            card.id ===
+            overId
         );
 
       if (
@@ -718,27 +780,32 @@ export default function ApplicationsPage() {
       }
 
       if (
-        oldIndex === newIndex
+        oldIndex ===
+        newIndex
       ) {
         return;
       }
 
-      setColumns((previous) =>
-        previous.map((column) =>
-          column.id ===
-          sourceColumn.id
-            ? {
-                ...column,
+      setColumns(
+        previous =>
+          previous.map(
+            column =>
+              column.id ===
+              sourceColumn.id
 
-                cards:
-                  arrayMove(
-                    column.cards,
-                    oldIndex,
-                    newIndex
-                  ),
-              }
-            : column
-        )
+                ? {
+                    ...column,
+
+                    cards:
+                      arrayMove(
+                        column.cards,
+                        oldIndex,
+                        newIndex
+                      ),
+                  }
+
+                : column
+          )
       );
 
       return;
@@ -750,73 +817,79 @@ export default function ApplicationsPage() {
 
     const card =
       sourceColumn.cards.find(
-        (item) =>
-          item.id === activeId
+        item =>
+          item.id ===
+          activeId
       );
 
     if (!card) return;
 
-    setColumns((previous) => {
-      const next =
-        previous.map(
-          (column) => ({
-            ...column,
+    setColumns(
+      previous => {
+        const next =
+          previous.map(
+            column => ({
+              ...column,
 
-            cards: [
-              ...column.cards,
-            ],
-          })
-        );
+              cards: [
+                ...column.cards,
+              ],
+            })
+          );
 
-      const source =
-        next.find(
-          (column) =>
-            column.id ===
-            sourceColumn.id
-        );
+        const source =
+          next.find(
+            column =>
+              column.id ===
+              sourceColumn.id
+          );
 
-      const destinationColumn =
-        next.find(
-          (column) =>
-            column.id ===
-            destination.id
-        );
+        const destinationColumn =
+          next.find(
+            column =>
+              column.id ===
+              destination.id
+          );
 
-      if (
-        !source ||
-        !destinationColumn
-      ) {
-        return previous;
+        if (
+          !source ||
+          !destinationColumn
+        ) {
+          return previous;
+        }
+
+        source.cards =
+          source.cards.filter(
+            item =>
+              item.id !==
+              activeId
+          );
+
+        const destinationIndex =
+          destinationColumn.cards.findIndex(
+            item =>
+              item.id ===
+              overId
+          );
+
+        if (
+          destinationIndex ===
+          -1
+        ) {
+          destinationColumn.cards.push(
+            card
+          );
+        } else {
+          destinationColumn.cards.splice(
+            destinationIndex,
+            0,
+            card
+          );
+        }
+
+        return next;
       }
-
-      source.cards =
-        source.cards.filter(
-          (item) =>
-            item.id !== activeId
-        );
-
-      const destinationIndex =
-        destinationColumn.cards.findIndex(
-          (item) =>
-            item.id === overId
-        );
-
-      if (
-        destinationIndex === -1
-      ) {
-        destinationColumn.cards.push(
-          card
-        );
-      } else {
-        destinationColumn.cards.splice(
-          destinationIndex,
-          0,
-          card
-        );
-      }
-
-      return next;
-    });
+    );
   };
 
   /* ================================================= */
@@ -830,12 +903,13 @@ export default function ApplicationsPage() {
       return cards;
     }
 
-    return cards.filter((card) =>
-      card.text
-        .toLowerCase()
-        .includes(
-          search.toLowerCase()
-        )
+    return cards.filter(
+      card =>
+        card.text
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          )
     );
   };
 
@@ -871,19 +945,39 @@ export default function ApplicationsPage() {
         handleDragEnd
       }
     >
-      <div className="relative min-h-screen overflow-hidden bg-[#f5f7fb]">
+      <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#f5f7fb]">
 
         {/* ================================================= */}
-        {/* BACKGROUND DESIGN */}
+        {/* BLUE LIGHTING BACKGROUND */}
         {/* ================================================= */}
 
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-          <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl" />
 
-          <div className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl" />
+          <div
+            className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse"
+          />
 
-          <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl" />
+          <div
+            className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
+            style={{
+              animationDelay:
+                '1.5s',
+            }}
+          />
+
+          <div
+            className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl animate-pulse"
+            style={{
+              animationDelay:
+                '3s',
+            }}
+          />
+
         </div>
+
+        {/* ================================================= */}
+        {/* GRID BACKGROUND */}
+        {/* ================================================= */}
 
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.35] z-0"
@@ -897,18 +991,19 @@ export default function ApplicationsPage() {
               '48px 48px',
 
             maskImage:
-              'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+              'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
 
             WebkitMaskImage:
-              'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+              'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
           }}
         />
 
         {/* ================================================= */}
-        {/* FIXED HEADER - SAME AS DASHBOARD */}
+        {/* FIXED HEADER */}
         {/* ================================================= */}
 
         <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
+
           <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
 
             <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
@@ -942,38 +1037,49 @@ export default function ApplicationsPage() {
                 }
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-sm shadow-blue-600/20 hover:bg-blue-700 hover:shadow-md transition-all"
               >
+
                 <Plus
                   size={18}
                   strokeWidth={2.5}
                 />
 
                 Add Column
+
               </button>
 
             </header>
 
           </div>
+
         </div>
 
         {/* ================================================= */}
-        {/* MAIN CONTENT */}
+        {/* SCROLLABLE CONTENT */}
         {/* ================================================= */}
 
-        <main className="relative z-10 w-full">
+        <main
+          className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
+          style={{
+            maskImage:
+              'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
 
-          <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8 lg:py-10">
+            WebkitMaskImage:
+              'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          }}
+        >
+
+          <div className="max-w-[1500px] mx-auto px-5 sm:px-6 lg:px-8 pt-8 pb-32">
+
 
             {/* ================================================= */}
             {/* TOOLBAR */}
             {/* ================================================= */}
 
-            <section className="mt-0">
+            <section className="mb-6">
 
               <div className="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-4 shadow-sm">
 
                 <div className="flex flex-col lg:flex-row gap-3">
-
-                  {/* SEARCH */}
 
                   <div className="relative flex-1">
 
@@ -985,7 +1091,7 @@ export default function ApplicationsPage() {
                     <input
                       type="text"
                       value={search}
-                      onChange={(event) =>
+                      onChange={event =>
                         setSearch(
                           event.target.value
                         )
@@ -996,11 +1102,9 @@ export default function ApplicationsPage() {
 
                   </div>
 
-                  {/* FILTER */}
-
                   <button
                     type="button"
-                    className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50"
+                    className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"
                   >
 
                     <SlidersHorizontal
@@ -1011,11 +1115,9 @@ export default function ApplicationsPage() {
 
                   </button>
 
-                  {/* LATEST */}
-
                   <button
                     type="button"
-                    className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50"
+                    className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all"
                   >
                     Latest
                   </button>
@@ -1031,7 +1133,8 @@ export default function ApplicationsPage() {
             {/* ================================================= */}
 
             {showAddColumn && (
-              <section className="mt-5">
+
+              <section className="mb-6">
 
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
 
@@ -1054,12 +1157,12 @@ export default function ApplicationsPage() {
                     value={
                       newColumnName
                     }
-                    onChange={(event) =>
+                    onChange={event =>
                       setNewColumnName(
                         event.target.value
                       )
                     }
-                    onKeyDown={(event) => {
+                    onKeyDown={event => {
 
                       if (
                         event.key ===
@@ -1082,8 +1185,6 @@ export default function ApplicationsPage() {
                     className="w-full h-11 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                   />
 
-                  {/* COLORS */}
-
                   <div className="mt-4">
 
                     <p className="text-xs font-semibold text-slate-500 mb-2">
@@ -1093,7 +1194,7 @@ export default function ApplicationsPage() {
                     <div className="flex flex-wrap gap-2">
 
                       {COLUMN_COLORS.map(
-                        (color) => (
+                        color => (
 
                           <button
                             key={
@@ -1131,8 +1232,6 @@ export default function ApplicationsPage() {
                     </div>
 
                   </div>
-
-                  {/* ACTIONS */}
 
                   <div className="flex justify-end gap-2 mt-5">
 
@@ -1176,39 +1275,42 @@ export default function ApplicationsPage() {
                 </div>
 
               </section>
+
             )}
 
             {/* ================================================= */}
-            {/* KANBAN BOARD */}
+            {/* BOARD */}
             {/* ================================================= */}
 
-            <section className="mt-6">
+            <section>
 
               <div className="overflow-x-auto pb-8">
 
                 <SortableContext
-                  items={columns.map(
-                    (column) =>
-                      column.id
-                  )}
+                  items={
+                    columns.map(
+                      column =>
+                        column.id
+                    )
+                  }
                   strategy={
                     horizontalListSortingStrategy
                   }
                 >
 
                   <div
-                    className="flex gap-5 items-start"
+                    className="flex gap-4 items-start"
                     style={{
                       minWidth:
                         columns.length *
-                          310 +
-                        310 +
+                          286 +
+                        286 +
                         'px',
                     }}
                   >
 
                     {columns.map(
-                      (column) => (
+                      column => (
 
                         <SortableColumn
                           key={
@@ -1306,7 +1408,7 @@ export default function ApplicationsPage() {
                     )}
 
                     {/* ================================================= */}
-                    {/* ADD COLUMN CARD */}
+                    {/* ADD COLUMN BUTTON */}
                     {/* ================================================= */}
 
                     <button
@@ -1316,7 +1418,7 @@ export default function ApplicationsPage() {
                           true
                         )
                       }
-                      className="w-[290px] shrink-0 min-h-[150px] rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 hover:bg-white hover:border-blue-300 flex flex-col items-center justify-center text-slate-400 hover:text-blue-600 transition-all"
+                      className="w-[270px] shrink-0 min-h-[150px] rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 hover:bg-white hover:border-blue-300 flex flex-col items-center justify-center text-slate-400 hover:text-blue-600 transition-all"
                     >
 
                       <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
@@ -1342,17 +1444,20 @@ export default function ApplicationsPage() {
             </section>
 
             {/* ================================================= */}
-            {/* INFO */}
+            {/* BOARD INFO */}
             {/* ================================================= */}
 
             <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-400">
 
               <span>
+
                 {totalCards}{' '}
+
                 application
                 {totalCards !== 1
                   ? 's'
                   : ''}
+
               </span>
 
               <span>
@@ -1382,6 +1487,12 @@ export default function ApplicationsPage() {
         </main>
 
         {/* ================================================= */}
+        {/* BOTTOM FADE */}
+        {/* ================================================= */}
+
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
+
+        {/* ================================================= */}
         {/* DRAG OVERLAY */}
         {/* ================================================= */}
 
@@ -1389,7 +1500,7 @@ export default function ApplicationsPage() {
 
           {activeCard ? (
 
-            <div className="w-[270px] bg-white border border-slate-200 rounded-xl p-4 shadow-2xl rotate-2 cursor-grabbing">
+            <div className="w-[250px] bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xl rotate-2 cursor-grabbing">
 
               <div className="flex items-start gap-2">
 
@@ -1411,11 +1522,11 @@ export default function ApplicationsPage() {
           ) : activeColumn ? (
 
             <div
-              className={`w-[290px] rounded-2xl border shadow-2xl rotate-1 overflow-hidden ${activeColumn.color.background} ${activeColumn.color.border}`}
+              className={`w-[270px] rounded-2xl border shadow-2xl rotate-1 overflow-hidden ${activeColumn.color.background} ${activeColumn.color.border}`}
             >
 
               <div
-                className={`px-4 py-4 ${activeColumn.color.header}`}
+                className={`px-3.5 py-3 ${activeColumn.color.header}`}
               >
 
                 <div className="flex items-center gap-2">
@@ -1439,7 +1550,7 @@ export default function ApplicationsPage() {
 
                 {activeColumn.cards
                   .slice(0, 2)
-                  .map((card) => (
+                  .map(card => (
 
                     <div
                       key={
@@ -1463,7 +1574,7 @@ export default function ApplicationsPage() {
         </DragOverlay>
 
         {/* ================================================= */}
-        {/* ANIMATION */}
+        {/* ANIMATIONS */}
         {/* ================================================= */}
 
         <style jsx global>{`
@@ -1473,7 +1584,19 @@ export default function ApplicationsPage() {
             scroll-behavior: smooth;
           }
 
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+
+          /* HEADER ENTRANCE */
+
           @keyframes header-in {
+
             from {
               opacity: 0;
               transform: translateY(-12px);
@@ -1483,13 +1606,48 @@ export default function ApplicationsPage() {
               opacity: 1;
               transform: translateY(0);
             }
+
           }
 
           .animate-header-in {
-            animation: header-in 0.4s ease-out forwards;
+            animation:
+              header-in
+              0.4s
+              ease-out
+              forwards;
           }
 
+          /* BLUE LIGHTING */
+
+          @keyframes blueGlow {
+
+            0%,
+            100% {
+              opacity: 0.45;
+              transform: scale(1)
+                translate(0, 0);
+            }
+
+            50% {
+              opacity: 0.85;
+              transform: scale(1.08)
+                translate(20px, -15px);
+            }
+
+          }
+
+          .blue-glow-animation {
+            animation:
+              blueGlow
+              8s
+              ease-in-out
+              infinite;
+          }
+
+          /* REDUCED MOTION */
+
           @media (prefers-reduced-motion: reduce) {
+
             html,
             body {
               scroll-behavior: auto;
@@ -1498,10 +1656,16 @@ export default function ApplicationsPage() {
             *,
             *::before,
             *::after {
-              animation-duration: 0.01ms !important;
-              animation-iteration-count: 1 !important;
-              transition-duration: 0.01ms !important;
+              animation-duration:
+                0.01ms !important;
+
+              animation-iteration-count:
+                1 !important;
+
+              transition-duration:
+                0.01ms !important;
             }
+
           }
 
         `}</style>
@@ -1610,6 +1774,7 @@ function SortableColumn({
   startEditingCard,
   saveCard,
   deleteCard,
+
 }: SortableColumnProps) {
 
   const {
@@ -1638,19 +1803,24 @@ function SortableColumn({
       setDropRef,
 
     isOver,
+
   } =
     useDroppable({
       id: column.id,
     });
 
   return (
+
     <div
-      ref={(node) => {
+      ref={node => {
+
         setNodeRef(node);
+
         setDropRef(node);
+
       }}
       style={style}
-      className={`w-[290px] shrink-0 transition-all ${
+      className={`w-[270px] shrink-0 transition-all ${
         isDragging
           ? 'opacity-30'
           : ''
@@ -1662,7 +1832,7 @@ function SortableColumn({
       {/* ================================================= */}
 
       <div
-        className={`rounded-2xl border-2 p-3 min-h-[500px] transition-all ${
+        className={`rounded-2xl border-2 p-2.5 min-h-[500px] transition-all ${
           column.color.background
         } ${
           column.color.border
@@ -1689,18 +1859,27 @@ function SortableColumn({
                 value={
                   editingColumnName
                 }
-                onChange={(event) =>
+                onChange={event =>
                   setEditingColumnName(
                     event.target.value
                   )
                 }
-                onKeyDown={(event) => {
+                onKeyDown={event => {
 
                   if (
                     event.key ===
                     'Enter'
                   ) {
                     saveColumn();
+                  }
+
+                  if (
+                    event.key ===
+                    'Escape'
+                  ) {
+                    setEditingColumn(
+                      null
+                    );
                   }
 
                 }}
@@ -1734,7 +1913,7 @@ function SortableColumn({
               <div className="flex flex-wrap gap-1.5">
 
                 {COLUMN_COLORS.map(
-                  (color) => (
+                  color => (
 
                     <button
                       key={
@@ -1789,13 +1968,13 @@ function SortableColumn({
           <div
             {...attributes}
             {...listeners}
-            className={`flex items-center justify-between px-3 py-3 rounded-xl mb-3 ${column.color.header} border ${column.color.border} cursor-grab active:cursor-grabbing select-none`}
+            className={`flex items-center justify-between px-3 py-2.5 rounded-xl mb-3 ${column.color.header} border ${column.color.border} cursor-grab active:cursor-grabbing select-none`}
           >
 
             <div className="flex items-center gap-2 min-w-0">
 
               <GripVertical
-                size={17}
+                size={16}
                 className="text-slate-500 shrink-0"
               />
 
@@ -1823,9 +2002,7 @@ function SortableColumn({
 
               <button
                 type="button"
-                onPointerDown={(
-                  event
-                ) =>
+                onPointerDown={event =>
                   event.stopPropagation()
                 }
                 onClick={() =>
@@ -1844,9 +2021,7 @@ function SortableColumn({
 
               <button
                 type="button"
-                onPointerDown={(
-                  event
-                ) =>
+                onPointerDown={event =>
                   event.stopPropagation()
                 }
                 onClick={() =>
@@ -1874,19 +2049,21 @@ function SortableColumn({
         {/* ================================================= */}
 
         <SortableContext
-          items={cards.map(
-            (card) =>
-              card.id
-          )}
+          items={
+            cards.map(
+              card =>
+                card.id
+            )
+          }
           strategy={
             verticalListSortingStrategy
           }
         >
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
 
             {cards.map(
-              (card) => (
+              card => (
 
                 <SortableCard
                   key={
@@ -1924,6 +2101,7 @@ function SortableColumn({
                   deleteCard={
                     deleteCard
                   }
+
                 />
 
               )
@@ -1940,7 +2118,7 @@ function SortableColumn({
         {cards.length === 0 && (
 
           <div
-            className={`border-2 border-dashed rounded-xl min-h-[150px] flex flex-col items-center justify-center text-center px-4 ${
+            className={`border-2 border-dashed rounded-xl min-h-[140px] flex flex-col items-center justify-center text-center px-4 ${
               isOver
                 ? 'border-slate-400 bg-white/30'
                 : 'border-white/80'
@@ -1964,7 +2142,7 @@ function SortableColumn({
         {/* ADD NOTE */}
         {/* ================================================= */}
 
-        <div className="mt-3">
+        <div className="mt-2.5">
 
           {newCardColumn ===
           column.id ? (
@@ -1976,11 +2154,29 @@ function SortableColumn({
                 value={
                   newCardText
                 }
-                onChange={(event) =>
+                onChange={event =>
                   setNewCardText(
                     event.target.value
                   )
                 }
+                onKeyDown={event => {
+
+                  if (
+                    event.key ===
+                    'Escape'
+                  ) {
+
+                    setNewCardColumn(
+                      null
+                    );
+
+                    setNewCardText(
+                      ''
+                    );
+
+                  }
+
+                }}
                 rows={4}
                 placeholder="Write your application note..."
                 className="w-full resize-none rounded-lg bg-slate-50 border border-slate-200 p-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
@@ -2057,6 +2253,7 @@ function SortableColumn({
 /* ================================================= */
 
 type SortableCardProps = {
+
   card: Card;
 
   columnId: string;
@@ -2094,6 +2291,7 @@ function SortableCard({
   startEditingCard,
   saveCard,
   deleteCard,
+
 }: SortableCardProps) {
 
   const {
@@ -2103,18 +2301,20 @@ function SortableCard({
     transform,
     transition,
     isDragging,
-  } =
-    useSortable({
-      id: card.id,
-    });
+
+  } = useSortable({
+    id: card.id,
+  });
 
   const style = {
+
     transform:
       CSS.Transform.toString(
         transform
       ),
 
     transition,
+
   };
 
   return (
@@ -2123,9 +2323,10 @@ function SortableCard({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`group bg-white border border-slate-200 rounded-xl p-4 shadow-sm ${
+
+      className={`group bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm transition-all ${
         isDragging
-          ? 'opacity-30'
+          ? 'opacity-30 scale-[0.98]'
           : 'hover:shadow-md'
       }`}
     >
@@ -2140,11 +2341,31 @@ function SortableCard({
             value={
               editingCardText
             }
-            onChange={(event) =>
+            onChange={event =>
               setEditingCardText(
                 event.target.value
               )
             }
+            onKeyDown={event => {
+
+              if (
+                event.key ===
+                'Escape'
+              ) {
+                setEditingCardText(
+                  card.text
+                );
+              }
+
+              if (
+                event.key ===
+                'Enter' &&
+                event.ctrlKey
+              ) {
+                saveCard();
+              }
+
+            }}
             rows={4}
             className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-800 outline-none resize-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
           />
@@ -2154,8 +2375,8 @@ function SortableCard({
             <button
               type="button"
               onClick={() =>
-                setEditingCard(
-                  null
+                setEditingCardText(
+                  card.text
                 )
               }
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100"
@@ -2191,7 +2412,7 @@ function SortableCard({
           >
 
             <GripVertical
-              size={16}
+              size={15}
               className="mt-0.5 shrink-0 text-slate-300"
             />
 
@@ -2207,10 +2428,13 @@ function SortableCard({
           {/* CARD ACTIONS */}
           {/* ================================================= */}
 
-          <div className="flex justify-end gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex justify-end gap-1 mt-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
 
             <button
               type="button"
+              onPointerDown={event =>
+                event.stopPropagation()
+              }
               onClick={() =>
                 startEditingCard(
                   card
@@ -2227,6 +2451,9 @@ function SortableCard({
 
             <button
               type="button"
+              onPointerDown={event =>
+                event.stopPropagation()
+              }
               onClick={() =>
                 deleteCard(
                   columnId,
