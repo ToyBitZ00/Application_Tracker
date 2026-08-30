@@ -35,7 +35,6 @@ import {
   Palette,
 } from 'lucide-react';
 
-
 /* ================================================= */
 /* TYPES */
 /* ================================================= */
@@ -60,7 +59,6 @@ type Column = {
   color: ColumnColor;
   cards: Card[];
 };
-
 
 /* ================================================= */
 /* COLUMN COLORS */
@@ -140,7 +138,6 @@ const COLUMN_COLORS: ColumnColor[] = [
   },
 ];
 
-
 /* ================================================= */
 /* INITIAL BOARD */
 /* ================================================= */
@@ -175,13 +172,11 @@ const INITIAL_COLUMNS: Column[] = [
   },
 ];
 
-
 /* ================================================= */
 /* MAIN PAGE */
 /* ================================================= */
 
 export default function ApplicationsPage() {
-
   const [columns, setColumns] =
     useState<Column[]>(INITIAL_COLUMNS);
 
@@ -224,7 +219,6 @@ export default function ApplicationsPage() {
   const [newColumnColor, setNewColumnColor] =
     useState<ColumnColor>(COLUMN_COLORS[0]);
 
-
   /* ================================================= */
   /* DRAG SENSOR */
   /* ================================================= */
@@ -237,13 +231,11 @@ export default function ApplicationsPage() {
     })
   );
 
-
   /* ================================================= */
   /* LOAD BOARD */
   /* ================================================= */
 
   useEffect(() => {
-
     const saved =
       localStorage.getItem(
         'application-kanban'
@@ -252,38 +244,29 @@ export default function ApplicationsPage() {
     if (!saved) return;
 
     try {
-
       const parsed =
         JSON.parse(saved);
 
       if (Array.isArray(parsed)) {
         setColumns(parsed);
       }
-
     } catch {
-
       setColumns(
         INITIAL_COLUMNS
       );
-
     }
-
   }, []);
-
 
   /* ================================================= */
   /* SAVE BOARD */
   /* ================================================= */
 
   useEffect(() => {
-
     localStorage.setItem(
       'application-kanban',
       JSON.stringify(columns)
     );
-
   }, [columns]);
-
 
   /* ================================================= */
   /* FIND CARD COLUMN */
@@ -292,7 +275,6 @@ export default function ApplicationsPage() {
   const findColumn = (
     cardId: string
   ) => {
-
     return columns.find(
       column =>
         column.cards.some(
@@ -300,23 +282,19 @@ export default function ApplicationsPage() {
             card.id === cardId
         )
     );
-
   };
-
 
   /* ================================================= */
   /* ADD COLUMN */
   /* ================================================= */
 
   const addColumn = () => {
-
     const name =
       newColumnName.trim();
 
     if (!name) return;
 
     const column: Column = {
-
       id:
         `column-${Date.now()}`,
 
@@ -327,7 +305,6 @@ export default function ApplicationsPage() {
         newColumnColor,
 
       cards: [],
-
     };
 
     setColumns(
@@ -344,9 +321,7 @@ export default function ApplicationsPage() {
     );
 
     setShowAddColumn(false);
-
   };
-
 
   /* ================================================= */
   /* DELETE COLUMN */
@@ -355,7 +330,6 @@ export default function ApplicationsPage() {
   const deleteColumn = (
     columnId: string
   ) => {
-
     const column =
       columns.find(
         item =>
@@ -365,14 +339,12 @@ export default function ApplicationsPage() {
     if (!column) return;
 
     if (column.cards.length > 0) {
-
       const confirmed =
         window.confirm(
           'This column contains notes. Are you sure you want to delete it?'
         );
 
       if (!confirmed) return;
-
     }
 
     setColumns(
@@ -382,9 +354,7 @@ export default function ApplicationsPage() {
             column.id !== columnId
         )
     );
-
   };
-
 
   /* ================================================= */
   /* START EDIT COLUMN */
@@ -393,7 +363,6 @@ export default function ApplicationsPage() {
   const startEditingColumn = (
     column: Column
   ) => {
-
     setEditingColumn(
       column.id
     );
@@ -405,16 +374,13 @@ export default function ApplicationsPage() {
     setEditingColumnColor(
       column.color
     );
-
   };
-
 
   /* ================================================= */
   /* SAVE COLUMN */
   /* ================================================= */
 
   const saveColumn = () => {
-
     if (!editingColumn) return;
 
     const name =
@@ -446,9 +412,7 @@ export default function ApplicationsPage() {
     setEditingColumn(null);
 
     setEditingColumnName('');
-
   };
-
 
   /* ================================================= */
   /* ADD CARD */
@@ -457,21 +421,18 @@ export default function ApplicationsPage() {
   const addCard = (
     columnId: string
   ) => {
-
     const text =
       newCardText.trim();
 
     if (!text) return;
 
     const card: Card = {
-
       id:
         `card-${Date.now()}-${Math.random()
           .toString(36)
           .slice(2, 7)}`,
 
       text,
-
     };
 
     setColumns(
@@ -496,9 +457,7 @@ export default function ApplicationsPage() {
     setNewCardText('');
 
     setNewCardColumn(null);
-
   };
-
 
   /* ================================================= */
   /* DELETE CARD */
@@ -508,7 +467,6 @@ export default function ApplicationsPage() {
     columnId: string,
     cardId: string
   ) => {
-
     setColumns(
       previous =>
         previous.map(
@@ -529,9 +487,7 @@ export default function ApplicationsPage() {
               : column
         )
     );
-
   };
-
 
   /* ================================================= */
   /* EDIT CARD */
@@ -540,7 +496,6 @@ export default function ApplicationsPage() {
   const startEditingCard = (
     card: Card
   ) => {
-
     setEditingCard(
       card.id
     );
@@ -548,16 +503,13 @@ export default function ApplicationsPage() {
     setEditingCardText(
       card.text
     );
-
   };
-
 
   /* ================================================= */
   /* SAVE CARD */
   /* ================================================= */
 
   const saveCard = () => {
-
     if (!editingCard) return;
 
     const text =
@@ -569,7 +521,6 @@ export default function ApplicationsPage() {
       previous =>
         previous.map(
           column => ({
-
             ...column,
 
             cards:
@@ -585,7 +536,6 @@ export default function ApplicationsPage() {
 
                     : card
               ),
-
           })
         )
     );
@@ -593,9 +543,7 @@ export default function ApplicationsPage() {
     setEditingCard(null);
 
     setEditingCardText('');
-
   };
-
 
   /* ================================================= */
   /* DRAG START */
@@ -604,10 +552,8 @@ export default function ApplicationsPage() {
   const handleDragStart = (
     event: any
   ) => {
-
     const id =
       String(event.active.id);
-
 
     /* COLUMN */
 
@@ -618,15 +564,12 @@ export default function ApplicationsPage() {
       );
 
     if (column) {
-
       setActiveColumn(
         column
       );
 
       return;
-
     }
-
 
     /* CARD */
 
@@ -640,28 +583,21 @@ export default function ApplicationsPage() {
       );
 
     if (card) {
-
       setActiveCard(
         card
       );
-
     }
-
   };
-
 
   /* ================================================= */
   /* DRAG CANCEL */
   /* ================================================= */
 
   const handleDragCancel = () => {
-
     setActiveCard(null);
 
     setActiveColumn(null);
-
   };
-
 
   /* ================================================= */
   /* DRAG END */
@@ -670,7 +606,6 @@ export default function ApplicationsPage() {
   const handleDragEnd = (
     event: DragEndEvent
   ) => {
-
     const {
       active,
       over,
@@ -687,7 +622,6 @@ export default function ApplicationsPage() {
 
     const overId =
       String(over.id);
-
 
     /* ================================================= */
     /* COLUMN DRAG */
@@ -711,12 +645,10 @@ export default function ApplicationsPage() {
       oldColumnIndex !== -1 &&
       newColumnIndex !== -1
     ) {
-
       if (
         oldColumnIndex !==
         newColumnIndex
       ) {
-
         setColumns(
           previous =>
             arrayMove(
@@ -725,13 +657,10 @@ export default function ApplicationsPage() {
               newColumnIndex
             )
         );
-
       }
 
       return;
-
     }
-
 
     /* ================================================= */
     /* CARD DRAG */
@@ -741,7 +670,6 @@ export default function ApplicationsPage() {
       findColumn(activeId);
 
     if (!sourceColumn) return;
-
 
     /* ================================================= */
     /* DROPPED ON COLUMN */
@@ -755,14 +683,11 @@ export default function ApplicationsPage() {
       );
 
     if (destinationColumn) {
-
       if (
         sourceColumn.id ===
         destinationColumn.id
       ) {
-
         return;
-
       }
 
       const card =
@@ -778,14 +703,11 @@ export default function ApplicationsPage() {
         previous =>
           previous.map(
             column => {
-
               if (
                 column.id ===
                 sourceColumn.id
               ) {
-
                 return {
-
                   ...column,
 
                   cards:
@@ -794,41 +716,30 @@ export default function ApplicationsPage() {
                         item.id !==
                         activeId
                     ),
-
                 };
-
               }
-
 
               if (
                 column.id ===
                 destinationColumn.id
               ) {
-
                 return {
-
                   ...column,
 
                   cards: [
                     ...column.cards,
                     card,
                   ],
-
                 };
-
               }
 
-
               return column;
-
             }
           )
       );
 
       return;
-
     }
-
 
     /* ================================================= */
     /* DROPPED ON CARD */
@@ -839,7 +750,6 @@ export default function ApplicationsPage() {
 
     if (!destination) return;
 
-
     /* ================================================= */
     /* SAME COLUMN */
     /* ================================================= */
@@ -848,7 +758,6 @@ export default function ApplicationsPage() {
       sourceColumn.id ===
       destination.id
     ) {
-
       const oldIndex =
         sourceColumn.cards.findIndex(
           card =>
@@ -867,18 +776,14 @@ export default function ApplicationsPage() {
         oldIndex === -1 ||
         newIndex === -1
       ) {
-
         return;
-
       }
 
       if (
         oldIndex ===
         newIndex
       ) {
-
         return;
-
       }
 
       setColumns(
@@ -889,7 +794,6 @@ export default function ApplicationsPage() {
               sourceColumn.id
 
                 ? {
-
                     ...column,
 
                     cards:
@@ -898,7 +802,6 @@ export default function ApplicationsPage() {
                         oldIndex,
                         newIndex
                       ),
-
                   }
 
                 : column
@@ -906,9 +809,7 @@ export default function ApplicationsPage() {
       );
 
       return;
-
     }
-
 
     /* ================================================= */
     /* MOVE BETWEEN COLUMNS */
@@ -925,7 +826,6 @@ export default function ApplicationsPage() {
 
     setColumns(
       previous => {
-
         const next =
           previous.map(
             column => ({
@@ -934,10 +834,8 @@ export default function ApplicationsPage() {
               cards: [
                 ...column.cards,
               ],
-
             })
           );
-
 
         const source =
           next.find(
@@ -946,7 +844,6 @@ export default function ApplicationsPage() {
               sourceColumn.id
           );
 
-
         const destinationColumn =
           next.find(
             column =>
@@ -954,16 +851,12 @@ export default function ApplicationsPage() {
               destination.id
           );
 
-
         if (
           !source ||
           !destinationColumn
         ) {
-
           return previous;
-
         }
-
 
         source.cards =
           source.cards.filter(
@@ -972,7 +865,6 @@ export default function ApplicationsPage() {
               activeId
           );
 
-
         const destinationIndex =
           destinationColumn.cards.findIndex(
             item =>
@@ -980,34 +872,25 @@ export default function ApplicationsPage() {
               overId
           );
 
-
         if (
           destinationIndex ===
           -1
         ) {
-
           destinationColumn.cards.push(
             card
           );
-
         } else {
-
           destinationColumn.cards.splice(
             destinationIndex,
             0,
             card
           );
-
         }
 
-
         return next;
-
       }
     );
-
   };
-
 
   /* ================================================= */
   /* SEARCH */
@@ -1016,11 +899,8 @@ export default function ApplicationsPage() {
   const filteredCards = (
     cards: Card[]
   ) => {
-
     if (!search.trim()) {
-
       return cards;
-
     }
 
     return cards.filter(
@@ -1031,9 +911,7 @@ export default function ApplicationsPage() {
             search.toLowerCase()
           )
     );
-
   };
-
 
   /* ================================================= */
   /* TOTAL */
@@ -1047,13 +925,11 @@ export default function ApplicationsPage() {
       0
     );
 
-
   /* ================================================= */
   /* RETURN */
   /* ================================================= */
 
   return (
-
     <DndContext
       sensors={sensors}
       collisionDetection={
@@ -1069,9 +945,7 @@ export default function ApplicationsPage() {
         handleDragEnd
       }
     >
-
       <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#f5f7fb]">
-
 
         {/* ================================================= */}
         {/* BLUE LIGHTING BACKGROUND */}
@@ -1080,11 +954,11 @@ export default function ApplicationsPage() {
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
 
           <div
-            className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-blue-500/10 blur-3xl animate-pulse"
+            className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse"
           />
 
           <div
-            className="absolute -bottom-48 -right-40 w-[600px] h-[600px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
+            className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
             style={{
               animationDelay:
                 '1.5s',
@@ -1092,7 +966,7 @@ export default function ApplicationsPage() {
           />
 
           <div
-            className="absolute top-[35%] left-[45%] w-96 h-96 rounded-full bg-blue-400/5 blur-3xl animate-pulse"
+            className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl animate-pulse"
             style={{
               animationDelay:
                 '3s',
@@ -1100,7 +974,6 @@ export default function ApplicationsPage() {
           />
 
         </div>
-
 
         {/* ================================================= */}
         {/* GRID BACKGROUND */}
@@ -1118,13 +991,12 @@ export default function ApplicationsPage() {
               '48px 48px',
 
             maskImage:
-              'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+              'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
 
             WebkitMaskImage:
-              'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+              'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
           }}
         />
-
 
         {/* ================================================= */}
         {/* FIXED HEADER */}
@@ -1148,18 +1020,15 @@ export default function ApplicationsPage() {
 
                 </div>
 
-
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
                   Application Board
                 </h1>
-
 
                 <p className="mt-2 text-sm md:text-base text-slate-500">
                   Organize and track your OJT and internship applications.
                 </p>
 
               </div>
-
 
               <button
                 type="button"
@@ -1184,7 +1053,6 @@ export default function ApplicationsPage() {
 
         </div>
 
-
         {/* ================================================= */}
         {/* SCROLLABLE CONTENT */}
         {/* ================================================= */}
@@ -1200,8 +1068,7 @@ export default function ApplicationsPage() {
           }}
         >
 
-          <div className="max-w-[1500px] mx-auto px-5 sm:px-6 lg:px-8 pt-8 pb-32">
-
+          <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-8 pb-32">
 
             {/* ================================================= */}
             {/* TOOLBAR */}
@@ -1234,7 +1101,6 @@ export default function ApplicationsPage() {
 
                   </div>
 
-
                   <button
                     type="button"
                     className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"
@@ -1248,14 +1114,11 @@ export default function ApplicationsPage() {
 
                   </button>
 
-
                   <button
                     type="button"
                     className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all"
                   >
-
                     Latest
-
                   </button>
 
                 </div>
@@ -1263,7 +1126,6 @@ export default function ApplicationsPage() {
               </div>
 
             </section>
-
 
             {/* ================================================= */}
             {/* CREATE COLUMN */}
@@ -1288,7 +1150,6 @@ export default function ApplicationsPage() {
 
                   </div>
 
-
                   <input
                     autoFocus
                     type="text"
@@ -1306,20 +1167,16 @@ export default function ApplicationsPage() {
                         event.key ===
                         'Enter'
                       ) {
-
                         addColumn();
-
                       }
 
                       if (
                         event.key ===
                         'Escape'
                       ) {
-
                         setShowAddColumn(
                           false
                         );
-
                       }
 
                     }}
@@ -1327,13 +1184,11 @@ export default function ApplicationsPage() {
                     className="w-full h-11 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                   />
 
-
                   <div className="mt-4">
 
                     <p className="text-xs font-semibold text-slate-500 mb-2">
                       Choose column color
                     </p>
-
 
                     <div className="flex flex-wrap gap-2">
 
@@ -1377,7 +1232,6 @@ export default function ApplicationsPage() {
 
                   </div>
 
-
                   <div className="flex justify-end gap-2 mt-5">
 
                     <button
@@ -1397,7 +1251,6 @@ export default function ApplicationsPage() {
                     >
                       Cancel
                     </button>
-
 
                     <button
                       type="button"
@@ -1424,7 +1277,6 @@ export default function ApplicationsPage() {
 
             )}
 
-
             {/* ================================================= */}
             {/* BOARD */}
             {/* ================================================= */}
@@ -1446,12 +1298,12 @@ export default function ApplicationsPage() {
                 >
 
                   <div
-                    className="flex gap-5 items-start"
+                    className="flex gap-4 items-start"
                     style={{
                       minWidth:
                         columns.length *
-                          310 +
-                        310 +
+                          286 +
+                        286 +
                         'px',
                     }}
                   >
@@ -1554,7 +1406,6 @@ export default function ApplicationsPage() {
                       )
                     )}
 
-
                     {/* ================================================= */}
                     {/* ADD COLUMN BUTTON */}
                     {/* ================================================= */}
@@ -1566,7 +1417,7 @@ export default function ApplicationsPage() {
                           true
                         )
                       }
-                      className="w-[290px] shrink-0 min-h-[150px] rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 hover:bg-white hover:border-blue-300 flex flex-col items-center justify-center text-slate-400 hover:text-blue-600 transition-all"
+                      className="w-[270px] shrink-0 min-h-[150px] rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 hover:bg-white hover:border-blue-300 flex flex-col items-center justify-center text-slate-400 hover:text-blue-600 transition-all"
                     >
 
                       <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
@@ -1576,7 +1427,6 @@ export default function ApplicationsPage() {
                         />
 
                       </div>
-
 
                       <span className="mt-3 text-sm font-semibold">
                         Add another column
@@ -1591,7 +1441,6 @@ export default function ApplicationsPage() {
               </div>
 
             </section>
-
 
             {/* ================================================= */}
             {/* BOARD INFO */}
@@ -1610,13 +1459,11 @@ export default function ApplicationsPage() {
 
               </span>
 
-
               <span>
                 Drag columns to rearrange them · Drag notes to change status.
               </span>
 
             </div>
-
 
             {/* ================================================= */}
             {/* FOOTER */}
@@ -1638,13 +1485,11 @@ export default function ApplicationsPage() {
 
         </main>
 
-
         {/* ================================================= */}
         {/* BOTTOM FADE */}
         {/* ================================================= */}
 
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
-
 
         {/* ================================================= */}
         {/* DRAG OVERLAY */}
@@ -1654,7 +1499,7 @@ export default function ApplicationsPage() {
 
           {activeCard ? (
 
-            <div className="w-[270px] bg-white border border-slate-200 rounded-xl p-4 shadow-2xl rotate-2 cursor-grabbing">
+            <div className="w-[250px] bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xl rotate-2 cursor-grabbing">
 
               <div className="flex items-start gap-2">
 
@@ -1676,11 +1521,11 @@ export default function ApplicationsPage() {
           ) : activeColumn ? (
 
             <div
-              className={`w-[290px] rounded-2xl border shadow-2xl rotate-1 overflow-hidden ${activeColumn.color.background} ${activeColumn.color.border}`}
+              className={`w-[270px] rounded-2xl border shadow-2xl rotate-1 overflow-hidden ${activeColumn.color.background} ${activeColumn.color.border}`}
             >
 
               <div
-                className={`px-4 py-4 ${activeColumn.color.header}`}
+                className={`px-3.5 py-3 ${activeColumn.color.header}`}
               >
 
                 <div className="flex items-center gap-2">
@@ -1700,7 +1545,6 @@ export default function ApplicationsPage() {
 
               </div>
 
-
               <div className="p-3">
 
                 {activeColumn.cards
@@ -1713,11 +1557,9 @@ export default function ApplicationsPage() {
                       }
                       className="bg-white border border-slate-200 rounded-xl p-3 mb-2 text-xs text-slate-600"
                     >
-
                       {
                         card.text
                       }
-
                     </div>
 
                   ))}
@@ -1729,7 +1571,6 @@ export default function ApplicationsPage() {
           ) : null}
 
         </DragOverlay>
-
 
         {/* ================================================= */}
         {/* ANIMATIONS */}
@@ -1751,7 +1592,6 @@ export default function ApplicationsPage() {
             scrollbar-width: none;
           }
 
-
           /* HEADER ENTRANCE */
 
           @keyframes header-in {
@@ -1768,7 +1608,6 @@ export default function ApplicationsPage() {
 
           }
 
-
           .animate-header-in {
             animation:
               header-in
@@ -1776,7 +1615,6 @@ export default function ApplicationsPage() {
               ease-out
               forwards;
           }
-
 
           /* BLUE LIGHTING */
 
@@ -1797,7 +1635,6 @@ export default function ApplicationsPage() {
 
           }
 
-
           .blue-glow-animation {
             animation:
               blueGlow
@@ -1805,7 +1642,6 @@ export default function ApplicationsPage() {
               ease-in-out
               infinite;
           }
-
 
           /* REDUCED MOTION */
 
@@ -1834,19 +1670,15 @@ export default function ApplicationsPage() {
         `}</style>
 
       </div>
-
     </DndContext>
-
   );
 }
-
 
 /* ================================================= */
 /* SORTABLE COLUMN */
 /* ================================================= */
 
 type SortableColumnProps = {
-
   column: Column;
 
   cards: Card[];
@@ -1912,7 +1744,6 @@ type SortableColumnProps = {
     ) => void;
 };
 
-
 function SortableColumn({
   column,
   cards,
@@ -1945,7 +1776,6 @@ function SortableColumn({
 
 }: SortableColumnProps) {
 
-
   const {
     attributes,
     listeners,
@@ -1958,18 +1788,14 @@ function SortableColumn({
       id: column.id,
     });
 
-
   const style = {
-
     transform:
       CSS.Transform.toString(
         transform
       ),
 
     transition,
-
   };
-
 
   const {
     setNodeRef:
@@ -1982,7 +1808,6 @@ function SortableColumn({
       id: column.id,
     });
 
-
   return (
 
     <div
@@ -1993,23 +1818,20 @@ function SortableColumn({
         setDropRef(node);
 
       }}
-
       style={style}
-
-      className={`w-[290px] shrink-0 transition-all ${
+      className={`w-[270px] shrink-0 transition-all ${
         isDragging
           ? 'opacity-30'
           : ''
       }`}
     >
 
-
       {/* ================================================= */}
       {/* WHOLE COLUMN */}
       {/* ================================================= */}
 
       <div
-        className={`rounded-2xl border-2 p-3 min-h-[500px] transition-all ${
+        className={`rounded-2xl border-2 p-2.5 min-h-[500px] transition-all ${
           column.color.background
         } ${
           column.color.border
@@ -2019,7 +1841,6 @@ function SortableColumn({
             : 'shadow-sm'
         }`}
       >
-
 
         {/* ================================================= */}
         {/* COLUMN HEADER */}
@@ -2048,26 +1869,21 @@ function SortableColumn({
                     event.key ===
                     'Enter'
                   ) {
-
                     saveColumn();
-
                   }
 
                   if (
                     event.key ===
                     'Escape'
                   ) {
-
                     setEditingColumn(
                       null
                     );
-
                   }
 
                 }}
                 className="flex-1 h-9 px-3 rounded-lg bg-slate-50 border border-slate-200 text-sm font-semibold outline-none focus:border-blue-500"
               />
-
 
               <button
                 type="button"
@@ -2085,7 +1901,6 @@ function SortableColumn({
 
             </div>
 
-
             {/* COLOR EDITOR */}
 
             <div className="mt-3">
@@ -2093,7 +1908,6 @@ function SortableColumn({
               <p className="text-[11px] font-semibold text-slate-400 mb-2">
                 Column Color
               </p>
-
 
               <div className="flex flex-wrap gap-1.5">
 
@@ -2134,7 +1948,6 @@ function SortableColumn({
 
             </div>
 
-
             <button
               type="button"
               onClick={() =>
@@ -2154,21 +1967,19 @@ function SortableColumn({
           <div
             {...attributes}
             {...listeners}
-            className={`flex items-center justify-between px-3 py-3 rounded-xl mb-3 ${column.color.header} border ${column.color.border} cursor-grab active:cursor-grabbing select-none`}
+            className={`flex items-center justify-between px-3 py-2.5 rounded-xl mb-3 ${column.color.header} border ${column.color.border} cursor-grab active:cursor-grabbing select-none`}
           >
 
             <div className="flex items-center gap-2 min-w-0">
 
               <GripVertical
-                size={17}
+                size={16}
                 className="text-slate-500 shrink-0"
               />
-
 
               <span
                 className={`w-2.5 h-2.5 rounded-full ${column.color.dot}`}
               />
-
 
               <h2
                 className={`text-sm font-bold truncate ${column.color.text}`}
@@ -2178,7 +1989,6 @@ function SortableColumn({
                 }
               </h2>
 
-
               <span className="min-w-6 h-6 px-1.5 rounded-full bg-white/70 border border-white flex items-center justify-center text-[11px] font-semibold text-slate-500">
                 {
                   column.cards.length
@@ -2186,7 +1996,6 @@ function SortableColumn({
               </span>
 
             </div>
-
 
             <div className="flex items-center shrink-0">
 
@@ -2208,7 +2017,6 @@ function SortableColumn({
                 />
 
               </button>
-
 
               <button
                 type="button"
@@ -2235,7 +2043,6 @@ function SortableColumn({
 
         )}
 
-
         {/* ================================================= */}
         {/* CARDS */}
         {/* ================================================= */}
@@ -2252,7 +2059,7 @@ function SortableColumn({
           }
         >
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
 
             {cards.map(
               card => (
@@ -2303,7 +2110,6 @@ function SortableColumn({
 
         </SortableContext>
 
-
         {/* ================================================= */}
         {/* EMPTY DROP AREA */}
         {/* ================================================= */}
@@ -2311,7 +2117,7 @@ function SortableColumn({
         {cards.length === 0 && (
 
           <div
-            className={`border-2 border-dashed rounded-xl min-h-[150px] flex flex-col items-center justify-center text-center px-4 ${
+            className={`border-2 border-dashed rounded-xl min-h-[140px] flex flex-col items-center justify-center text-center px-4 ${
               isOver
                 ? 'border-slate-400 bg-white/30'
                 : 'border-white/80'
@@ -2323,7 +2129,6 @@ function SortableColumn({
               className="text-slate-400/60"
             />
 
-
             <p className="mt-2 text-xs text-slate-400">
               Drop notes here
             </p>
@@ -2332,12 +2137,11 @@ function SortableColumn({
 
         )}
 
-
         {/* ================================================= */}
         {/* ADD NOTE */}
         {/* ================================================= */}
 
-        <div className="mt-3">
+        <div className="mt-2.5">
 
           {newCardColumn ===
           column.id ? (
@@ -2377,7 +2181,6 @@ function SortableColumn({
                 className="w-full resize-none rounded-lg bg-slate-50 border border-slate-200 p-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
               />
 
-
               <div className="flex justify-end gap-2 mt-2">
 
                 <button
@@ -2397,7 +2200,6 @@ function SortableColumn({
                 >
                   Cancel
                 </button>
-
 
                 <button
                   type="button"
@@ -2442,11 +2244,8 @@ function SortableColumn({
       </div>
 
     </div>
-
   );
-
 }
-
 
 /* ================================================= */
 /* SORTABLE CARD */
@@ -2480,7 +2279,6 @@ type SortableCardProps = {
     ) => void;
 };
 
-
 function SortableCard({
   card,
   columnId,
@@ -2495,7 +2293,6 @@ function SortableCard({
 
 }: SortableCardProps) {
 
-
   const {
     attributes,
     listeners,
@@ -2508,7 +2305,6 @@ function SortableCard({
     id: card.id,
   });
 
-
   const style = {
 
     transform:
@@ -2520,7 +2316,6 @@ function SortableCard({
 
   };
 
-
   return (
 
     <div
@@ -2528,13 +2323,12 @@ function SortableCard({
       style={style}
       {...attributes}
 
-      className={`group bg-white border border-slate-200 rounded-xl p-4 shadow-sm transition-all ${
+      className={`group bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm transition-all ${
         isDragging
           ? 'opacity-30 scale-[0.98]'
           : 'hover:shadow-md'
       }`}
     >
-
 
       {editingCard ===
       card.id ? (
@@ -2557,11 +2351,9 @@ function SortableCard({
                 event.key ===
                 'Escape'
               ) {
-
                 setEditingCardText(
                   card.text
                 );
-
               }
 
               if (
@@ -2569,16 +2361,13 @@ function SortableCard({
                 'Enter' &&
                 event.ctrlKey
               ) {
-
                 saveCard();
-
               }
 
             }}
             rows={4}
             className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-800 outline-none resize-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
           />
-
 
           <div className="flex justify-end gap-2 mt-2">
 
@@ -2593,7 +2382,6 @@ function SortableCard({
             >
               Cancel
             </button>
-
 
             <button
               type="button"
@@ -2623,10 +2411,9 @@ function SortableCard({
           >
 
             <GripVertical
-              size={16}
+              size={15}
               className="mt-0.5 shrink-0 text-slate-300"
             />
-
 
             <p className="flex-1 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap break-words">
               {
@@ -2636,12 +2423,11 @@ function SortableCard({
 
           </div>
 
-
           {/* ================================================= */}
           {/* CARD ACTIONS */}
           {/* ================================================= */}
 
-          <div className="flex justify-end gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex justify-end gap-1 mt-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
 
             <button
               type="button"
@@ -2661,7 +2447,6 @@ function SortableCard({
               />
 
             </button>
-
 
             <button
               type="button"
@@ -2692,5 +2477,4 @@ function SortableCard({
     </div>
 
   );
-
 }
