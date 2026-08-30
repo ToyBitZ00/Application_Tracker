@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
 import {
   BriefcaseBusiness,
   Clock3,
@@ -15,16 +16,34 @@ import {
 
 type StatusKey = 'Applied' | 'Interview' | 'Offer' | 'Rejected';
 
+type InterviewRoundState = 'completed' | 'active' | 'upcoming';
+
+type InterviewRound = {
+  label: string;
+  state: InterviewRoundState;
+};
+
 type ApplicationTableRow = {
   company: string;
   role: string;
   date: string;
   status: string;
   note: string;
-  rounds?: string[];
+  rounds?: InterviewRound[];
 };
 
-const statuses: StatusKey[] = ['Applied', 'Interview', 'Offer', 'Rejected'];
+const getOrdinalLabel = (value: number) => {
+  const mod100 = value % 100;
+  const mod10 = value % 10;
+
+  if (mod10 === 1 && mod100 !== 11) return `${value}st`;
+  if (mod10 === 2 && mod100 !== 12) return `${value}nd`;
+  if (mod10 === 3 && mod100 !== 13) return `${value}rd`;
+
+  return `${value}th`;
+};
+
+const getInterviewRoundLabel = (roundNumber: number) => `${getOrdinalLabel(roundNumber)} Interview Round`;
 
 const stats = [
   {
@@ -96,27 +115,39 @@ const dashboardData: Record<
         company: 'Aster Cloud',
         role: 'Software Engineer',
         date: 'Jul 02',
-        status: 'Technical round',
-        note: 'System design questions and coding challenge',
-        rounds: ['Screening', 'Technical', 'Panel'],
-      },
-      {
-        company: 'Orbit Studio',
-        role: 'Frontend Engineer',
-        date: 'Jul 05',
-        status: 'Panel interview',
-        note: 'Live UI review with engineering leads',
-        rounds: ['Screening', 'Portfolio', 'Panel'],
-      },
-      {
-        company: 'Luna Digital',
-        role: 'Product Designer',
-        date: 'Jul 08',
-        status: 'Hiring manager',
-        note: 'Design critique and role fit discussion',
-        rounds: ['Screening', 'Case', 'Hiring Manager'],
-      },
-    ],
+       status: '2nd Interview Round',
+       note: 'System design questions and coding challenge',
+       rounds: [
+         { label: getInterviewRoundLabel(1), state: 'completed' },
+         { label: getInterviewRoundLabel(2), state: 'active' },
+         { label: getInterviewRoundLabel(3), state: 'upcoming' },
+       ],
+     },
+     {
+       company: 'Orbit Studio',
+       role: 'Frontend Engineer',
+       date: 'Jul 05',
+       status: '3rd Interview Round',
+       note: 'Live UI review with engineering leads',
+       rounds: [
+         { label: getInterviewRoundLabel(1), state: 'completed' },
+         { label: getInterviewRoundLabel(2), state: 'completed' },
+         { label: getInterviewRoundLabel(3), state: 'active' },
+       ],
+     },
+     {
+       company: 'Luna Digital',
+       role: 'Product Designer',
+       date: 'Jul 08',
+       status: '1st Interview Round',
+       note: 'Design critique and role fit discussion',
+       rounds: [
+         { label: getInterviewRoundLabel(1), state: 'active' },
+         { label: getInterviewRoundLabel(2), state: 'upcoming' },
+         { label: getInterviewRoundLabel(3), state: 'upcoming' },
+       ],
+     },
+   ],
   },
   Offer: {
     title: 'Offer Stage',
@@ -176,39 +207,10 @@ const dashboardData: Record<
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<StatusKey>('Applied');
-  const carouselRef = useRef<HTMLDivElement | null>(null);
-  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const activePanel = dashboardData[activeTab];
 
   const handleTabChange = (tab: StatusKey) => {
     setActiveTab(tab);
-
-    const index = statuses.indexOf(tab);
-    const slide = cardRefs.current[index];
-    const container = carouselRef.current;
-
-    if (!slide || !container) return;
-
-    const left = slide.offsetLeft - (container.clientWidth - slide.offsetWidth) / 2;
-
-    container.scrollTo({
-      left: Math.max(0, left),
-      behavior: 'smooth',
-    });
-  };
-
-  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
-
-    if (Math.abs(delta) < 18) return;
-
-    event.preventDefault();
-
-    const currentIndex = statuses.indexOf(activeTab);
-    const nextIndex = delta > 0 ? Math.min(statuses.length - 1, currentIndex + 1) : Math.max(0, currentIndex - 1);
-
-    if (nextIndex !== currentIndex) {
-      handleTabChange(statuses[nextIndex]);
-    }
   };
 
   return (
@@ -383,93 +385,96 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div
-              ref={carouselRef}
-              onWheel={handleWheel}
-              className="scroll-smooth px-3 py-5 sm:px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              style={{
-                overflowX: 'auto',
-                display: 'flex',
-                gap: '1rem',
-                scrollSnapType: 'x mandatory',
-                scrollPaddingInline: '0.75rem',
-                WebkitOverflowScrolling: 'touch',
-              }}
-            >
-              {statuses.map((tab, index) => {
-                const panel = dashboardData[tab];
-
-                return (
-                  <div
-                    key={tab}
-                    ref={(el) => {
-                      cardRefs.current[index] = el;
-                    }}
-                    style={{ scrollSnapAlign: 'center', flex: '0 0 82%', minWidth: 0 }}
-                    className="md:flex-[0_0_70%] lg:flex-[0_0_62%]"
-                  >
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-sm">
-                      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
-                        <div>
-                          <h3 className="text-base font-bold text-slate-900">{panel.title}</h3>
-                          <p className="text-xs text-slate-500">{panel.rows.length} entries</p>
-                        </div>
-                        <div className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700">
-                          <Sparkles size={10} />
-                          {tab}
-                        </div>
-                      </div>
-
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
-                          <thead className="bg-slate-100 text-slate-600">
-                            <tr>
-                              <th className="px-4 py-3 font-semibold sm:px-5">Company</th>
-                              <th className="px-4 py-3 font-semibold sm:px-5">Stage</th>
-                              <th className="px-4 py-3 font-semibold sm:px-5">Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {panel.rows.map((item) => (
-                              <tr key={`${tab}-${item.company}-${item.role}`} className="border-t border-slate-200 bg-white">
-                                <td className="px-4 py-3 align-top sm:px-5">
-                                  <div className="font-semibold text-slate-900">{item.company}</div>
-                                  <div className="mt-1 text-xs text-slate-500">{item.role}</div>
-                                </td>
-                                <td className="px-4 py-3 align-top sm:px-5">
-                                  {item.rounds ? (
-                                    <div className="flex flex-wrap gap-2">
-                                      {item.rounds.map((round) => (
-                                        <span
-                                          key={`${item.company}-${round}`}
-                                          className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700"
-                                        >
-                                          {round}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-700">
-                                      {item.status}
-                                    </span>
-                                  )}
-                                  <p className="mt-2 text-xs text-slate-500">{item.note}</p>
-                                </td>
-                                <td className="px-4 py-3 align-top text-right sm:px-5">
-                                  <div className="font-medium text-slate-700">{item.date}</div>
-                                  <div className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.11em] text-emerald-700">
-                                    {item.status}
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+            <div className="px-3 py-5 sm:px-5">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-sm"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">{activePanel.title}</h3>
+                      <p className="text-xs text-slate-500">{activePanel.rows.length} entries</p>
+                    </div>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700">
+                      <Sparkles size={10} />
+                      {activeTab}
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+                      <thead className="bg-slate-100 text-slate-600">
+                        <tr>
+                          <th className="px-4 py-3 font-semibold sm:px-5">Company</th>
+                          <th className="px-4 py-3 font-semibold sm:px-5">Stage</th>
+                          <th className="px-4 py-3 font-semibold sm:px-5">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activePanel.rows.map((item) => (
+                          <tr key={`${activeTab}-${item.company}-${item.role}`} className="border-t border-slate-200 bg-white">
+                            <td className="px-4 py-3 align-top sm:px-5">
+                              <div className="font-semibold text-slate-900">{item.company}</div>
+                              <div className="mt-1 text-xs text-slate-500">{item.role}</div>
+                            </td>
+                            <td className="px-4 py-3 align-top sm:px-5">
+                              {item.rounds ? (
+                                <div className="flex flex-wrap gap-2">
+                                  {item.rounds.map((round) => {
+                                    const isCompleted = round.state === 'completed';
+                                    const isActive = round.state === 'active';
+
+                                    return (
+                                      <span
+                                        key={`${item.company}-${round.label}`}
+                                        className={[
+                                          'rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide',
+                                          isCompleted
+                                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                            : isActive
+                                              ? 'border-blue-200 bg-blue-600 text-white shadow-sm'
+                                              : 'border-slate-200 bg-slate-100 text-slate-600',
+                                        ].join(' ')}
+                                      >
+                                        {round.label}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-700">
+                                  {item.status}
+                                </span>
+                              )}
+                              <p className="mt-2 text-xs text-slate-500">{item.note}</p>
+                            </td>
+                            <td className="px-4 py-3 align-top text-right sm:px-5">
+                              <div className="font-medium text-slate-700">{item.date}</div>
+                              <div
+                                className={[
+                                  'mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.11em]',
+                                  item.rounds
+                                    ? item.rounds.some((round) => round.state === 'active')
+                                      ? 'bg-blue-50 text-blue-700'
+                                      : 'bg-emerald-50 text-emerald-700'
+                                    : 'bg-emerald-50 text-emerald-700',
+                                ].join(' ')}
+                              >
+                                {item.status}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </section>
