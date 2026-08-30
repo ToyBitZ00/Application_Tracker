@@ -225,10 +225,10 @@ export default function DashboardPage() {
       />
 
       {/* ================================================= */}
-      {/* FIXED HEADER (FROSTED GLASS BACKGROUND) */}
+      {/* FIXED HEADER (TRANSPARENT) */}
       {/* ================================================= */}
-      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-[#f5f7fb]/80 backdrop-blur-md border-b border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
           <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
             <div>
               <div className="flex items-center gap-2 mb-2">
