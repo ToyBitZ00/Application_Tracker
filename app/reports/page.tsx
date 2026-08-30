@@ -1,11 +1,14 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import {
-  BarChart2,
-  BriefcaseBusiness,
-  Clock3,
-  CheckCircle2,
+  Activity,
+  Target,
+  Clock,
+  TrendingUp,
   ArrowUpRight,
+  Calendar,
+  ChevronDown,
 } from 'lucide-react';
 import {
   BarChart,
@@ -25,12 +28,6 @@ import {
 /* MOCK DATA */
 /* ================================================= */
 
-const STATS = [
-  { label: 'Applications', value: 124, icon: BriefcaseBusiness },
-  { label: 'Interviews', value: 18, icon: Clock3 },
-  { label: 'Offers', value: 3, icon: CheckCircle2 },
-];
-
 const momentumData = [
   { week: 'Week 1', applications: 12 },
   { week: 'Week 2', applications: 19 },
@@ -41,20 +38,86 @@ const momentumData = [
 ];
 
 const pipelineData = [
-  { name: 'Applied', value: 45, color: '#94a3b8' },      // Slate (Neutral)
-  { name: 'Screening', value: 20, color: '#3b82f6' },    // Blue (Active)
-  { name: 'Interview', value: 15, color: '#f59e0b' },    // Amber/Orange (Progress)
-  { name: 'Offer', value: 5, color: '#10b981' },         // Emerald (Success)
-  { name: 'Rejected', value: 25, color: '#ef4444' },     // Red (Declined)
+  { 
+    name: 'Applied', 
+    value: 45, 
+    color: '#94a3b8',
+    companies: [
+      { name: 'Northstar Labs', role: 'Frontend Developer Intern', date: 'Aug 28' },
+      { name: 'Pixel Harbor', role: 'UI Engineer', date: 'Aug 25' },
+      { name: 'Quantum Tech', role: 'Web Developer Intern', date: 'Aug 20' },
+    ]
+  },
+  { 
+    name: 'Screening', 
+    value: 20, 
+    color: '#3b82f6',
+    companies: [
+      { name: 'Signal Works', role: 'Product Analyst', date: 'Aug 15' },
+      { name: 'Nexus Systems', role: 'IT Support Intern', date: 'Aug 12' },
+    ]
+  },
+  { 
+    name: 'Interview', 
+    value: 15, 
+    color: '#f59e0b',
+    companies: [
+      { name: 'Aster Cloud', role: 'Software Engineer', date: 'Jul 02' },
+      { name: 'Orbit Studio', role: 'Frontend Engineer', date: 'Jul 05' },
+      { name: 'Luna Digital', role: 'Product Designer', date: 'Jul 08' },
+    ]
+  },
+  { 
+    name: 'Offer', 
+    value: 5, 
+    color: '#10b981',
+    companies: [
+      { name: 'Summit Grid', role: 'Product Engineer', date: 'Jul 11' },
+      { name: 'BrightPath', role: 'Full-Stack Developer', date: 'Jul 15' },
+    ]
+  },
+  { 
+    name: 'Rejected', 
+    value: 25, 
+    color: '#ef4444',
+    companies: [
+      { name: 'Clearline', role: 'Junior QA Analyst', date: 'Jun 12' },
+      { name: 'Delta Forge', role: 'Business Analyst', date: 'Jun 05' },
+    ]
+  },
 ];
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const YEARS = ['2026', '2025', '2024', '2023'];
 
 /* ================================================= */
 /* MAIN COMPONENT */
 /* ================================================= */
 
 export default function ReportsPage() {
+  // State for the custom dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState('This Month');
+  const [customMonth, setCustomMonth] = useState('Dec');
+  const [customYear, setCustomYear] = useState('2025');
+  
+  // State for the expandable breakdown rows
+  const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
+  
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    // Fixed page height so only the <main> block inside will scroll.
     <div className="relative h-screen w-full flex flex-col overflow-hidden bg-[#f5f7fb]">
       
       {/* ================================================= */}
@@ -88,30 +151,105 @@ export default function ReportsPage() {
       />
 
       {/* ================================================= */}
-      {/* FIXED HEADER (TRANSPARENT) */}
+      {/* FIXED HEADER (TRANSPARENT & UNIFORM) */}
       {/* ================================================= */}
-      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
+      <div className="relative z-50 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
-          <header>
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-slate-950 flex items-center justify-center text-white shadow-lg shadow-slate-900/20">
-                <BarChart2 size={26} strokeWidth={2.5} />
-              </div>
-              
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                    Reports
-                  </span>
-                </div>
-                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-950 leading-none">
-                  Application Reports
-                </h1>
-                <p className="mt-1.5 text-xs md:text-sm text-slate-500">
-                  Analyze your OJT and internship application activity.
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+            
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-blue-600" />
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+                  Reports
                 </p>
               </div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
+                Reports & Analytics
+              </h1>
+              <p className="mt-2 text-sm md:text-base text-slate-500 max-w-xl">
+                Analyze your OJT and internship application activity.
+              </p>
             </div>
+
+            {/* CUSTOM RANGE FILTER DROPDOWN */}
+            <div className="relative shrink-0" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 h-10 pl-4 pr-3 rounded-xl border border-slate-200 bg-white/80 backdrop-blur-xl text-sm font-bold text-slate-700 shadow-sm hover:bg-white hover:border-slate-300 transition-all"
+              >
+                <Calendar size={15} className="text-blue-600" />
+                {timeRange}
+                <ChevronDown 
+                  size={16} 
+                  className={`text-slate-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_12px_40px_rgba(15,23,42,0.12)] border border-slate-100 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="p-2 flex flex-col">
+                    
+                    {['This Week', 'Last Week', 'This Month', 'Last Month'].map((range) => (
+                      <button
+                        key={range}
+                        onClick={() => {
+                          setTimeRange(range);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                          timeRange === range 
+                            ? 'bg-blue-50 text-blue-700' 
+                            : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {range}
+                      </button>
+                    ))}
+                    
+                    <div className="h-px bg-slate-100 my-2 mx-2" />
+                    
+                    <div className="px-4 py-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">
+                        Specify Past Period
+                      </p>
+                      
+                      <div className="flex gap-2 mb-3">
+                        <select 
+                          value={customMonth}
+                          onChange={(e) => setCustomMonth(e.target.value)}
+                          className="w-1/2 h-9 px-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-50 hover:bg-white transition cursor-pointer"
+                        >
+                          {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <select
+                          value={customYear}
+                          onChange={(e) => setCustomYear(e.target.value)}
+                          className="w-1/2 h-9 px-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-50 hover:bg-white transition cursor-pointer"
+                        >
+                          {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTimeRange(`${customMonth} ${customYear}`);
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full h-9 rounded-lg bg-slate-950 text-white text-xs font-semibold shadow-[0_4px_12px_rgba(15,23,42,0.15)] hover:bg-slate-900 transition active:scale-[0.98]"
+                      >
+                        Apply Filter
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+            </div>
+
           </header>
         </div>
       </div>
@@ -120,7 +258,7 @@ export default function ReportsPage() {
       {/* SCROLLABLE CONTENT WITH MASK FOR FADE EFFECT */}
       {/* ================================================= */}
       <main 
-        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide pt-4 pb-32"
+        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide pt-10 pb-32"
         style={{
           maskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
@@ -128,26 +266,69 @@ export default function ReportsPage() {
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           
-          {/* ================= KPI CARDS ================= */}
+          {/* ================= HYBRID KPI CARDS ================= */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-            {STATS.map(({ label, value, icon: Icon }) => (
-              <div 
-                key={label} 
-                className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 transition-transform duration-200"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-                    <Icon size={21} className="text-blue-600" strokeWidth={2} />
-                  </div>
-                  <ArrowUpRight size={18} className="text-slate-300" />
+            
+            {/* Response Rate */}
+            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 transition-transform duration-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <Activity size={21} className="text-blue-600" strokeWidth={2} />
                 </div>
-                <div className="mt-5">
-                  <p className="text-sm font-semibold text-slate-500">{label}</p>
-                  <p className="mt-1 text-3xl md:text-4xl font-extrabold text-slate-950">{value}</p>
-                  <p className="mt-1.5 text-xs font-medium text-slate-400">Total {label.toLowerCase()}</p>
-                </div>
+                <ArrowUpRight size={18} className="text-slate-300" />
               </div>
-            ))}
+              <div className="mt-5">
+                <p className="text-sm font-semibold text-slate-500">Response Rate</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <p className="text-3xl md:text-4xl font-extrabold text-slate-950">42.5%</p>
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                    <TrendingUp size={12} strokeWidth={3} />
+                    +4.2%
+                  </span>
+                </div>
+                <p className="mt-1.5 text-xs font-medium text-slate-400">Of total applications received a reply.</p>
+              </div>
+            </div>
+
+            {/* Interview Conversion */}
+            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 transition-transform duration-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <Target size={21} className="text-blue-600" strokeWidth={2} />
+                </div>
+                <ArrowUpRight size={18} className="text-slate-300" />
+              </div>
+              <div className="mt-5">
+                <p className="text-sm font-semibold text-slate-500">Interview Conversion</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <p className="text-3xl md:text-4xl font-extrabold text-slate-950">18.0%</p>
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                    <TrendingUp size={12} strokeWidth={3} />
+                    +2.1%
+                  </span>
+                </div>
+                <p className="mt-1.5 text-xs font-medium text-slate-400">Converted from applied to interview.</p>
+              </div>
+            </div>
+
+            {/* Avg Time-to-Response */}
+            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:-translate-y-0.5 transition-transform duration-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <Clock size={21} className="text-blue-600" strokeWidth={2} />
+                </div>
+                <ArrowUpRight size={18} className="text-slate-300" />
+              </div>
+              <div className="mt-5">
+                <p className="text-sm font-semibold text-slate-500">Avg Time-to-Response</p>
+                <div className="flex items-end gap-2 mt-1">
+                  <p className="text-3xl md:text-4xl font-extrabold text-slate-950">8.4</p>
+                  <span className="text-sm font-bold text-slate-600 mb-1.5">Days</span>
+                </div>
+                <p className="mt-1.5 text-xs font-medium text-slate-400">Average wait time for initial contact.</p>
+              </div>
+            </div>
+
           </div>
 
           {/* ================= CHARTS ================= */}
@@ -231,6 +412,84 @@ export default function ReportsPage() {
             </div>
 
           </div>
+
+          {/* ================= INTERACTIVE STATUS BREAKDOWN ================= */}
+          <div className="mt-5 bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
+            <div className="px-6 md:px-8 py-5 border-b border-slate-100">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                Breakdown
+              </p>
+              <h2 className="text-lg font-bold text-slate-950 mt-1">
+                Application status
+              </h2>
+            </div>
+            
+            <div className="divide-y divide-slate-100">
+              {pipelineData.map((item, index) => {
+                const isExpanded = expandedStatus === item.name;
+
+                return (
+                  <div key={index} className="flex flex-col">
+                    
+                    {/* Clickable Row */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedStatus(isExpanded ? null : item.name)}
+                      className="px-6 md:px-8 py-4 flex items-center justify-between hover:bg-slate-50/80 transition-colors duration-150 w-full text-left focus:outline-none"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-sm font-medium text-slate-700">
+                          {item.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm font-semibold text-slate-950">
+                          {item.value}
+                        </span>
+                        <ChevronDown 
+                          size={16} 
+                          className={`text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+                        />
+                      </div>
+                    </button>
+
+                    {/* Expandable Company List */}
+                    {isExpanded && (
+                      <div className="bg-slate-50/50 px-6 md:px-8 py-3 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
+                        <div 
+                          className="ml-4 pl-4 border-l-[3px]" 
+                          style={{ borderColor: `${item.color}40` }}
+                        >
+                          {item.companies.length > 0 ? (
+                            <div className="space-y-3 py-2">
+                              {item.companies.map((company, cIndex) => (
+                                <div key={cIndex} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+                                  <div>
+                                    <p className="text-sm font-semibold text-slate-800">{company.name}</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">{company.role}</p>
+                                  </div>
+                                  <span className="text-[11px] font-medium text-slate-400 bg-white border border-slate-200 px-2.5 py-1 rounded-md shrink-0 w-fit">
+                                    {company.date}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 py-3 italic">No applications found in this stage.</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
         </div>
       </main>
 
