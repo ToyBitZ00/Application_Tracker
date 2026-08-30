@@ -16,7 +16,7 @@ import {
   Check,
   AlertCircle,
   Key,
-  X, // <-- Added X icon for the modals
+  X,
 } from 'lucide-react';
 
 /* ================================================= */
@@ -667,6 +667,8 @@ export default function SettingsPage() {
                         value={profile.fullName}
                         onChange={(v) => handleUpdateProfile('fullName', v)}
                       />
+                      
+                      {/* MODIFIED: Editable Email Field */}
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
                           Email Address
@@ -678,10 +680,10 @@ export default function SettingsPage() {
                           />
                           <input
                             type="email"
-                            disabled
                             value={profile.email}
+                            onChange={(e) => handleUpdateProfile('email', e.target.value)}
                             placeholder="you@example.com"
-                            className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-100 bg-slate-50 text-sm text-slate-400 outline-none transition cursor-not-allowed"
+                            className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                           />
                         </div>
                       </div>
