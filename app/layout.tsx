@@ -1,6 +1,7 @@
 import { Fraunces, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import SegmentedNav from '@/components/SegmentedNav';
+import PageTransition from '@/components/PageTransition';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -28,7 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} font-body bg-paper text-ink`}>
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
         <SegmentedNav />
       </body>
       

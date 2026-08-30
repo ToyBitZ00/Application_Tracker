@@ -12,6 +12,8 @@ import {
   ArrowDown,
   TrendingUp,
   Sparkles,
+  Building2,
+  X,
 } from 'lucide-react';
 
 type StatusKey = 'Applied' | 'Interview' | 'Offer' | 'Rejected';
@@ -59,6 +61,12 @@ const stats = [
     description: 'Applications closed',
     icon: XCircle,
   },
+];
+
+const recommendedCompanies = [
+  { name: 'Northstar Labs', role: 'Frontend Developer Intern', location: 'Makati, Metro Manila' },
+  { name: 'Signal Works', role: 'Product Analyst Intern', location: 'Quezon City' },
+  { name: 'Pixel Harbor', role: 'UI Engineer Intern', location: 'Remote' },
 ];
 
 const dashboardData: Record<
@@ -194,6 +202,7 @@ const dashboardData: Record<
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<StatusKey>('Applied');
   const activePanel = dashboardData[activeTab];
+  const [showRecommended, setShowRecommended] = useState(true);
 
   const handleTabChange = (tab: StatusKey) => {
     setActiveTab(tab);
@@ -268,7 +277,77 @@ export default function DashboardPage() {
         }}
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-8 pb-32">
+          {/* RECOMMENDED COMPANIES */}
+          <AnimatePresence>
+            {showRecommended && recommendedCompanies.length > 0 && (
+              <motion.section
+                key="recommended-companies"
+                initial={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                transition={{ duration: 0.35, ease: 'easeInOut' }}
+                className="mb-8 overflow-hidden"
+              >
+                <div className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/40 shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between px-6 py-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+                        <Building2 size={17} className="text-white" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="font-bold text-slate-900">Recommended Companies</h2>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                            <Sparkles size={10} />
+                            Suggested for you
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-sm text-slate-500">
+                          Based on your course and profile — not part of your tracked applications.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
+                  <div className="mx-6 rounded-xl border border-blue-100 bg-white overflow-hidden">
+                    <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+                      <thead className="bg-slate-50 text-slate-500">
+                        <tr>
+                          <th className="px-5 py-3 font-semibold">Company</th>
+                          <th className="px-5 py-3 font-semibold">Suggested Role</th>
+                          <th className="px-5 py-3 font-semibold">Location</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recommendedCompanies.map((company) => (
+                          <tr key={company.name} className="border-t border-slate-100">
+                            <td className="px-5 py-3 font-semibold text-slate-900">{company.name}</td>
+                            <td className="px-5 py-3 text-slate-600">{company.role}</td>
+                            <td className="px-5 py-3 text-slate-500">{company.location}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-6 px-6 py-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowRecommended(false)}
+                      className="text-sm font-semibold text-red-500 hover:text-red-600 transition-colors"
+                    >
+                      Dismiss
+                    </button>
+                    <Link
+                      href="/applications"
+                      className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      Proceed to Applications →
+                    </Link>
+                  </div>
+                </div>
+              </motion.section>
+            )}
+          </AnimatePresence>
           {/* HERO CARD */}
           <section className="mb-8">
             <div className="relative overflow-hidden rounded-2xl bg-[#0f172a] p-7 md:p-9 shadow-xl shadow-slate-900/10">
