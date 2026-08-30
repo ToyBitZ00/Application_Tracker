@@ -38,7 +38,12 @@ const momentumData = [
   { week: 'Week 6', applications: 30 },
 ];
 
-const pipelineData = [
+const pipelineData: Array<{
+  name: string;
+  value: number;
+  color: string;
+  companies: Array<{ name: string; role: string; date: string; currentRound?: string }>;
+}> = [
   { 
     name: 'Applied', 
     value: 45, 
