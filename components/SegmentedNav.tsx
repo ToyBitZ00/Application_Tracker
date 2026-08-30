@@ -62,13 +62,12 @@ export default function SegmentedNav() {
   const isAdminRoute = pathname.startsWith('/admin');
   const navItems = isAdminRoute ? adminNavItems : studentNavItems;
 
-  // Both student and admin now share the exact same blue gradient active pill
   const activePillColor = 'bg-gradient-to-r from-blue-600 to-blue-500';
 
   return (
     <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
       <div
-        className="flex items-center gap-1 bg-white/95 backdrop-blur-xl rounded-full shadow-[0_8px_30px_rgba(15,23,42,0.12)] border border-slate-200/80 p-2 transition-all duration-300 ease-out"
+        className="flex items-center gap-1 bg-white/95 backdrop-blur-xl rounded-full shadow-[0_8px_30px_rgba(15,23,42,0.12)] border border-slate-200/80 p-2 transition-all duration-300 ease-out dark-nav-shell"
         onMouseEnter={() => {
           clearCollapseTimer();
           setIsExpanded(true);

@@ -10,46 +10,15 @@ import {
   Trash2,
   Mail,
   GraduationCap,
-  Sun,
-  Moon,
-  Monitor,
-  Check,
   AlertCircle,
   Key,
   X,
+  Check,
 } from 'lucide-react';
 
 /* ================================================= */
 /* TYPES & CONSTANTS */
 /* ================================================= */
-
-type Theme = 'light' | 'dark' | 'system';
-
-const THEMES: {
-  name: string;
-  description: string;
-  icon: ReactNode;
-  value: Theme;
-}[] = [
-  {
-    name: 'Light',
-    description: 'Clean and bright',
-    icon: <Sun size={18} />,
-    value: 'light',
-  },
-  {
-    name: 'Dark',
-    description: 'Easy on the eyes',
-    icon: <Moon size={18} />,
-    value: 'dark',
-  },
-  {
-    name: 'System',
-    description: 'Use device preference',
-    icon: <Monitor size={18} />,
-    value: 'system',
-  },
-];
 
 const COURSES = ['BSCS', 'BSBA', 'BSHM', 'BEED', 'BSEd'];
 
@@ -130,59 +99,6 @@ function Toggle({ enabled, onClick }: { enabled: boolean; onClick: () => void })
           enabled ? 'translate-x-5' : 'translate-x-0'
         }`}
       />
-    </button>
-  );
-}
-
-function ThemeCard({ name, description, icon, active, onClick, preview }: {
-  name: string;
-  description: string;
-  icon: ReactNode;
-  active: boolean;
-  onClick: () => void;
-  preview: Theme;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`text-left rounded-xl border p-4 transition-all ${
-        active
-          ? 'border-blue-500 bg-blue-50/60 ring-1 ring-blue-500'
-          : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-      }`}
-    >
-      <div
-        className={`h-20 rounded-lg border p-3 mb-4 ${
-          preview === 'dark'
-            ? 'bg-[#0f172a] border-slate-700'
-            : preview === 'system'
-            ? 'bg-gradient-to-r from-white via-white to-[#0f172a] border-slate-200'
-            : 'bg-white border-slate-200'
-        }`}
-      >
-        <div className={`h-2 w-1/2 rounded ${preview === 'dark' ? 'bg-slate-600' : 'bg-slate-200'}`} />
-        <div className="flex gap-2 mt-3">
-          <div className={`h-7 w-1/3 rounded ${preview === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`} />
-          <div className={`h-7 flex-1 rounded ${preview === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`} />
-        </div>
-      </div>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className={`flex items-center gap-2 text-sm font-semibold ${active ? 'text-blue-700' : 'text-slate-700'}`}>
-            {icon}
-            {name}
-          </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            {description}
-          </p>
-        </div>
-        {active && (
-          <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
-            <Check size={12} className="text-white" />
-          </div>
-        )}
-      </div>
     </button>
   );
 }
@@ -538,7 +454,6 @@ function DeleteAccountModal({ onCancel, onConfirm }: { onCancel: () => void; onC
 /* ================================================= */
 
 export default function SettingsPage() {
-  const [theme, setTheme] = useState<Theme>('light');
   const [autoRounds, setAutoRounds] = useState(true);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -590,14 +505,14 @@ export default function SettingsPage() {
         className="pointer-events-none absolute inset-0 opacity-[0.35] z-0"
         style={{
           backgroundImage: `
-            linear-gradient(to right, #cbd5e1 1px, transparent 1px),
-            linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)
+            linear-gradient(to right, rgba(148, 163, 184, 0.22) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(148, 163, 184, 0.22) 1px, transparent 1px)
           `,
           backgroundSize: '48px 48px',
           maskImage:
-            'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
+            'linear-gradient(to bottom, transparent, rgba(0,0,0,0.78) 18%, rgba(0,0,0,0.9) 82%, transparent)',
           WebkitMaskImage:
-            'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
+            'linear-gradient(to bottom, transparent, rgba(0,0,0,0.78) 18%, rgba(0,0,0,0.9) 82%, transparent)',
         }}
       />
 
@@ -801,24 +716,17 @@ export default function SettingsPage() {
               <SectionHeader
                 icon={<Palette size={18} />}
                 title="Appearance"
-                description="Choose how Application Tracker looks"
+                description="Current interface styling"
               />
               <div className="p-6 md:p-7">
-                <p className="text-sm font-semibold text-slate-700 mb-4">
-                  Theme
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {THEMES.map((item) => (
-                    <ThemeCard
-                      key={item.value}
-                      name={item.name}
-                      description={item.description}
-                      icon={item.icon}
-                      active={theme === item.value}
-                      onClick={() => setTheme(item.value)}
-                      preview={item.value}
-                    />
-                  ))}
+                <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">Light mode</p>
+                    <p className="text-xs text-slate-500 mt-1">The interface is fixed to the standard bright layout.</p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-700">
+                    Active
+                  </span>
                 </div>
               </div>
             </SettingsSection>

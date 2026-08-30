@@ -11,7 +11,7 @@ const SLIDES = [
 ] as const;
 
 const INITIAL_DELAY = 2000;
-const SLIDE_INTERVAL = 4000;
+const SLIDE_INTERVAL = 3000;
 const RESUME_AFTER_INTERACTION = 4000;
 
 export default function DashboardPreviewCarousel() {
@@ -87,7 +87,7 @@ export default function DashboardPreviewCarousel() {
               if (side === 'center' && timerRef.current) clearTimeout(timerRef.current);
             }}
             onDragEnd={side === 'center' ? handleDragEnd : undefined}
-            initial={side === 'center' ? { opacity: 0, x: direction > 0 ? 28 : -28, scale: 0.98 } : { opacity: 0, x: 0, scale: 0.9 }}
+            initial={side === 'center' ? { opacity: 0, x: direction > 0 ? 32 : -32, scale: 0.98 } : { opacity: 0, x: 0, scale: 0.9 }}
             animate={{
               x,
               rotate,
@@ -96,8 +96,8 @@ export default function DashboardPreviewCarousel() {
               zIndex: z,
               y: side === 'center' ? 0 : 14,
             }}
-            exit={side === 'center' ? { opacity: 0, x: direction > 0 ? -28 : 28, scale: 0.98 } : { opacity: 0.2 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            exit={side === 'center' ? { opacity: 0, x: direction > 0 ? -32 : 32, scale: 0.98 } : { opacity: 0.2 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className={`absolute left-1/2 top-0 w-[78%] sm:w-[70%] md:w-[65%] -translate-x-1/2 ${
               side === 'center' ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'
             }`}
@@ -115,10 +115,10 @@ export default function DashboardPreviewCarousel() {
                   <motion.div
                     key={slide.key}
                     custom={direction}
-                    initial={side === 'center' ? { opacity: 0, x: direction > 0 ? 12 : -12 } : { opacity: 0 }}
+                    initial={side === 'center' ? { opacity: 0, x: direction > 0 ? 18 : -18 } : { opacity: 0 }}
                     animate={side === 'center' ? { opacity: 1, x: 0 } : { opacity: 1 }}
-                    exit={side === 'center' ? { opacity: 0, x: direction > 0 ? -12 : 12 } : { opacity: 0.8 }}
-                    transition={{ duration: 0.45, ease: 'easeOut' }}
+                    exit={side === 'center' ? { opacity: 0, x: direction > 0 ? -18 : 18 } : { opacity: 0.8 }}
+                    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <img
                       src={slide.src}
