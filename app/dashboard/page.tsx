@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   Plus,
-  ArrowUpRight,
+  ArrowDown,
   TrendingUp,
   Sparkles,
 } from 'lucide-react';
@@ -395,7 +395,7 @@ export default function DashboardPage() {
                       >
                         <Icon size={21} className={iconColorClass} strokeWidth={2} />
                       </div>
-                      <ArrowUpRight size={18} className={arrowClass} />
+                      <ArrowDown size={18} className={arrowClass} />
                     </div>
 
                     <div className="mt-5">
@@ -427,7 +427,7 @@ export default function DashboardPage() {
                   className="hidden items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-700 sm:inline-flex"
                 >
                   View all
-                  <ArrowUpRight size={15} />
+                  <ArrowDown size={15} />
                 </Link>
               </div>
 
