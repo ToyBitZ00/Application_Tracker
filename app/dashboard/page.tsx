@@ -16,7 +16,7 @@ import {
 
 type StatusKey = 'Applied' | 'Interview' | 'Offer' | 'Rejected';
 
-type InterviewRoundState = 'completed' | 'active' | 'upcoming';
+type InterviewRoundState = 'completed' | 'scheduled';
 
 type InterviewRound = {
   label: string;
@@ -32,18 +32,7 @@ type ApplicationTableRow = {
   rounds?: InterviewRound[];
 };
 
-const getOrdinalLabel = (value: number) => {
-  const mod100 = value % 100;
-  const mod10 = value % 10;
-
-  if (mod10 === 1 && mod100 !== 11) return `${value}st`;
-  if (mod10 === 2 && mod100 !== 12) return `${value}nd`;
-  if (mod10 === 3 && mod100 !== 13) return `${value}rd`;
-
-  return `${value}th`;
-};
-
-const getInterviewRoundLabel = (roundNumber: number) => `${getOrdinalLabel(roundNumber)} Interview Round`;
+const statuses: StatusKey[] = ['Applied', 'Interview', 'Offer', 'Rejected'];
 
 const stats = [
   {
@@ -108,47 +97,44 @@ const dashboardData: Record<
     ],
   },
   Interview: {
-    title: 'Interview Pipeline',
-    subtitle: 'Progress through each interview round.',
-    rows: [
-      {
-        company: 'Aster Cloud',
-        role: 'Software Engineer',
-        date: 'Jul 02',
-       status: '2nd Interview Round',
-       note: 'System design questions and coding challenge',
-       rounds: [
-         { label: getInterviewRoundLabel(1), state: 'completed' },
-         { label: getInterviewRoundLabel(2), state: 'active' },
-         { label: getInterviewRoundLabel(3), state: 'upcoming' },
-       ],
-     },
-     {
-       company: 'Orbit Studio',
-       role: 'Frontend Engineer',
-       date: 'Jul 05',
-       status: '3rd Interview Round',
-       note: 'Live UI review with engineering leads',
-       rounds: [
-         { label: getInterviewRoundLabel(1), state: 'completed' },
-         { label: getInterviewRoundLabel(2), state: 'completed' },
-         { label: getInterviewRoundLabel(3), state: 'active' },
-       ],
-     },
-     {
-       company: 'Luna Digital',
-       role: 'Product Designer',
-       date: 'Jul 08',
-       status: '1st Interview Round',
-       note: 'Design critique and role fit discussion',
-       rounds: [
-         { label: getInterviewRoundLabel(1), state: 'active' },
-         { label: getInterviewRoundLabel(2), state: 'upcoming' },
-         { label: getInterviewRoundLabel(3), state: 'upcoming' },
-       ],
-     },
-   ],
-  },
+  title: 'Interview Pipeline',
+  subtitle: 'Progress through each interview round.',
+  rows: [
+    {
+      company: 'Aster Cloud',
+      role: 'Software Engineer',
+      date: 'Jul 02',
+      status: 'Technical round',
+      note: 'System design questions and coding challenge',
+      rounds: [
+        { label: '1st Interview', state: 'completed' },
+        { label: '2nd Interview', state: 'scheduled' },
+      ],
+    },
+    {
+      company: 'Orbit Studio',
+      role: 'Frontend Engineer',
+      date: 'Jul 05',
+      status: 'Panel interview',
+      note: 'Live UI review with engineering leads',
+      rounds: [
+        { label: '1st Interview', state: 'completed' },
+        { label: '2nd Interview', state: 'completed' },
+        { label: '3rd Interview', state: 'scheduled' },
+      ],
+    },
+    {
+      company: 'Luna Digital',
+      role: 'Product Designer',
+      date: 'Jul 08',
+      status: 'Hiring manager',
+      note: 'Design critique and role fit discussion',
+      rounds: [
+        { label: '1st Interview', state: 'completed' },
+      ],
+    },
+  ],
+},
   Offer: {
     title: 'Offer Stage',
     subtitle: 'Companies that have moved forward with offers.',
@@ -214,21 +200,18 @@ export default function DashboardPage() {
   };
 
   return (
-    // Fixed page height so only the <main> block inside will scroll.
     <div className="relative h-screen w-full flex flex-col overflow-hidden bg-[#f5f7fb]">
-      
+
       {/* ================================================= */}
       {/* BACKGROUND DESIGN (FIXED) */}
       {/* ================================================= */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse" />
-        <div 
-          className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse" 
-          style={{ animationDelay: '1.5s' }}
+        <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl" />
+        <div
+          className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl"
         />
-        <div 
-          className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl animate-pulse" 
-          style={{ animationDelay: '3s' }}
+        <div
+          className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl"
         />
       </div>
 
@@ -241,9 +224,9 @@ export default function DashboardPage() {
           `,
           backgroundSize: '48px 48px',
           maskImage:
-            'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
+            'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
           WebkitMaskImage:
-            'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
+            'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
         }}
       />
 
@@ -252,7 +235,7 @@ export default function DashboardPage() {
       {/* ================================================= */}
       <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
-          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-2 h-2 rounded-full bg-blue-600" />
@@ -275,22 +258,22 @@ export default function DashboardPage() {
               <Plus size={18} strokeWidth={2.5} />
               Add Application
             </Link>
-          </header>
+          </div>
         </div>
       </div>
 
       {/* ================================================= */}
       {/* SCROLLABLE CONTENT WITH MASK FOR FADE EFFECT */}
       {/* ================================================= */}
-      <main 
-        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide pt-10 pb-32"
+      <main
+        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
         style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 80px), transparent 100%)',
+          maskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 40px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 40px), transparent 100%)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-10 pb-32">
+
           <section className="mb-8">
             <div className="relative overflow-hidden rounded-2xl bg-[#0f172a] p-7 md:p-9 shadow-xl shadow-slate-900/10">
               <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-blue-600/20 blur-3xl" />
@@ -353,6 +336,47 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {stats.map(({ title, count, description, icon: Icon }) => {
                 const isActive = activeTab === title;
+                const isRejected = title === 'Rejected';
+
+                const cardClass = isRejected
+                  ? isActive
+                    ? 'border-red-200 bg-red-50 shadow-red-100/80 -translate-y-0.5'
+                    : 'border-red-100 bg-red-50/60 hover:border-red-200 hover:bg-red-50 hover:-translate-y-0.5 hover:shadow-red-100/80'
+                  : isActive
+                    ? 'border-blue-200 bg-blue-50 shadow-blue-100/80 -translate-y-0.5'
+                    : 'border-slate-200/80 bg-white/90 hover:-translate-y-0.5 hover:shadow-md';
+
+                const iconWrapClass = isRejected
+                  ? isActive
+                    ? 'bg-red-600'
+                    : 'bg-red-100'
+                  : isActive
+                    ? 'bg-blue-600'
+                    : 'bg-blue-50';
+
+                const iconColorClass = isRejected
+                  ? isActive
+                    ? 'text-white'
+                    : 'text-red-600'
+                  : isActive
+                    ? 'text-white'
+                    : 'text-blue-600';
+
+                const arrowClass = isRejected
+                  ? isActive
+                    ? 'text-red-600'
+                    : 'text-red-400 group-hover:text-red-600'
+                  : isActive
+                    ? 'text-blue-600'
+                    : 'text-slate-300 group-hover:text-blue-500';
+
+                const labelClass = isRejected
+                  ? isActive
+                    ? 'text-red-700'
+                    : 'text-red-600'
+                  : isActive
+                    ? 'text-blue-700'
+                    : 'text-slate-500';
 
                 return (
                   <button
@@ -362,28 +386,23 @@ export default function DashboardPage() {
                     onClick={() => handleTabChange(title)}
                     className={[
                       'group rounded-2xl border p-5 text-left shadow-sm transition-all md:p-6',
-                      isActive
-                        ? 'border-blue-200 bg-blue-50 shadow-blue-100/80 -translate-y-0.5'
-                        : 'border-slate-200/80 bg-white/95 backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-md',
+                      cardClass,
                     ].join(' ')}
                   >
                     <div className="flex items-center justify-between">
                       <div
                         className={[
                           'flex h-11 w-11 items-center justify-center rounded-xl',
-                          isActive ? 'bg-blue-600' : 'bg-blue-50',
+                          iconWrapClass,
                         ].join(' ')}
                       >
-                        <Icon size={21} className={isActive ? 'text-white' : 'text-blue-600'} strokeWidth={2} />
+                        <Icon size={21} className={iconColorClass} strokeWidth={2} />
                       </div>
-                      <ArrowUpRight
-                        size={18}
-                        className={isActive ? 'text-blue-600' : 'text-slate-300 group-hover:text-blue-500'}
-                      />
+                      <ArrowUpRight size={18} className={arrowClass} />
                     </div>
 
                     <div className="mt-5">
-                      <p className={['text-sm font-semibold', isActive ? 'text-blue-700' : 'text-slate-500'].join(' ')}>
+                      <p className={['text-sm font-semibold', labelClass].join(' ')}>
                         {title}
                       </p>
                       <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">{count}</p>
@@ -396,13 +415,13 @@ export default function DashboardPage() {
           </section>
 
           <section>
-            <div className="rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-sm">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
                 <div>
                   <h2 className="font-bold text-slate-900">
-                    {dashboardData[activeTab].title}
+                    {activePanel.title}
                   </h2>
-                  <p className="mt-1 text-sm text-slate-500">{dashboardData[activeTab].subtitle}</p>
+                  <p className="mt-1 text-sm text-slate-500">{activePanel.subtitle}</p>
                 </div>
 
                 <Link
@@ -414,118 +433,125 @@ export default function DashboardPage() {
                 </Link>
               </div>
 
-              <div
-                ref={carouselRef}
-                onWheel={handleWheel}
-                className="scroll-smooth px-3 py-5 sm:px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                style={{
-                  overflowX: 'auto',
-                  display: 'flex',
-                  gap: '1rem',
-                  scrollSnapType: 'x mandatory',
-                  scrollPaddingInline: '0.75rem',
-                  WebkitOverflowScrolling: 'touch',
-                }}
-              >
-                {statuses.map((tab, index) => {
-                  const panel = dashboardData[tab];
-
-                  return (
-                    <div
-                      key={tab}
-                      ref={(el) => {
-                        cardRefs.current[index] = el;
-                      }}
-                      style={{ scrollSnapAlign: 'center', flex: '0 0 82%', minWidth: 0 }}
-                      className="md:flex-[0_0_70%] lg:flex-[0_0_62%]"
-                    >
-                      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-sm">
-                        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
-                          <div>
-                            <h3 className="text-base font-bold text-slate-900">{panel.title}</h3>
-                            <p className="text-xs text-slate-500">{panel.rows.length} entries</p>
-                          </div>
-                          <div className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700">
-                            <Sparkles size={10} />
-                            {tab}
-                          </div>
+              {/* ================= SINGLE VISIBLE PANEL ================= */}
+              <div className="px-3 py-5 sm:px-5 overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -16 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  >
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-sm">
+                      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
+                        <div>
+                          <h3 className="text-base font-bold text-slate-900">{activePanel.title}</h3>
+                          <p className="text-xs text-slate-500">{activePanel.rows.length} entries</p>
                         </div>
-
-                        <div className="overflow-x-auto">
-                          <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
-                            <thead className="bg-slate-100 text-slate-600">
-                              <tr>
-                                <th className="px-4 py-3 font-semibold sm:px-5">Company</th>
-                                <th className="px-4 py-3 font-semibold sm:px-5">Stage</th>
-                                <th className="px-4 py-3 font-semibold sm:px-5 text-right">Date</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {panel.rows.map((item) => (
-                                <tr key={`${tab}-${item.company}-${item.role}`} className="border-t border-slate-200 bg-white">
-                                  <td className="px-4 py-3 align-top sm:px-5">
-                                    <div className="font-semibold text-slate-900">{item.company}</div>
-                                    <div className="mt-1 text-xs text-slate-500">{item.role}</div>
-                                  </td>
-                                  <td className="px-4 py-3 align-top sm:px-5">
-                                    {item.rounds ? (
-                                      <div className="flex flex-wrap gap-2">
-                                        {item.rounds.map((round) => (
-                                          <span
-                                            key={`${item.company}-${round}`}
-                                            className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700"
-                                          >
-                                            {round}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-700">
-                                        {item.status}
-                                      </span>
-                                    )}
-                                    <p className="mt-2 text-xs text-slate-500">{item.note}</p>
-                                  </td>
-                                  <td className="px-4 py-3 align-top text-right sm:px-5">
-                                    <div className="font-medium text-slate-700">{item.date}</div>
-                                    <div className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.11em] text-emerald-700">
-                                      {item.status}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                        <div
+                          className={[
+                            'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]',
+                            activeTab === 'Rejected' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700',
+                          ].join(' ')}
+                        >
+                          <Sparkles size={10} />
+                          {activeTab}
                         </div>
                       </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+                          <thead className="bg-slate-100 text-slate-600">
+                            <tr>
+                              <th className="px-4 py-3 font-semibold sm:px-5">Company</th>
+                              <th className="px-4 py-3 font-semibold sm:px-5">Stage</th>
+                              <th className="px-4 py-3 font-semibold sm:px-5">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activePanel.rows.map((item) => (
+                              <tr key={`${activeTab}-${item.company}-${item.role}`} className="border-t border-slate-200 bg-white">
+                                <td className="px-4 py-3 align-top sm:px-5">
+                                  <div className="font-semibold text-slate-900">{item.company}</div>
+                                  <div className="mt-1 text-xs text-slate-500">{item.role}</div>
+                                </td>
+                                <td className="px-4 py-3 align-top sm:px-5">
+                                  {item.rounds ? (
+                                    <div className="flex flex-wrap gap-2">
+                                      {item.rounds.map((round) => (
+                                        <span
+                                          key={`${item.company}-${round.label}`}
+                                          className={
+                                            round.state === 'completed'
+                                              ? 'rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-emerald-700'
+                                              : 'rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700'
+                                          }
+                                        >
+                                          {round.label}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-700">
+                                      {item.status}
+                                    </span>
+                                  )}
+                                  <p className="mt-2 text-xs text-slate-500">{item.note}</p>
+                                </td>
+                                <td className="px-4 py-3 align-top text-right sm:px-5">
+                                  <div className="font-medium text-slate-700">{item.date}</div>
+                                  <div className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.11em] text-emerald-700">
+                                    {item.status}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  );
-                })}
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </div>
           </section>
+
         </div>
       </main>
 
       {/* ================================================= */}
-      {/* BOTTOM FADE-IN EFFECT & GLOBAL STYLES */}
+      {/* BOTTOM FADE-IN EFFECT */}
       {/* ================================================= */}
-      <div className="fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
+      <div className="fixed bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
 
       <style jsx global>{`
         html, body {
           scroll-behavior: smooth;
         }
 
-        /* Hide scrollbar for Chrome, Safari and Opera */
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
 
-        /* Hide scrollbar for IE, Edge and Firefox */
         .scrollbar-hide {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        @keyframes header-in {
+          from {
+            opacity: 0;
+            transform: translateY(-12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-header-in {
+          animation: header-in 0.4s ease-out forwards;
         }
       `}</style>
     </div>
