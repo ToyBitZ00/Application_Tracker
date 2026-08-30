@@ -200,42 +200,36 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="relative h-screen w-full flex flex-col overflow-hidden bg-[#f5f7fb]">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#f5f7fb]">
 
       {/* ================================================= */}
-      {/* BACKGROUND DESIGN (FIXED) */}
+      {/* BACKGROUND DESIGN */}
       {/* ================================================= */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl" />
-        <div
-          className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl"
-        />
-        <div
-          className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl"
-        />
+        <div className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl" />
       </div>
 
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.35] z-0"
+        className="absolute inset-0 pointer-events-none opacity-[0.35] z-0"
         style={{
           backgroundImage: `
             linear-gradient(to right, #cbd5e1 1px, transparent 1px),
             linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)
           `,
           backgroundSize: '48px 48px',
-          maskImage:
-            'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
-          WebkitMaskImage:
-            'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+          maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
         }}
       />
 
       {/* ================================================= */}
-      {/* FIXED HEADER (TRANSPARENT) */}
+      {/* FIXED HEADER (FROSTED GLASS BACKGROUND) */}
       {/* ================================================= */}
-      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
+      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-[#f5f7fb]/80 backdrop-blur-md border-b border-slate-200/50">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 animate-header-in">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-2 h-2 rounded-full bg-blue-600" />
@@ -258,22 +252,24 @@ export default function DashboardPage() {
               <Plus size={18} strokeWidth={2.5} />
               Add Application
             </Link>
-          </div>
+          </header>
         </div>
       </div>
 
       {/* ================================================= */}
-      {/* SCROLLABLE CONTENT WITH MASK FOR FADE EFFECT */}
+      {/* SCROLLABLE CONTENT */}
       {/* ================================================= */}
       <main
         className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
         style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 40px), transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 32px, black calc(100% - 40px), transparent 100%)',
+          // PERFECTED FADE: 0px to 24px is a gradient fade out. Solid at 24px. Content rests safely at 32px (pt-8).
+          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-10 pb-32">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-8 pb-32">
 
+          {/* HERO CARD */}
           <section className="mb-8">
             <div className="relative overflow-hidden rounded-2xl bg-[#0f172a] p-7 md:p-9 shadow-xl shadow-slate-900/10">
               <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-blue-600/20 blur-3xl" />
@@ -323,6 +319,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
+          {/* STATS ROW */}
           <section className="mb-8">
             <div className="flex items-end justify-between mb-4">
               <div>
@@ -414,6 +411,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
+          {/* DATA TABLE */}
           <section>
             <div className="rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
@@ -433,7 +431,6 @@ export default function DashboardPage() {
                 </Link>
               </div>
 
-              {/* ================= SINGLE VISIBLE PANEL ================= */}
               <div className="px-3 py-5 sm:px-5 overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -466,7 +463,7 @@ export default function DashboardPage() {
                             <tr>
                               <th className="px-4 py-3 font-semibold sm:px-5">Company</th>
                               <th className="px-4 py-3 font-semibold sm:px-5">Stage</th>
-                              <th className="px-4 py-3 font-semibold sm:px-5">Date</th>
+                              <th className="px-4 py-3 font-semibold sm:px-5 text-right">Date</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -523,7 +520,7 @@ export default function DashboardPage() {
       {/* ================================================= */}
       {/* BOTTOM FADE-IN EFFECT */}
       {/* ================================================= */}
-      <div className="fixed bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
 
       <style jsx global>{`
         html, body {
