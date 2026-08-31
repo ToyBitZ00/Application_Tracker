@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import {
+  clearStoredApplicationUser,
   getStoredApplicationUser,
   getStoredUsername,
   setStoredApplicationUser,
@@ -149,6 +151,7 @@ const emptyDashboardData: Record<
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
   const [activeTab, setActiveTab] = useState<StatusKey>('Applied');
@@ -175,6 +178,9 @@ export default function DashboardPage() {
           setNotes([]);
           setLoadingApplications(false);
         }
+
+        clearStoredApplicationUser();
+        router.replace('/login');
         return;
       }
 
@@ -193,6 +199,9 @@ export default function DashboardPage() {
           setNotes([]);
           setLoadingApplications(false);
         }
+
+        clearStoredApplicationUser();
+        router.replace('/login');
         return;
       }
 
@@ -230,7 +239,7 @@ export default function DashboardPage() {
     return () => {
       mounted = false;
     };
-  }, [supabase]);
+  }, [router, supabase]);
 
   /* ================================================= */
   /* LOAD RECOMMENDED COMPANIES (cached per session) */
