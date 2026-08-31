@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #F8F7F4;
   --foreground: #0F172A;
+}
+
+:root.dark {
+  --background: #020617;
+  --foreground: #F8FAFC;
 }
 
 @theme inline {
