@@ -350,6 +350,56 @@ function ChangePasswordModal({
     };
   }, [onCancel]);
 
+  async function handleVerifyCurrentPassword() {
+    setError('');
+
+    if (!currentPass) {
+      setError('Please enter your current password.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error: supabaseError } =
+        await supabase.rpc(
+          'verify_application_user_password',
+          {
+            p_user_id: userId,
+            p_username: username,
+            p_current_password: currentPass,
+          }
+        );
+
+      if (supabaseError) {
+        throw new Error(
+          supabaseError.message ||
+            'Unable to verify current password.'
+        );
+      }
+
+      const result = data as {
+        success?: boolean;
+      } | null;
+
+      if (!result?.success) {
+        throw new Error(
+          'Current password is incorrect.'
+        );
+      }
+
+      setStep('change');
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to verify current password.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handlePasswordChange() {
     setError('');
 
@@ -507,20 +557,20 @@ function ChangePasswordModal({
 
                 <button
                   type="button"
-                  onClick={() => {
-                    if (!currentPass) {
-                      setError(
-                        'Please enter your current password.'
-                      );
-                      return;
-                    }
-
-                    setError('');
-                    setStep('change');
-                  }}
-                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
+                  disabled={loading}
+                  onClick={handleVerifyCurrentPassword}
+                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Continue
+                  {loading && (
+                    <Loader2
+                      size={15}
+                      className="animate-spin"
+                    />
+                  )}
+
+                  {loading
+                    ? 'Verifying...'
+                    : 'Continue'}
                 </button>
               </div>
             </div>
