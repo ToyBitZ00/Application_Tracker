@@ -36,14 +36,25 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  transition: background-color 220ms ease, color 220ms ease;
 }
 
 html {
+  scroll-behavior: smooth;
   scrollbar-width: none;
+  transition: background-color 220ms ease, color 220ms ease;
+}
+
+*, *::before, *::after {
+  transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease, box-shadow 220ms ease, fill 220ms ease;
 }
 
 html::-webkit-scrollbar {
   display: none;
+}
+
+section[id] {
+  scroll-margin-top: 96px;
 }
 
 @keyframes float {

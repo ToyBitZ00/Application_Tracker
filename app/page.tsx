@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { siGithub } from 'simple-icons';
+import DashboardPreviewCarousel from '@/components/DashboardPreviewCarousel';
 import {
   Kanban,
   Users,
@@ -63,6 +66,14 @@ function GithubIcon({ className }: { className?: string }) {
 }
 
 export default function LandingPage() {
+  const handleExploreFeatures = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900">
 
@@ -136,6 +147,7 @@ export default function LandingPage() {
 
               <a
                 href="#features"
+                onClick={handleExploreFeatures}
                 className="w-full sm:w-auto inline-flex items-center justify-center px-7 py-3.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition"
               >
                 Explore Features
@@ -143,111 +155,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Dashboard Preview */}
-          <div className="relative mt-20 max-w-5xl mx-auto">
-            <div className="absolute -inset-4 bg-blue-600/10 blur-3xl rounded-3xl" />
-
-            <div className="relative rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 overflow-hidden">
-              
-              {/* Browser Header */}
-              <div className="h-12 border-b border-slate-200 bg-slate-50 flex items-center px-5 gap-2">
-                <div className="w-3 h-3 rounded-full bg-slate-300" />
-                <div className="w-3 h-3 rounded-full bg-slate-300" />
-                <div className="w-3 h-3 rounded-full bg-slate-300" />
-
-                <div className="ml-5 h-7 flex-1 max-w-md mx-auto rounded-md bg-white border border-slate-200" />
-              </div>
-
-              {/* Dashboard */}
-              <div className="p-6 md:p-8 bg-slate-50">
-                
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-7">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
-                      Dashboard
-                    </p>
-                    <h2 className="text-2xl font-bold text-slate-900 mt-1">
-                      Application Overview
-                    </h2>
-                  </div>
-
-                  <div className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium">
-                    + Add Application
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  {[
-                    ['12', 'Total Applications'],
-                    ['5', 'Active'],
-                    ['4', 'Interviews'],
-                    ['2', 'Offers'],
-                  ].map(([number, label]) => (
-                    <div
-                      key={label}
-                      className="bg-white border border-slate-200 rounded-xl p-5"
-                    >
-                      <p className="text-2xl font-bold text-slate-900">
-                        {number}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        {label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Application List */}
-                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-                    <p className="font-semibold text-slate-900">
-                      Recent Applications
-                    </p>
-                    <p className="text-xs text-blue-600 font-medium">
-                      View all
-                    </p>
-                  </div>
-
-                  <div className="divide-y divide-slate-100">
-                    {applications.map((application) => (
-                      <div
-                        key={application.company}
-                        className="px-5 py-4 flex items-center justify-between gap-4"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">
-                            {application.company.charAt(0)}
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="font-medium text-slate-900 truncate">
-                              {application.company}
-                            </p>
-                            <p className="text-xs text-slate-500 truncate">
-                              {application.position}
-                            </p>
-                          </div>
-                        </div>
-
-                        <span
-                          className={`text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap ${
-                            application.status === 'Offered'
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : application.status === 'Interview'
-                              ? 'bg-amber-50 text-amber-700'
-                              : 'bg-blue-50 text-blue-700'
-                          }`}
-                        >
-                          {application.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardPreviewCarousel />
         </div>
       </section>
 
