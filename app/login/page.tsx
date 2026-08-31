@@ -380,12 +380,16 @@ export default function LoginPage() {
       id: string;
       username: string;
       full_name: string;
+      account_role?: 'user' | 'admin' | 'super_admin';
+      is_blocked?: boolean;
     }
   ) => {
     const currentUser = {
       id: user.id,
       username: user.username,
       fullName: user.full_name,
+      role: user.account_role || 'user',
+      isBlocked: Boolean(user.is_blocked),
     };
 
     setStoredApplicationUser(currentUser);
@@ -466,6 +470,18 @@ export default function LoginPage() {
         return;
       }
 
+      if (data?.blocked) {
+        setError(
+          'This account is blocked. Please contact an administrator.'
+        );
+
+        setLoading(false);
+
+        await triggerShake(loginShake);
+
+        return;
+      }
+
       if (!data?.success) {
         setError(
           'Invalid username or password.'
@@ -482,7 +498,8 @@ export default function LoginPage() {
       // SAVE USER
       // ======================================================
 
-      saveCurrentUser(data);
+      const currentUser =
+        saveCurrentUser(data);
 
       // ======================================================
       // SUCCESS
@@ -493,7 +510,13 @@ export default function LoginPage() {
 
       redirectTimer.current =
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push(
+            currentUser.role === 'admin' ||
+              currentUser.role ===
+                'super_admin'
+              ? '/admin/dashboard'
+              : '/dashboard'
+          );
           router.refresh();
         }, 1600);
 
@@ -672,7 +695,7 @@ export default function LoginPage() {
   // ==========================================================
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f5f7fb] flex items-center justify-center px-5 py-10">
+    <div className="application-login-page relative min-h-screen overflow-hidden bg-[#f5f7fb] flex items-center justify-center px-5 py-10">
 
       {/* BACKGROUND */}
 

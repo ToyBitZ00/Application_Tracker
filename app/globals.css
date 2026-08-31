@@ -53,6 +53,29 @@ html::-webkit-scrollbar {
   display: none;
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.application-login-page input[type='password']::-ms-reveal,
+.application-login-page input[type='password']::-ms-clear {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.application-login-page input[type='password']::-webkit-credentials-auto-fill-button,
+.application-login-page input[type='password']::-webkit-caps-lock-indicator {
+  display: none !important;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 section[id] {
   scroll-margin-top: 96px;
 }
@@ -83,4 +106,34 @@ section[id] {
 
 .animate-header-in {
   animation: header-in 0.4s ease-out forwards;
+}
+
+@keyframes blueGlow {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08) translate(20px, -15px);
+  }
+}
+
+.blue-glow-animation {
+  animation: blueGlow 8s ease-in-out infinite;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-in {
+  animation: modal-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

@@ -473,14 +473,6 @@ export default function CourseManagementPage() {
       {/* ================================================= */}
       <div className="fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
 
-      {/* GLOBAL STYLES */}
-      <style jsx global>{`
-        @keyframes header-in {
-          from { opacity: 0; transform: translateY(-12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-header-in { animation: header-in 0.4s ease-out forwards; }
-      `}</style>
     </>
   );
 }

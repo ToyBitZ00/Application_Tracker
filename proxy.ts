@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const SESSION_COOKIE_KEY = 'application_tracker_session';
+const ADMIN_SESSION_COOKIE_KEY = 'application_tracker_admin_session';
 
 const PROTECTED_ROUTES = [
   '/dashboard',
@@ -13,6 +14,25 @@ const PROTECTED_ROUTES = [
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const isAdminRoute =
+    pathname === '/admin' ||
+    pathname.startsWith('/admin/');
+
+  if (isAdminRoute) {
+    const hasAdminSession = Boolean(
+      request.cookies.get(ADMIN_SESSION_COOKIE_KEY)?.value
+    );
+
+    if (hasAdminSession) {
+      return NextResponse.next();
+    }
+
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('next', pathname);
+
+    return NextResponse.redirect(loginUrl);
+  }
 
   const isProtectedRoute = PROTECTED_ROUTES.some(
     (route) =>
@@ -45,5 +65,6 @@ export const config = {
     '/settings/:path*',
     '/reports/:path*',
     '/onboarding/:path*',
+    '/admin/:path*',
   ],
 };
