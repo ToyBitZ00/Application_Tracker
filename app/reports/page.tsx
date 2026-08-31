@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  type ReactNode,
+} from 'react';
 import {
   Activity,
   Target,
@@ -25,135 +31,392 @@ import {
   Legend,
 } from 'recharts';
 
-/* ================================================= */
-/* MOCK DATA */
-/* ================================================= */
-
-const momentumData = [
-  { week: 'Week 1', applications: 12 },
-  { week: 'Week 2', applications: 19 },
-  { week: 'Week 3', applications: 8 },
-  { week: 'Week 4', applications: 24 },
-  { week: 'Week 5', applications: 15 },
-  { week: 'Week 6', applications: 30 },
-];
-
-const pipelineData: Array<{
-  name: string;
-  value: number;
-  color: string;
-  companies: Array<{ name: string; role: string; date: string; currentRound?: string }>;
-}> = [
-  { 
-    name: 'Applied', 
-    value: 45, 
-    color: '#94a3b8',
-    companies: [
-      { name: 'Northstar Labs', role: 'Frontend Developer Intern', date: 'Aug 28' },
-      { name: 'Pixel Harbor', role: 'UI Engineer', date: 'Aug 25' },
-      { name: 'Quantum Tech', role: 'Web Developer Intern', date: 'Aug 20' },
-    ]
-  },
-  { 
-    name: 'Screening', 
-    value: 20, 
-    color: '#3b82f6',
-    companies: [
-      { name: 'Signal Works', role: 'Product Analyst', date: 'Aug 15' },
-      { name: 'Nexus Systems', role: 'IT Support Intern', date: 'Aug 12' },
-    ]
-  },
-  { 
-    name: 'Interview', 
-    value: 15, 
-    color: '#f59e0b',
-    companies: [
-      { name: 'Aster Cloud', role: 'Software Engineer', date: 'Jul 02', currentRound: '2nd Interview' },
-      { name: 'Orbit Studio', role: 'Frontend Engineer', date: 'Jul 05', currentRound: '3rd Interview' },
-      { name: 'Luna Digital', role: 'Product Designer', date: 'Jul 08', currentRound: '1st Interview' },
-    ]
-  },
-  { 
-    name: 'Offer', 
-    value: 5, 
-    color: '#10b981',
-    companies: [
-      { name: 'Summit Grid', role: 'Product Engineer', date: 'Jul 11' },
-      { name: 'BrightPath', role: 'Full-Stack Developer', date: 'Jul 15' },
-    ]
-  },
-  { 
-    name: 'Rejected', 
-    value: 25, 
-    color: '#ef4444',
-    companies: [
-      { name: 'Clearline', role: 'Junior QA Analyst', date: 'Jun 12' },
-      { name: 'Delta Forge', role: 'Business Analyst', date: 'Jun 05' },
-    ]
-  },
-];
+import {
+  getStoredApplicationUser,
+  getStoredUsername,
+  setStoredApplicationUser,
+} from '@/lib/application-session';
+import { createClient } from '@/lib/supabase/client';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEARS = ['2026', '2025', '2024', '2023'];
 
-// Upgraded Data for the Light Blue Header Modals
-const KPI_DETAILS: Record<string, any> = {
-  responseRate: {
-    title: 'Response Rate',
-    value: '42.5%',
-    trend: '+4.2%',
-    trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
-    icon: <Activity size={24} className="text-blue-600" strokeWidth={2} />,
-    description: 'Detailed breakdown of companies that have replied to your applications.',
-    items: [
-      { company: 'Northstar Labs', avatar: 'NL', avatarBg: 'bg-blue-100 text-blue-700', detail: 'Replied in 2 days', badge: 'Interview', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200' },
-      { company: 'Pixel Harbor', avatar: 'PH', avatarBg: 'bg-indigo-100 text-indigo-700', detail: 'Replied in 5 days', badge: 'Screening', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200' },
-      { company: 'Clearline', avatar: 'CL', avatarBg: 'bg-slate-200 text-slate-700', detail: 'Replied in 12 days', badge: 'Rejected', badgeColor: 'bg-red-50 text-red-700 border-red-200' },
-    ]
-  },
-  conversion: {
-    title: 'Interview Conversion',
-    value: '18.0%',
-    trend: '+2.1%',
-    trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
-    icon: <Target size={24} className="text-blue-600" strokeWidth={2} />,
-    description: 'Applications that successfully moved from applied to the interview stage.',
-    items: [
-      { company: 'Aster Cloud', avatar: 'AC', avatarBg: 'bg-purple-100 text-purple-700', detail: 'Software Engineer', badge: 'Technical', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-      { company: 'Orbit Studio', avatar: 'OS', avatarBg: 'bg-orange-100 text-orange-700', detail: 'Frontend Engineer', badge: 'Panel', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200' },
-      { company: 'Luna Digital', avatar: 'LD', avatarBg: 'bg-emerald-100 text-emerald-700', detail: 'Product Designer', badge: 'Hiring Mgr', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    ]
-  },
-  timeToResponse: {
-    title: 'Avg Time-to-Response',
-    value: '8.4 Days',
-    trend: '-1.2 Days', 
-    trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
-    icon: <Clock size={24} className="text-blue-600" strokeWidth={2} />,
-    description: 'The average wait time before initial contact, sorted by fastest response.',
-    items: [
-      { company: 'Northstar Labs', avatar: 'NL', avatarBg: 'bg-blue-100 text-blue-700', detail: 'Frontend Developer Intern', badge: '2 Days', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-      { company: 'Pixel Harbor', avatar: 'PH', avatarBg: 'bg-indigo-100 text-indigo-700', detail: 'UI Engineer', badge: '5 Days', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-      { company: 'Clearline', avatar: 'CL', avatarBg: 'bg-slate-200 text-slate-700', detail: 'Junior QA Analyst', badge: '12 Days', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200' },
-      { company: 'Delta Forge', avatar: 'DF', avatarBg: 'bg-red-100 text-red-700', detail: 'Business Analyst', badge: '14 Days', badgeColor: 'bg-red-50 text-red-700 border-red-200' },
-    ]
-  }
+type StatusName = 'Applied' | 'Screening' | 'Interview' | 'Offer' | 'Rejected';
+type KpiKey = 'responseRate' | 'conversion' | 'timeToResponse';
+
+type SupabaseNote = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  position: number;
+  created_at: string;
+  updated_at: string;
 };
+
+type ApplicationUser = {
+  id: string;
+  full_name: string | null;
+  username: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type PipelineCompany = {
+  name: string;
+  role: string;
+  date: string;
+  currentRound?: string;
+};
+
+type PipelineItem = {
+  name: StatusName;
+  status: string;
+  value: number;
+  color: string;
+  companies: PipelineCompany[];
+};
+
+type KpiItem = {
+  company: string;
+  avatar: string;
+  avatarBg: string;
+  detail: string;
+  badge: string;
+  badgeColor: string;
+};
+
+type KpiDetail = {
+  title: string;
+  value: string;
+  trend: string;
+  trendColor: string;
+  icon: ReactNode;
+  description: string;
+  items: KpiItem[];
+};
+
+const STATUS_CONFIG: {
+  status: string;
+  name: StatusName;
+  color: string;
+}[] = [
+  { status: 'applied', name: 'Applied', color: '#94a3b8' },
+  { status: 'screening', name: 'Screening', color: '#3b82f6' },
+  { status: 'interview', name: 'Interview', color: '#f59e0b' },
+  { status: 'offer', name: 'Offer', color: '#10b981' },
+  { status: 'rejected', name: 'Rejected', color: '#ef4444' },
+];
+
+const formatPercent = (count: number, total: number) => {
+  if (total === 0) return '0.0%';
+  return `${((count / total) * 100).toFixed(1)}%`;
+};
+
+const formatDate = (value: string) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: '2-digit',
+  });
+};
+
+const initials = (value: string) =>
+  value
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('') || 'NA';
+
+const getRoleFromDescription = (description: string | null) =>
+  description?.split('\n').find(Boolean) || 'Application note';
 
 /* ================================================= */
 /* MAIN COMPONENT */
 /* ================================================= */
 
 export default function ReportsPage() {
+  const supabase = useMemo(
+    () => createClient(),
+    []
+  );
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [timeRange, setTimeRange] = useState('This Month');
   const [customMonth, setCustomMonth] = useState('Dec');
   const [customYear, setCustomYear] = useState('2025');
   
   const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
-  const [activeKpiModal, setActiveKpiModal] = useState<string | null>(null);
+  const [activeKpiModal, setActiveKpiModal] = useState<KpiKey | null>(null);
+  const [notes, setNotes] = useState<SupabaseNote[]>([]);
+  const [loadingReports, setLoadingReports] = useState(true);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadApplications() {
+      const storedUser = getStoredApplicationUser();
+      const username =
+        storedUser?.username ||
+        getStoredUsername();
+
+      if (!username) {
+        if (mounted) {
+          setNotes([]);
+          setLoadingReports(false);
+        }
+
+        return;
+      }
+
+      const { data: profile } = await supabase.rpc(
+        'get_application_user_profile',
+        {
+          p_user_id: storedUser?.id || null,
+          p_username: username,
+        }
+      );
+
+      const account = profile as ApplicationUser | null;
+
+      if (!account) {
+        if (mounted) {
+          setNotes([]);
+          setLoadingReports(false);
+        }
+
+        return;
+      }
+
+      setStoredApplicationUser({
+        id: account.id,
+        username: account.username,
+        fullName: account.full_name || '',
+      });
+
+      const { data, error } = await supabase
+        .from('application_notes')
+        .select(
+          'id, user_id, title, description, status, position, created_at, updated_at'
+        )
+        .eq('user_id', account.id)
+        .order('created_at', {
+          ascending: true,
+        });
+
+      if (error) {
+        console.error(
+          'Error loading report applications:',
+          error
+        );
+
+        if (mounted) {
+          setNotes([]);
+          setLoadingReports(false);
+        }
+
+        return;
+      }
+
+      if (mounted) {
+        setNotes((data as SupabaseNote[] | null) || []);
+        setLoadingReports(false);
+      }
+    }
+
+    loadApplications();
+
+    return () => {
+      mounted = false;
+    };
+  }, [supabase]);
+
+  const momentumData = useMemo(() => {
+    const buckets = Array.from(
+      { length: 6 },
+      (_, index) => ({
+        week: `Week ${index + 1}`,
+        applications: 0,
+      })
+    );
+
+    notes.forEach((note) => {
+      const date = new Date(note.created_at);
+
+      if (Number.isNaN(date.getTime())) {
+        return;
+      }
+
+      const bucketIndex = Math.min(
+        5,
+        Math.max(0, Math.floor((date.getDate() - 1) / 7))
+      );
+
+      buckets[bucketIndex].applications += 1;
+    });
+
+    return buckets;
+  }, [notes]);
+
+  const pipelineData = useMemo<PipelineItem[]>(
+    () =>
+      STATUS_CONFIG.map((config) => {
+        const statusNotes = notes.filter(
+          (note) => note.status === config.status
+        );
+
+        return {
+          ...config,
+          value: statusNotes.length,
+          companies: statusNotes.map((note, index) => ({
+            name: note.title,
+            role: getRoleFromDescription(note.description),
+            date: formatDate(note.updated_at || note.created_at),
+            currentRound:
+              config.status === 'interview'
+                ? `${index + 1}${
+                    index === 0
+                      ? 'st'
+                      : index === 1
+                        ? 'nd'
+                        : index === 2
+                          ? 'rd'
+                          : 'th'
+                  } Interview`
+                : undefined,
+          })),
+        };
+      }),
+    [notes]
+  );
+
+  const totalApplications = notes.length;
+  const repliedApplications = notes.filter((note) =>
+    ['screening', 'interview', 'offer', 'rejected'].includes(note.status)
+  ).length;
+  const interviewApplications = notes.filter(
+    (note) => note.status === 'interview'
+  ).length;
+  const averageDaysToResponse = useMemo(() => {
+    const replied = notes.filter((note) =>
+      ['screening', 'interview', 'offer', 'rejected'].includes(note.status)
+    );
+
+    if (replied.length === 0) {
+      return '0.0';
+    }
+
+    const totalDays = replied.reduce((total, note) => {
+      const createdAt = new Date(note.created_at).getTime();
+      const updatedAt = new Date(note.updated_at).getTime();
+
+      if (
+        Number.isNaN(createdAt) ||
+        Number.isNaN(updatedAt)
+      ) {
+        return total;
+      }
+
+      return total + Math.max(
+        0,
+        Math.round((updatedAt - createdAt) / 86400000)
+      );
+    }, 0);
+
+    return (totalDays / replied.length).toFixed(1);
+  }, [notes]);
+
+  const kpiDetails = useMemo<Record<KpiKey, KpiDetail>>(() => {
+    const toKpiItem = (
+      note: SupabaseNote,
+      badge: string,
+      badgeColor: string
+    ): KpiItem => ({
+      company: note.title,
+      avatar: initials(note.title),
+      avatarBg: 'bg-blue-100 text-blue-700',
+      detail: getRoleFromDescription(note.description),
+      badge,
+      badgeColor,
+    });
+
+    const replied = notes.filter((note) =>
+      ['screening', 'interview', 'offer', 'rejected'].includes(note.status)
+    );
+
+    return {
+      responseRate: {
+        title: 'Response Rate',
+        value: formatPercent(repliedApplications, totalApplications),
+        trend: `${repliedApplications} replies`,
+        trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
+        icon: <Activity size={24} className="text-blue-600" strokeWidth={2} />,
+        description: 'Applications that have moved beyond Applied.',
+        items: replied.map((note) =>
+          toKpiItem(
+            note,
+            STATUS_CONFIG.find((item) => item.status === note.status)?.name ||
+              'Replied',
+            'bg-blue-50 text-blue-700 border-blue-200'
+          )
+        ),
+      },
+      conversion: {
+        title: 'Interview Conversion',
+        value: formatPercent(interviewApplications, totalApplications),
+        trend: `${interviewApplications} interviews`,
+        trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
+        icon: <Target size={24} className="text-blue-600" strokeWidth={2} />,
+        description: 'Applications currently in the interview stage.',
+        items: notes
+          .filter((note) => note.status === 'interview')
+          .map((note) =>
+            toKpiItem(
+              note,
+              'Interview',
+              'bg-amber-50 text-amber-700 border-amber-200'
+            )
+          ),
+      },
+      timeToResponse: {
+        title: 'Avg Time-to-Response',
+        value: `${averageDaysToResponse} Days`,
+        trend: `${repliedApplications} tracked`,
+        trendColor: 'bg-white shadow-sm border border-emerald-100 text-emerald-600',
+        icon: <Clock size={24} className="text-blue-600" strokeWidth={2} />,
+        description: 'Average days between creation and latest status update.',
+        items: replied.map((note) =>
+          toKpiItem(
+            note,
+            `${Math.max(
+              0,
+              Math.round(
+                (new Date(note.updated_at).getTime() -
+                  new Date(note.created_at).getTime()) /
+                  86400000
+              )
+            )} Days`,
+            'bg-emerald-50 text-emerald-700 border-emerald-200'
+          )
+        ),
+      },
+    };
+  }, [
+    averageDaysToResponse,
+    interviewApplications,
+    notes,
+    repliedApplications,
+    totalApplications,
+  ]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -224,7 +487,9 @@ export default function ReportsPage() {
                 Reports & Analytics
               </h1>
               <p className="mt-2 text-sm md:text-base text-slate-500 max-w-xl">
-                Analyze your OJT and internship application activity.
+                {loadingReports
+                  ? 'Loading your Supabase application activity...'
+                  : 'Analyze your OJT and internship application activity.'}
               </p>
             </div>
 
@@ -340,10 +605,12 @@ export default function ReportsPage() {
               <div className="mt-5">
                 <p className="text-sm font-semibold text-slate-500">Response Rate</p>
                 <div className="flex items-center gap-3 mt-1">
-                  <p className="text-3xl md:text-4xl font-extrabold text-slate-950">42.5%</p>
+                <p className="text-3xl md:text-4xl font-extrabold text-slate-950">
+                  {kpiDetails.responseRate.value}
+                </p>
                   <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                     <TrendingUp size={12} strokeWidth={3} />
-                    +4.2%
+                    {kpiDetails.responseRate.trend}
                   </span>
                 </div>
                 <p className="mt-1.5 text-xs font-medium text-slate-400">Of total applications received a reply.</p>
@@ -365,10 +632,12 @@ export default function ReportsPage() {
               <div className="mt-5">
                 <p className="text-sm font-semibold text-slate-500">Interview Conversion</p>
                 <div className="flex items-center gap-3 mt-1">
-                  <p className="text-3xl md:text-4xl font-extrabold text-slate-950">18.0%</p>
+                <p className="text-3xl md:text-4xl font-extrabold text-slate-950">
+                  {kpiDetails.conversion.value}
+                </p>
                   <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                     <TrendingUp size={12} strokeWidth={3} />
-                    +2.1%
+                    {kpiDetails.conversion.trend}
                   </span>
                 </div>
                 <p className="mt-1.5 text-xs font-medium text-slate-400">Converted from applied to interview.</p>
@@ -390,7 +659,9 @@ export default function ReportsPage() {
               <div className="mt-5">
                 <p className="text-sm font-semibold text-slate-500">Avg Time-to-Response</p>
                 <div className="flex items-end gap-2 mt-1">
-                  <p className="text-3xl md:text-4xl font-extrabold text-slate-950">8.4</p>
+                  <p className="text-3xl md:text-4xl font-extrabold text-slate-950">
+                    {averageDaysToResponse}
+                  </p>
                   <span className="text-sm font-bold text-slate-600 mb-1.5">Days</span>
                 </div>
                 <p className="mt-1.5 text-xs font-medium text-slate-400">Average wait time for initial contact.</p>
@@ -576,7 +847,7 @@ export default function ReportsPage() {
       {/* ================================================= */}
       {/* REDESIGNED LIGHT BLUE KPI BREAKDOWN MODAL */}
       {/* ================================================= */}
-      {activeKpiModal && KPI_DETAILS[activeKpiModal] && (
+      {activeKpiModal && kpiDetails[activeKpiModal] && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
           {/* Blurred Backdrop */}
           <div 
@@ -595,18 +866,18 @@ export default function ReportsPage() {
             <div className="relative px-6 py-6 bg-blue-50/80 border-b border-blue-100 flex items-start justify-between rounded-t-3xl">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-blue-100/50 flex shrink-0 items-center justify-center">
-                  {KPI_DETAILS[activeKpiModal].icon}
+                  {kpiDetails[activeKpiModal].icon}
                 </div>
                 <div>
                   <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-blue-400 mb-0.5 mt-1">
-                    {KPI_DETAILS[activeKpiModal].title}
+                    {kpiDetails[activeKpiModal].title}
                   </h3>
                   <div className="flex items-center gap-3">
                     <span className="text-2xl sm:text-3xl font-extrabold text-blue-950 leading-none">
-                      {KPI_DETAILS[activeKpiModal].value}
+                      {kpiDetails[activeKpiModal].value}
                     </span>
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${KPI_DETAILS[activeKpiModal].trendColor}`}>
-                      {KPI_DETAILS[activeKpiModal].trend}
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${kpiDetails[activeKpiModal].trendColor}`}>
+                      {kpiDetails[activeKpiModal].trend}
                     </span>
                   </div>
                 </div>
@@ -624,11 +895,11 @@ export default function ReportsPage() {
             {/* List Body */}
             <div className="px-6 py-5 max-h-[55vh] overflow-y-auto">
               <p className="text-xs font-medium text-slate-500 mb-4 px-1">
-                {KPI_DETAILS[activeKpiModal].description}
+                {kpiDetails[activeKpiModal].description}
               </p>
               
               <div className="space-y-3">
-                {KPI_DETAILS[activeKpiModal].items.map((item: any, index: number) => (
+                {kpiDetails[activeKpiModal].items.map((item, index) => (
                   <div 
                     key={index}
                     className="flex items-center p-3 sm:p-4 bg-white border border-slate-200/80 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all group"

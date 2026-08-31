@@ -25,9 +25,30 @@ export const metadata = {
   description: 'OJT / Internship application pipeline',
 };
 
+const themeScript = `
+  (function () {
+    try {
+      var theme = localStorage.getItem('application_tracker_theme') || 'light';
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var useDark = theme === 'dark' || (theme === 'system' && prefersDark);
+
+      document.documentElement.classList.toggle('dark', useDark);
+      document.documentElement.dataset.theme = theme;
+    } catch (error) {}
+  })();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeScript,
+          }}
+        />
+      </head>
+
       <body className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} font-body bg-paper text-ink`}>
         <PageTransition>
           {children}

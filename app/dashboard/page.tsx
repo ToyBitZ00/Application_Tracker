@@ -2,19 +2,25 @@
 
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   BriefcaseBusiness,
   Clock3,
   CheckCircle2,
   XCircle,
   Plus,
-  ArrowDown,
+  ArrowUpRight,
   TrendingUp,
   Sparkles,
   Building2,
-  X,
 } from 'lucide-react';
+
+import {
+  getStoredApplicationUser,
+  getStoredUsername,
+  setStoredApplicationUser,
+} from '@/lib/application-session';
+import { createClient } from '@/lib/supabase/client';
 
 type StatusKey = 'Applied' | 'Interview' | 'Offer' | 'Rejected';
 
@@ -34,175 +40,308 @@ type ApplicationTableRow = {
   rounds?: InterviewRound[];
 };
 
-const statuses: StatusKey[] = ['Applied', 'Interview', 'Offer', 'Rejected'];
+type SupabaseNote = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  interview_tag: string | null;
+  status: string;
+  position: number;
+  created_at: string;
+  updated_at: string;
+};
 
-const stats = [
+type ApplicationUser = {
+  id: string;
+  full_name: string | null;
+  username: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type RecommendedCompany = {
+  name: string;
+  role: string;
+  location: string;
+};
+
+const RECOMMENDED_COMPANIES_CACHE_KEY = 'dashboard_recommended_companies';
+
+const statusLabels: Record<string, string> = {
+  applied: 'Applied',
+  screening: 'Screening',
+  interview: 'Interview',
+  offer: 'Offer',
+  rejected: 'Rejected',
+};
+
+const statusTabs: Record<string, StatusKey> = {
+  applied: 'Applied',
+  screening: 'Applied',
+  interview: 'Interview',
+  offer: 'Offer',
+  rejected: 'Rejected',
+};
+
+const interviewTagStatuses = ['interview', 'offer', 'rejected'];
+
+const formatDate = (value: string) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: '2-digit',
+  });
+};
+
+const statConfig = [
   {
     title: 'Applied' as StatusKey,
-    count: 18,
     description: 'Applications submitted',
     icon: BriefcaseBusiness,
   },
   {
     title: 'Interview' as StatusKey,
-    count: 6,
     description: 'Applications in interview',
     icon: Clock3,
   },
   {
     title: 'Offer' as StatusKey,
-    count: 3,
     description: 'Offers received',
     icon: CheckCircle2,
   },
   {
     title: 'Rejected' as StatusKey,
-    count: 9,
     description: 'Applications closed',
     icon: XCircle,
   },
 ];
 
-const recommendedCompanies = [
-  { name: 'Northstar Labs', role: 'Frontend Developer Intern', location: 'Makati, Metro Manila' },
-  { name: 'Signal Works', role: 'Product Analyst Intern', location: 'Quezon City' },
-  { name: 'Pixel Harbor', role: 'UI Engineer Intern', location: 'Remote' },
-];
-
-const dashboardData: Record<
+const emptyDashboardData: Record<
   StatusKey,
-  {
-    title: string;
-    subtitle: string;
-    rows: ApplicationTableRow[];
-  }
+  { title: string; subtitle: string; rows: ApplicationTableRow[] }
 > = {
   Applied: {
     title: 'Recent Applications',
     subtitle: 'Your latest application activity.',
-    rows: [
-      {
-        company: 'Northstar Labs',
-        role: 'Frontend Developer Intern',
-        date: 'Jun 24',
-        status: 'Under review',
-        note: 'Portfolio reviewed by design team',
-      },
-      {
-        company: 'Signal Works',
-        role: 'Product Analyst',
-        date: 'Jun 22',
-        status: 'Awaiting response',
-        note: 'Resume sent to hiring manager',
-      },
-      {
-        company: 'Pixel Harbor',
-        role: 'UI Engineer',
-        date: 'Jun 18',
-        status: 'Applied',
-        note: 'Application submitted successfully',
-      },
-    ],
+    rows: [],
   },
   Interview: {
-  title: 'Interview Pipeline',
-  subtitle: 'Progress through each interview round.',
-  rows: [
-    {
-      company: 'Aster Cloud',
-      role: 'Software Engineer',
-      date: 'Jul 02',
-      status: 'Technical round',
-      note: 'System design questions and coding challenge',
-      rounds: [
-        { label: '1st Interview', state: 'completed' },
-        { label: '2nd Interview', state: 'scheduled' },
-      ],
-    },
-    {
-      company: 'Orbit Studio',
-      role: 'Frontend Engineer',
-      date: 'Jul 05',
-      status: 'Panel interview',
-      note: 'Live UI review with engineering leads',
-      rounds: [
-        { label: '1st Interview', state: 'completed' },
-        { label: '2nd Interview', state: 'completed' },
-        { label: '3rd Interview', state: 'scheduled' },
-      ],
-    },
-    {
-      company: 'Luna Digital',
-      role: 'Product Designer',
-      date: 'Jul 08',
-      status: 'Hiring manager',
-      note: 'Design critique and role fit discussion',
-      rounds: [
-        { label: '1st Interview', state: 'completed' },
-      ],
-    },
-  ],
-},
+    title: 'Interview Pipeline',
+    subtitle: 'Progress through each interview round.',
+    rows: [],
+  },
   Offer: {
     title: 'Offer Stage',
     subtitle: 'Companies that have moved forward with offers.',
-    rows: [
-      {
-        company: 'Summit Grid',
-        role: 'Product Engineer',
-        date: 'Jul 11',
-        status: 'Offer received',
-        note: 'Compensation package under review',
-      },
-      {
-        company: 'BrightPath',
-        role: 'Full-Stack Developer',
-        date: 'Jul 15',
-        status: 'Negotiation',
-        note: 'Offer details and start date being discussed',
-      },
-      {
-        company: 'Verve Labs',
-        role: 'Web Developer',
-        date: 'Jul 18',
-        status: 'Accepted',
-        note: 'Final onboarding packet sent',
-      },
-    ],
+    rows: [],
   },
   Rejected: {
     title: 'Rejected Applications',
     subtitle: 'Applications that did not move forward.',
-    rows: [
-      {
-        company: 'Clearline',
-        role: 'Junior QA Analyst',
-        date: 'Jun 12',
-        status: 'Not selected',
-        note: 'Role filled internally before final review',
-      },
-      {
-        company: 'Delta Forge',
-        role: 'Business Analyst',
-        date: 'Jun 05',
-        status: 'Rejected',
-        note: 'Interview panel selected another candidate',
-      },
-      {
-        company: 'Harbor One',
-        role: 'Operations Intern',
-        date: 'May 30',
-        status: 'Closed',
-        note: 'Application was not advanced to shortlist',
-      },
-    ],
+    rows: [],
   },
 };
 
 export default function DashboardPage() {
+  const supabase = useMemo(() => createClient(), []);
+
   const [activeTab, setActiveTab] = useState<StatusKey>('Applied');
-  const activePanel = dashboardData[activeTab];
+  const [notes, setNotes] = useState<SupabaseNote[]>([]);
+  const [loadingApplications, setLoadingApplications] = useState(true);
   const [showRecommended, setShowRecommended] = useState(true);
+  const [recommendedCompanies, setRecommendedCompanies] = useState<
+    RecommendedCompany[]
+  >([]);
+  const [loadingRecommended, setLoadingRecommended] = useState(true);
+
+  /* ================================================= */
+  /* LOAD APPLICATION NOTES */
+  /* ================================================= */
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadApplications() {
+      const storedUser = getStoredApplicationUser();
+      const username = storedUser?.username || getStoredUsername();
+
+      if (!username) {
+        if (mounted) {
+          setNotes([]);
+          setLoadingApplications(false);
+        }
+        return;
+      }
+
+      const { data: profile } = await supabase.rpc(
+        'get_application_user_profile',
+        {
+          p_user_id: storedUser?.id || null,
+          p_username: username,
+        }
+      );
+
+      const account = profile as ApplicationUser | null;
+
+      if (!account) {
+        if (mounted) {
+          setNotes([]);
+          setLoadingApplications(false);
+        }
+        return;
+      }
+
+      setStoredApplicationUser({
+        id: account.id,
+        username: account.username,
+        fullName: account.full_name || '',
+      });
+
+      const { data, error } = await supabase
+        .from('application_notes')
+        .select(
+          'id, user_id, title, description, interview_tag, status, position, created_at, updated_at'
+        )
+        .eq('user_id', account.id)
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading dashboard applications:', error);
+        if (mounted) {
+          setNotes([]);
+          setLoadingApplications(false);
+        }
+        return;
+      }
+
+      if (mounted) {
+        setNotes((data as SupabaseNote[] | null) || []);
+        setLoadingApplications(false);
+      }
+    }
+
+    loadApplications();
+
+    return () => {
+      mounted = false;
+    };
+  }, [supabase]);
+
+  /* ================================================= */
+  /* LOAD RECOMMENDED COMPANIES (cached per session) */
+  /* ================================================= */
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadRecommendedCompanies() {
+      if (typeof window !== 'undefined') {
+        const cached = sessionStorage.getItem(
+          RECOMMENDED_COMPANIES_CACHE_KEY
+        );
+
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached) as RecommendedCompany[];
+            if (mounted) {
+              setRecommendedCompanies(parsed);
+              setLoadingRecommended(false);
+            }
+            return;
+          } catch {
+            sessionStorage.removeItem(RECOMMENDED_COMPANIES_CACHE_KEY);
+          }
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('companies')
+        .select('name, role, location');
+
+      if (error) {
+        console.error('Error loading recommended companies:', error);
+        if (mounted) {
+          setRecommendedCompanies([]);
+          setLoadingRecommended(false);
+        }
+        return;
+      }
+
+      const companies = (data as RecommendedCompany[] | null) || [];
+
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(
+          RECOMMENDED_COMPANIES_CACHE_KEY,
+          JSON.stringify(companies)
+        );
+      }
+
+      if (mounted) {
+        setRecommendedCompanies(companies);
+        setLoadingRecommended(false);
+      }
+    }
+
+    loadRecommendedCompanies();
+
+    return () => {
+      mounted = false;
+    };
+  }, [supabase]);
+
+  /* ================================================= */
+  /* DERIVE TABLE DATA FROM NOTES */
+  /* ================================================= */
+  const syncedDashboardData = useMemo(() => {
+    const nextData = Object.fromEntries(
+      Object.entries(emptyDashboardData).map(([key, value]) => [
+        key,
+        { ...value, rows: [] as ApplicationTableRow[] },
+      ])
+    ) as typeof emptyDashboardData;
+
+    notes.forEach((note) => {
+      const tab = statusTabs[note.status];
+      if (!tab) return;
+
+      nextData[tab].rows.push({
+        company: note.title,
+        role: statusLabels[note.status] || note.status,
+        date: formatDate(note.updated_at || note.created_at),
+        status: statusLabels[note.status] || note.status,
+        note: note.description || 'No details added yet.',
+        rounds:
+          note.interview_tag && interviewTagStatuses.includes(note.status)
+            ? [{ label: note.interview_tag, state: 'scheduled' }]
+            : undefined,
+      });
+    });
+
+    return nextData;
+  }, [notes]);
+
+  const stats = useMemo(
+    () =>
+      statConfig.map((item) => ({
+        ...item,
+        count: notes.filter((note) => statusTabs[note.status] === item.title)
+          .length,
+      })),
+    [notes]
+  );
+
+  const activePanel = syncedDashboardData[activeTab];
+  const activeApplications = notes.filter(
+    (note) => note.status !== 'rejected'
+  ).length;
+  const awaitingReply = notes.filter((note) =>
+    ['applied', 'screening'].includes(note.status)
+  ).length;
+  const offerPending = notes.filter((note) => note.status === 'offer').length;
 
   const handleTabChange = (tab: StatusKey) => {
     setActiveTab(tab);
@@ -215,9 +354,15 @@ export default function DashboardPage() {
       {/* BACKGROUND DESIGN */}
       {/* ================================================= */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl" />
-        <div className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl" />
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl" />
+        <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse" />
+        <div
+          className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
+          style={{ animationDelay: '1.5s' }}
+        />
+        <div
+          className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl animate-pulse"
+          style={{ animationDelay: '3s' }}
+        />
       </div>
 
       <div
@@ -228,8 +373,10 @@ export default function DashboardPage() {
             linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)
           `,
           backgroundSize: '48px 48px',
-          maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+          maskImage:
+            'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+          WebkitMaskImage:
+            'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
         }}
       />
 
@@ -271,83 +418,92 @@ export default function DashboardPage() {
       <main
         className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
         style={{
-          // PERFECTED FADE: 0px to 24px is a gradient fade out. Solid at 24px. Content rests safely at 32px (pt-8).
-          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          maskImage:
+            'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          WebkitMaskImage:
+            'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
         }}
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-8 pb-32">
+
           {/* RECOMMENDED COMPANIES */}
           <AnimatePresence>
-            {showRecommended && recommendedCompanies.length > 0 && (
-              <motion.section
-                key="recommended-companies"
-                initial={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                transition={{ duration: 0.35, ease: 'easeInOut' }}
-                className="mb-8 overflow-hidden"
-              >
-                <div className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/40 shadow-sm overflow-hidden">
-                  <div className="flex items-center justify-between px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
-                        <Building2 size={17} className="text-white" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="font-bold text-slate-900">Recommended Companies</h2>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
-                            <Sparkles size={10} />
-                            Suggested for you
-                          </span>
+            {showRecommended &&
+              !loadingRecommended &&
+              recommendedCompanies.length > 0 && (
+                <motion.section
+                  key="recommended-companies"
+                  initial={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.35, ease: 'easeInOut' }}
+                  className="mb-8 overflow-hidden"
+                >
+                  <div className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/40 shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+                          <Building2 size={17} className="text-white" />
                         </div>
-                        <p className="mt-0.5 text-sm text-slate-500">
-                          Based on your course and profile — not part of your tracked applications.
-                        </p>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h2 className="font-bold text-slate-900">
+                              Recommended Companies
+                            </h2>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                              <Sparkles size={10} />
+                              Suggested for you
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-sm text-slate-500">
+                            Based on your course and profile — not part of your tracked applications.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mx-6 rounded-xl border border-blue-100 bg-white overflow-hidden">
-                    <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
-                      <thead className="bg-slate-50 text-slate-500">
-                        <tr>
-                          <th className="px-5 py-3 font-semibold">Company</th>
-                          <th className="px-5 py-3 font-semibold">Suggested Role</th>
-                          <th className="px-5 py-3 font-semibold">Location</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recommendedCompanies.map((company) => (
-                          <tr key={company.name} className="border-t border-slate-100">
-                            <td className="px-5 py-3 font-semibold text-slate-900">{company.name}</td>
-                            <td className="px-5 py-3 text-slate-600">{company.role}</td>
-                            <td className="px-5 py-3 text-slate-500">{company.location}</td>
+                    <div className="mx-6 rounded-xl border border-blue-100 bg-white overflow-hidden">
+                      <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+                        <thead className="bg-slate-50 text-slate-500">
+                          <tr>
+                            <th className="px-5 py-3 font-semibold">Company</th>
+                            <th className="px-5 py-3 font-semibold">Suggested Role</th>
+                            <th className="px-5 py-3 font-semibold">Location</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {recommendedCompanies.map((company) => (
+                            <tr key={company.name} className="border-t border-slate-100">
+                              <td className="px-5 py-3 font-semibold text-slate-900">
+                                {company.name}
+                              </td>
+                              <td className="px-5 py-3 text-slate-600">{company.role}</td>
+                              <td className="px-5 py-3 text-slate-500">{company.location}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
-                  <div className="flex items-center justify-end gap-6 px-6 py-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowRecommended(false)}
-                      className="text-sm font-semibold text-red-500 hover:text-red-600 transition-colors"
-                    >
-                      Dismiss
-                    </button>
-                    <Link
-                      href="/applications"
-                      className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-                    >
-                      Proceed to Applications →
-                    </Link>
+                    <div className="flex items-center justify-end gap-6 px-6 py-4">
+                      <button
+                        type="button"
+                        onClick={() => setShowRecommended(false)}
+                        className="text-sm font-semibold text-red-500 hover:text-red-600 transition-colors"
+                      >
+                        Dismiss
+                      </button>
+                      <Link
+                        href="/applications"
+                        className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                      >
+                        Proceed to Applications →
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </motion.section>
-            )}
+                </motion.section>
+              )}
           </AnimatePresence>
+
           {/* HERO CARD */}
           <section className="mb-8">
             <div className="relative overflow-hidden rounded-2xl bg-[#0f172a] p-7 md:p-9 shadow-xl shadow-slate-900/10">
@@ -364,7 +520,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-                      You have <span className="text-blue-400">26</span> active applications.
+                      You have <span className="text-blue-400">{activeApplications}</span> active applications.
                     </h2>
                     <p className="mt-2 text-sm text-slate-400 max-w-lg">
                       Track interviews, responses, offers, and follow-ups from one clean workflow.
@@ -376,21 +532,21 @@ export default function DashboardPage() {
                       <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">
                         Active
                       </p>
-                      <p className="mt-1 text-2xl font-bold text-white">18</p>
+                      <p className="mt-1 text-2xl font-bold text-white">{activeApplications}</p>
                     </div>
 
                     <div className="px-5 border-l border-white/10">
                       <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">
                         Awaiting Reply
                       </p>
-                      <p className="mt-1 text-2xl font-bold text-white">8</p>
+                      <p className="mt-1 text-2xl font-bold text-white">{awaitingReply}</p>
                     </div>
 
                     <div className="pl-5 border-l border-white/10">
                       <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">
                         Offer Pending
                       </p>
-                      <p className="mt-1 text-2xl font-bold text-blue-400">3</p>
+                      <p className="mt-1 text-2xl font-bold text-blue-400">{offerPending}</p>
                     </div>
                   </div>
                 </div>
@@ -474,7 +630,7 @@ export default function DashboardPage() {
                       >
                         <Icon size={21} className={iconColorClass} strokeWidth={2} />
                       </div>
-                      <ArrowDown size={18} className={arrowClass} />
+                      <ArrowUpRight size={18} className={arrowClass} />
                     </div>
 
                     <div className="mt-5">
@@ -506,7 +662,7 @@ export default function DashboardPage() {
                   className="hidden items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-700 sm:inline-flex"
                 >
                   View all
-                  <ArrowDown size={15} />
+                  <ArrowUpRight size={15} />
                 </Link>
               </div>
 
@@ -546,6 +702,19 @@ export default function DashboardPage() {
                             </tr>
                           </thead>
                           <tbody>
+                            {activePanel.rows.length === 0 && (
+                              <tr className="border-t border-slate-200 bg-white">
+                                <td
+                                  colSpan={3}
+                                  className="px-4 py-8 text-center text-sm text-slate-400 sm:px-5"
+                                >
+                                  {loadingApplications
+                                    ? 'Loading applications...'
+                                    : 'No applications in this stage yet.'}
+                                </td>
+                              </tr>
+                            )}
+
                             {activePanel.rows.map((item) => (
                               <tr key={`${activeTab}-${item.company}-${item.role}`} className="border-t border-slate-200 bg-white">
                                 <td className="px-4 py-3 align-top sm:px-5">
@@ -560,10 +729,11 @@ export default function DashboardPage() {
                                           key={`${item.company}-${round.label}`}
                                           className={
                                             round.state === 'completed'
-                                              ? 'rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-emerald-700'
-                                              : 'rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700'
+                                              ? 'inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-emerald-700'
+                                              : 'inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700'
                                           }
                                         >
+                                          <Clock3 size={10} />
                                           {round.label}
                                         </span>
                                       ))}
