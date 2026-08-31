@@ -43,6 +43,34 @@ type ApplicationUser = {
 
 /* =========================================================
    CONSTANTS
+========================================================= */
+
+const THEMES: {
+  name: string;
+  description: string;
+  icon: ReactNode;
+  value: Theme;
+}[] = [
+  {
+    name: 'Light',
+    description: 'Clean and bright',
+    icon: <Sun size={18} />,
+    value: 'light',
+  },
+  {
+    name: 'Dark',
+    description: 'Easy on the eyes',
+    icon: <Moon size={18} />,
+    value: 'dark',
+  },
+  {
+    name: 'System',
+    description: 'Use device preference',
+    icon: <Monitor size={18} />,
+    value: 'system',
+  },
+];
+
 const COURSES = ['BSCS', 'BSBA', 'BSHM', 'BEED', 'BSEd'];
 
 const THEME_STORAGE_KEY = 'application_tracker_theme';
@@ -1170,14 +1198,14 @@ export default function SettingsPage() {
         className="pointer-events-none absolute inset-0 opacity-[0.35] z-0"
         style={{
           backgroundImage: `
-            linear-gradient(to right, rgba(148, 163, 184, 0.22) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(148, 163, 184, 0.22) 1px, transparent 1px)
+            linear-gradient(to right, #cbd5e1 1px, transparent 1px),
+            linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)
           `,
           backgroundSize: '48px 48px',
           maskImage:
-            'linear-gradient(to bottom, transparent, rgba(0,0,0,0.78) 18%, rgba(0,0,0,0.9) 82%, transparent)',
+            'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
           WebkitMaskImage:
-            'linear-gradient(to bottom, transparent, rgba(0,0,0,0.78) 18%, rgba(0,0,0,0.9) 82%, transparent)',
+            'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)',
         }}
       />
 
@@ -1480,7 +1508,7 @@ export default function SettingsPage() {
               <SectionHeader
                 icon={<Palette size={18} />}
                 title="Appearance"
-                description="Current interface styling"
+                description="Choose how Application Tracker looks"
               />
 
               <div className="p-6 md:p-7">
