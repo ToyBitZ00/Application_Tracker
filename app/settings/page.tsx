@@ -1227,25 +1227,18 @@ export default function SettingsPage() {
   ===================================================== */
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#f5f7fb] dark:bg-slate-950">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#f5f7fb]">
       {/* BACKGROUND */}
 
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
-        <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse" />
-
         <div
-          className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
-          style={{ animationDelay: '1.5s' }}
-        />
-
-        <div
-          className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl animate-pulse"
+          className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl blue-glow-animation"
           style={{ animationDelay: '3s' }}
         />
       </div>
 
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.35] z-0"
+        className="pointer-events-none absolute inset-0 opacity-[0.28] z-0"
         style={{
           backgroundImage: `
             linear-gradient(to right, #cbd5e1 1px, transparent 1px),
@@ -1712,39 +1705,6 @@ export default function SettingsPage() {
         />
       )}
 
-      {/* GLOBAL STYLES */}
-
-      <style jsx global>{`
-        html,
-        body {
-          scroll-behavior: smooth;
-        }
-
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-
-        @keyframes header-in {
-          from {
-            opacity: 0;
-            transform: translateY(-12px);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-header-in {
-          animation: header-in 0.4s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 }

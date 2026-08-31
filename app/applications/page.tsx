@@ -405,6 +405,10 @@ function normalizeCompanyLogoUrl(logoUrl: string) {
     return trimmedLogoUrl;
   }
 
+  if (trimmedLogoUrl.startsWith('/')) {
+    return trimmedLogoUrl;
+  }
+
   return `https://${trimmedLogoUrl}`;
 }
 
@@ -482,21 +486,49 @@ function mergeCompanies(
   primary: Company[],
   fallback: Company[]
 ) {
-  const seen = new Set<string>();
+  const merged = new Map<string, Company>();
 
-  return [...primary, ...fallback].filter(
-    (company) => {
+  fallback.forEach((company) => {
+    merged.set(
+      company.name.trim().toLowerCase(),
+      company
+    );
+  });
+
+  primary.forEach((company) => {
       const key =
         company.name.trim().toLowerCase();
+      const fallbackCompany =
+        merged.get(key);
 
-      if (seen.has(key)) {
-        return false;
-      }
+      merged.set(key, {
+        ...fallbackCompany,
+        ...company,
+        location:
+          company.location ||
+          fallbackCompany?.location ||
+          '',
+        role:
+          company.role ||
+          fallbackCompany?.role ||
+          '',
+        description:
+          company.description ||
+          fallbackCompany?.description ||
+          '',
+        website:
+          company.website &&
+          company.website !== '#'
+            ? company.website
+            : fallbackCompany?.website || '#',
+        logoUrl:
+          company.logoUrl ||
+          fallbackCompany?.logoUrl ||
+          '',
+      });
+  });
 
-      seen.add(key);
-      return true;
-    }
-  );
+  return Array.from(merged.values());
 }
 
 function CompanyLogo({
@@ -3313,124 +3345,6 @@ export default function ApplicationsPage() {
           </div>
 
         )}
-
-        {/* =================================================
-            ANIMATIONS
-        ================================================= */}
-
-        <style jsx global>{`
-
-          html,
-          body {
-            scroll-behavior: smooth;
-          }
-
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-
-          .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-
-          @keyframes header-in {
-            from {
-              opacity: 0;
-              transform: translateY(-12px);
-            }
-
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
-          .animate-header-in {
-            animation:
-              header-in
-              0.4s
-              ease-out
-              forwards;
-          }
-
-          @keyframes blueGlow {
-            0%,
-            100% {
-              opacity: 0.45;
-              transform:
-                scale(1)
-                translate(0, 0);
-            }
-
-            50% {
-              opacity: 0.85;
-              transform:
-                scale(1.08)
-                translate(20px, -15px);
-            }
-          }
-
-          .blue-glow-animation {
-            animation:
-              blueGlow
-              8s
-              ease-in-out
-              infinite;
-          }
-
-          @keyframes modal-in {
-            from {
-              opacity: 0;
-              transform:
-                scale(0.88)
-                translateY(18px);
-            }
-
-            to {
-              opacity: 1;
-              transform:
-                scale(1)
-                translateY(0);
-            }
-          }
-
-          .animate-modal-in {
-            animation:
-              modal-in
-              0.22s
-              cubic-bezier(
-                0.16,
-                1,
-                0.3,
-                1
-              )
-              forwards;
-          }
-
-          @media (prefers-reduced-motion: reduce) {
-
-            html,
-            body {
-              scroll-behavior: auto;
-            }
-
-            *,
-            *::before,
-            *::after {
-              animation-duration:
-                0.01ms !important;
-
-              animation-iteration-count:
-                1 !important;
-
-              transition-duration:
-                0.01ms !important;
-            }
-
-          }
-
-        `}</style>
 
       </div>
     </DndContext>

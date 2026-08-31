@@ -241,13 +241,18 @@ export default function ReportsPage() {
   }, [supabase]);
 
   const momentumData = useMemo(() => {
-    const buckets = Array.from(
-      { length: 6 },
-      (_, index) => ({
-        week: `Week ${index + 1}`,
-        applications: 0,
-      })
-    );
+    const buckets = [
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ].map((day) => ({
+      day,
+      applications: 0,
+    }));
 
     notes.forEach((note) => {
       const date = new Date(note.created_at);
@@ -256,10 +261,8 @@ export default function ReportsPage() {
         return;
       }
 
-      const bucketIndex = Math.min(
-        5,
-        Math.max(0, Math.floor((date.getDate() - 1) / 7))
-      );
+      const bucketIndex =
+        (date.getDay() + 6) % 7;
 
       buckets[bucketIndex].applications += 1;
     });
@@ -677,19 +680,22 @@ export default function ReportsPage() {
             <div className="lg:col-span-8 bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
               <div className="mb-8">
                 <h2 className="text-base font-bold text-slate-950">Applications Over Time</h2>
-                <p className="text-xs text-slate-400 mt-1">Number of applications submitted per week.</p>
+                <p className="text-xs text-slate-400 mt-1">Number of applications submitted by weekday.</p>
               </div>
               
-              <div className="h-[280px] w-full">
+              <div className="h-[310px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={momentumData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <BarChart data={momentumData} margin={{ top: 8, right: 12, left: 0, bottom: 22 }}>
                     <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#e2e8f0" />
                     <XAxis 
-                      dataKey="week" 
+                      dataKey="day" 
                       axisLine={false} 
                       tickLine={false} 
                       tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 500 }} 
-                      dy={15}
+                      interval={0}
+                      minTickGap={0}
+                      height={36}
+                      dy={10}
                     />
                     <YAxis 
                       axisLine={false} 
@@ -930,38 +936,6 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* GLOBAL STYLES */}
-      <style jsx global>{`
-        html, body {
-          scroll-behavior: smooth;
-        }
-
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-
-        /* Hide scrollbar for IE, Edge and Firefox */
-        .scrollbar-hide {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-        }
-
-        @keyframes header-in {
-          from {
-            opacity: 0;
-            transform: translateY(-12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-header-in {
-          animation: header-in 0.4s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 }

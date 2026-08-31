@@ -4,10 +4,13 @@ type StoredApplicationUser = {
   id: string;
   username: string;
   fullName?: string;
+  role?: 'user' | 'admin' | 'super_admin';
+  isBlocked?: boolean;
 };
 
 const SESSION_KEY = 'application_tracker_user';
 const SESSION_COOKIE_KEY = 'application_tracker_session';
+const ADMIN_SESSION_COOKIE_KEY = 'application_tracker_admin_session';
 
 const LEGACY_USERNAME_KEYS = [
   'username',
@@ -39,6 +42,8 @@ export function getStoredApplicationUser(): StoredApplicationUser | null {
           id: parsed.id,
           username: parsed.username,
           fullName: parsed.fullName,
+          role: parsed.role,
+          isBlocked: parsed.isBlocked,
         };
       }
     } catch {
@@ -58,6 +63,14 @@ export function setStoredApplicationUser(user: StoredApplicationUser) {
   document.cookie = `${SESSION_COOKIE_KEY}=${encodeURIComponent(
     user.id
   )}; path=/; max-age=604800; samesite=lax`;
+
+  if (user.role === 'admin' || user.role === 'super_admin') {
+    document.cookie = `${ADMIN_SESSION_COOKIE_KEY}=${encodeURIComponent(
+      user.role
+    )}; path=/; max-age=604800; samesite=lax`;
+  } else {
+    document.cookie = `${ADMIN_SESSION_COOKIE_KEY}=; path=/; max-age=0; samesite=lax`;
+  }
 }
 
 export function getStoredUsername(): string | null {
@@ -89,6 +102,7 @@ export function clearStoredApplicationUser() {
 
   localStorage.removeItem(SESSION_KEY);
   document.cookie = `${SESSION_COOKIE_KEY}=; path=/; max-age=0; samesite=lax`;
+  document.cookie = `${ADMIN_SESSION_COOKIE_KEY}=; path=/; max-age=0; samesite=lax`;
 
   LEGACY_USERNAME_KEYS.forEach((key) => {
     localStorage.removeItem(key);
