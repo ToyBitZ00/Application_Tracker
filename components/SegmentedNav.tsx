@@ -25,7 +25,7 @@ const studentNavItems = [
 // Super Admin Nav Items (Now unified with the Blue Theme)
 const adminNavItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { label: 'Students', href: '/admin/students', icon: Users },
+  { label: 'Accounts', href: '/admin/students', icon: Users },
   { label: 'Courses', href: '/admin/courses', icon: GraduationCap },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
