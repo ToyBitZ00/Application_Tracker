@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BriefcaseBusiness,
   Clock3,
   CheckCircle2,
   XCircle,
   Plus,
-  ArrowUpRight,
+  ArrowDown,
   TrendingUp,
   Sparkles,
   Building2,
@@ -157,6 +157,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<StatusKey>('Applied');
   const [notes, setNotes] = useState<SupabaseNote[]>([]);
   const [loadingApplications, setLoadingApplications] = useState(true);
+  const tableSectionRef = useRef<HTMLElement | null>(null);
   const [showRecommended, setShowRecommended] = useState(true);
   const [recommendedCompanies, setRecommendedCompanies] = useState<
     RecommendedCompany[]
@@ -354,6 +355,13 @@ export default function DashboardPage() {
 
   const handleTabChange = (tab: StatusKey) => {
     setActiveTab(tab);
+
+    requestAnimationFrame(() => {
+      tableSectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    });
   };
 
   return (
@@ -411,7 +419,7 @@ export default function DashboardPage() {
             </div>
 
             <Link
-              href="/applications/new"
+              href="/applications/"
               className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-sm shadow-blue-600/20 hover:bg-blue-700 hover:shadow-md transition-all"
             >
               <Plus size={18} strokeWidth={2.5} />
@@ -639,7 +647,7 @@ export default function DashboardPage() {
                       >
                         <Icon size={21} className={iconColorClass} strokeWidth={2} />
                       </div>
-                      <ArrowUpRight size={18} className={arrowClass} />
+                      <ArrowDown size={18} className={arrowClass} />
                     </div>
 
                     <div className="mt-5">
@@ -656,120 +664,111 @@ export default function DashboardPage() {
           </section>
 
           {/* DATA TABLE */}
-          <section>
-            <div className="rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-                <div>
-                  <h2 className="font-bold text-slate-900">
-                    {activePanel.title}
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500">{activePanel.subtitle}</p>
+          <section ref={tableSectionRef}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                className="rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm overflow-hidden"
+              >
+                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+                  <div>
+                    <h2 className="font-bold text-slate-900">
+                      {activePanel.title}
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-500">{activePanel.subtitle}</p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={[
+                        'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]',
+                        activeTab === 'Rejected' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700',
+                      ].join(' ')}
+                    >
+                      <Sparkles size={10} />
+                      {activeTab}
+                    </div>
+
+                    <Link
+                      href="/applications"
+                      className="hidden items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-700 sm:inline-flex"
+                    >
+                      View all
+                      <ArrowDown size={15} />
+                    </Link>
+                  </div>
                 </div>
 
-                <Link
-                  href="/applications"
-                  className="hidden items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-700 sm:inline-flex"
-                >
-                  View all
-                  <ArrowUpRight size={15} />
-                </Link>
-              </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+                    <thead className="bg-slate-100 text-slate-600">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold sm:px-5">Company</th>
+                        <th className="px-4 py-3 font-semibold sm:px-5">Stage</th>
+                        <th className="px-4 py-3 font-semibold sm:px-5 text-right">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activePanel.rows.length === 0 && (
+                        <tr className="border-t border-slate-200 bg-white">
+                          <td
+                            colSpan={3}
+                            className="px-4 py-8 text-center text-sm text-slate-400 sm:px-5"
+                          >
+                            {loadingApplications
+                              ? 'Loading applications...'
+                              : 'No applications in this stage yet.'}
+                          </td>
+                        </tr>
+                      )}
 
-              <div className="px-3 py-5 sm:px-5 overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -16 }}
-                    transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  >
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 shadow-sm">
-                      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
-                        <div>
-                          <h3 className="text-base font-bold text-slate-900">{activePanel.title}</h3>
-                          <p className="text-xs text-slate-500">{activePanel.rows.length} entries</p>
-                        </div>
-                        <div
-                          className={[
-                            'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]',
-                            activeTab === 'Rejected' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700',
-                          ].join(' ')}
-                        >
-                          <Sparkles size={10} />
-                          {activeTab}
-                        </div>
-                      </div>
-
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
-                          <thead className="bg-slate-100 text-slate-600">
-                            <tr>
-                              <th className="px-4 py-3 font-semibold sm:px-5">Company</th>
-                              <th className="px-4 py-3 font-semibold sm:px-5">Stage</th>
-                              <th className="px-4 py-3 font-semibold sm:px-5 text-right">Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {activePanel.rows.length === 0 && (
-                              <tr className="border-t border-slate-200 bg-white">
-                                <td
-                                  colSpan={3}
-                                  className="px-4 py-8 text-center text-sm text-slate-400 sm:px-5"
-                                >
-                                  {loadingApplications
-                                    ? 'Loading applications...'
-                                    : 'No applications in this stage yet.'}
-                                </td>
-                              </tr>
+                      {activePanel.rows.map((item) => (
+                        <tr key={`${activeTab}-${item.company}-${item.role}`} className="border-t border-slate-200 bg-white">
+                          <td className="px-4 py-3 align-top sm:px-5">
+                            <div className="font-semibold text-slate-900">{item.company}</div>
+                            <div className="mt-1 text-xs text-slate-500">{item.role}</div>
+                          </td>
+                          <td className="px-4 py-3 align-top sm:px-5">
+                            {item.rounds ? (
+                              <div className="flex flex-wrap gap-2">
+                                {item.rounds.map((round) => (
+                                  <span
+                                    key={`${item.company}-${round.label}`}
+                                    className={
+                                      round.state === 'completed'
+                                        ? 'inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-emerald-700'
+                                        : 'inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700'
+                                    }
+                                  >
+                                    <Clock3 size={10} />
+                                    {round.label}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-700">
+                                {item.status}
+                              </span>
                             )}
-
-                            {activePanel.rows.map((item) => (
-                              <tr key={`${activeTab}-${item.company}-${item.role}`} className="border-t border-slate-200 bg-white">
-                                <td className="px-4 py-3 align-top sm:px-5">
-                                  <div className="font-semibold text-slate-900">{item.company}</div>
-                                  <div className="mt-1 text-xs text-slate-500">{item.role}</div>
-                                </td>
-                                <td className="px-4 py-3 align-top sm:px-5">
-                                  {item.rounds ? (
-                                    <div className="flex flex-wrap gap-2">
-                                      {item.rounds.map((round) => (
-                                        <span
-                                          key={`${item.company}-${round.label}`}
-                                          className={
-                                            round.state === 'completed'
-                                              ? 'inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-emerald-700'
-                                              : 'inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700'
-                                          }
-                                        >
-                                          <Clock3 size={10} />
-                                          {round.label}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-700">
-                                      {item.status}
-                                    </span>
-                                  )}
-                                  <p className="mt-2 text-xs text-slate-500">{item.note}</p>
-                                </td>
-                                <td className="px-4 py-3 align-top text-right sm:px-5">
-                                  <div className="font-medium text-slate-700">{item.date}</div>
-                                  <div className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.11em] text-emerald-700">
-                                    {item.status}
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
+                            <p className="mt-2 text-xs text-slate-500">{item.note}</p>
+                          </td>
+                          <td className="px-4 py-3 align-top text-right sm:px-5">
+                            <div className="font-medium text-slate-700">{item.date}</div>
+                            <div className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.11em] text-emerald-700">
+                              {item.status}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </section>
 
         </div>
