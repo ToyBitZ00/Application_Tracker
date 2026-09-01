@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   AnimatePresence,
@@ -12,6 +13,7 @@ import {
   Lock,
   User,
   ArrowRight,
+  ArrowLeft,
   AlertCircle,
   Eye,
   EyeOff,
@@ -695,7 +697,7 @@ export default function LoginPage() {
   // ==========================================================
 
   return (
-    <div className="application-login-page relative min-h-screen overflow-hidden bg-[#f5f7fb] flex items-center justify-center px-5 py-10">
+    <div className="application-login-page relative min-h-screen overflow-hidden bg-[#f5f7fb] flex items-center justify-center px-5 py-15">
 
       {/* BACKGROUND */}
 
@@ -2059,7 +2061,17 @@ export default function LoginPage() {
 
         <footer className="text-center mt-6">
 
-          <p className="text-xs text-slate-400">
+          <p className="text-sm text-slate-500 inline-flex items-center gap-2">
+            <ArrowLeft size={15} className="text-blue-600" />
+            <Link
+              href="/"
+              className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              Back to Landing Page
+            </Link>
+          </p>
+
+          <p className="text-xs text-slate-400 mt-3">
             Application Tracker · Software Engineering 2
           </p>
 
