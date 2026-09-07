@@ -86,7 +86,9 @@ export default function SegmentedNav() {
             <Link
               key={href}
               href={href}
-              className={`relative flex items-center ${isExpanded ? 'gap-2 px-4 sm:px-5' : 'gap-0 px-3.5'} py-3 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-all duration-300 ease-out`}
+              aria-label={label}
+              title={label}
+              className={`relative flex items-center max-md:gap-0 max-md:px-3.5 ${isExpanded ? 'gap-2 px-4 sm:px-5' : 'gap-0 px-3.5'} py-3 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-all duration-300 ease-out`}
             >
               {isActive && (
                 <motion.div
@@ -107,7 +109,7 @@ export default function SegmentedNav() {
                   scaleX: isExpanded ? 1 : 0.8,
                 }}
                 transition={{ duration: 0.1, ease: 'easeOut' }}
-                className="relative z-10 overflow-hidden whitespace-nowrap origin-left"
+                className="relative z-10 max-md:hidden overflow-hidden whitespace-nowrap origin-left"
               >
                 <span className={isActive ? 'text-white' : 'text-slate-600'}>{label}</span>
               </motion.span>
