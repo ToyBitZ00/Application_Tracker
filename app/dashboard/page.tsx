@@ -20,8 +20,8 @@ import {
   clearStoredApplicationUser,
   getShowRecommendedCompanies,
   getStoredApplicationUser,
-  getStoredApplicationLoginInstance,
   getStoredUsername,
+  setShowRecommendedCompanies,
   setStoredApplicationUser,
 } from '@/lib/application-session';
 import { createClient } from '@/lib/supabase/client';
@@ -71,7 +71,6 @@ type RecommendedCompany = {
 };
 
 const RECOMMENDED_COMPANIES_CACHE_KEY = 'dashboard_recommended_companies';
-const RECOMMENDED_COMPANIES_DISMISSED_KEY = 'dashboard_recommended_companies_dismissed';
 
 const statusLabels: Record<string, string> = {
   applied: 'Applied',
@@ -170,18 +169,12 @@ export default function DashboardPage() {
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       const storedUser = getStoredApplicationUser();
-      const loginInstance = getStoredApplicationLoginInstance() || 'legacy';
-      const dismissedInstance = sessionStorage.getItem(
-        RECOMMENDED_COMPANIES_DISMISSED_KEY
-      );
 
       const preferenceEnabled = storedUser
         ? getShowRecommendedCompanies(storedUser.id)
         : true;
 
-      setShowRecommended(
-        preferenceEnabled && dismissedInstance !== loginInstance
-      );
+      setShowRecommended(preferenceEnabled);
     });
 
     return () => cancelAnimationFrame(frame);
@@ -471,8 +464,7 @@ export default function DashboardPage() {
           {/* RECOMMENDED COMPANIES */}
           <AnimatePresence>
             {showRecommended &&
-              !loadingRecommended &&
-              recommendedCompanies.length > 0 && (
+              (
                 <motion.section
                   key="recommended-companies"
                   initial={{ opacity: 1, height: 'auto' }}
@@ -513,15 +505,29 @@ export default function DashboardPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {recommendedCompanies.map((company) => (
-                            <tr key={company.name} className="border-t border-slate-100">
-                              <td className="px-5 py-3 font-semibold text-slate-900">
-                                {company.name}
+                          {loadingRecommended ? (
+                            <tr className="border-t border-slate-100">
+                              <td colSpan={3} className="px-5 py-6 text-center text-sm text-slate-400">
+                                Loading recommended companies...
                               </td>
-                              <td className="px-5 py-3 text-slate-600">{company.role}</td>
-                              <td className="px-5 py-3 text-slate-500">{company.location}</td>
                             </tr>
-                          ))}
+                          ) : recommendedCompanies.length === 0 ? (
+                            <tr className="border-t border-slate-100">
+                              <td colSpan={3} className="px-5 py-6 text-center text-sm text-slate-400">
+                                No recommended companies are available yet.
+                              </td>
+                            </tr>
+                          ) : (
+                            recommendedCompanies.map((company) => (
+                              <tr key={company.name} className="border-t border-slate-100">
+                                <td className="px-5 py-3 font-semibold text-slate-900">
+                                  {company.name}
+                                </td>
+                                <td className="px-5 py-3 text-slate-600">{company.role}</td>
+                                <td className="px-5 py-3 text-slate-500">{company.location}</td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -530,13 +536,11 @@ export default function DashboardPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const loginInstance =
-                            getStoredApplicationLoginInstance() || 'legacy';
+                          const storedUser = getStoredApplicationUser();
 
-                          sessionStorage.setItem(
-                            RECOMMENDED_COMPANIES_DISMISSED_KEY,
-                            loginInstance
-                          );
+                          if (storedUser) {
+                            setShowRecommendedCompanies(storedUser.id, false);
+                          }
                           setShowRecommended(false);
                         }}
                         className="text-sm font-semibold text-red-500 hover:text-red-600 transition-colors"

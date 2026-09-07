@@ -24,10 +24,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-import {
-  setStoredApplicationUser,
-  startStoredApplicationLogin,
-} from '@/lib/application-session';
+import { setStoredApplicationUser } from '@/lib/application-session';
 
 const DEBOUNCE_MS = 600;
 
@@ -394,7 +391,6 @@ export default function LoginPage() {
       isBlocked: Boolean(user.is_blocked),
     };
 
-    startStoredApplicationLogin();
     setStoredApplicationUser(currentUser);
 
     return currentUser;
