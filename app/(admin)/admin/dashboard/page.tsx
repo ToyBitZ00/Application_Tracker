@@ -319,9 +319,15 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-10 pb-32">
-          <header className="flex flex-col gap-2">
+      <main 
+        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
+        style={{
+          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-10 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <header className="flex flex-col gap-2 animate-header-in">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-blue-600" />
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
@@ -675,6 +681,15 @@ export default function AdminDashboardPage() {
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
+
+      {/* GLOBAL STYLES ANIMATION ADDED HERE */}
+      <style jsx global>{`
+        @keyframes header-in {
+          from { opacity: 0; transform: translateY(-12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-header-in { animation: header-in 0.4s ease-out forwards; }
+      `}</style>
     </>
   );
 }
