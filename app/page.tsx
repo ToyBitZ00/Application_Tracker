@@ -311,7 +311,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {team.map(({ name, year, role, initials, github, avatar }) => (
               <a
                 key={name}
@@ -333,7 +333,7 @@ export default function LandingPage() {
 
                 <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
                   <span>{name}</span>
-                  <GithubIcon className="shrink-0 text-black group-hover:opacity-50 transition-opacity" />
+                  <GithubIcon className="shrink-0 text-black transition-opacity" />
                 </h3>
         
                 <p className="text-sm text-slate-500 mt-1">
