@@ -22,9 +22,11 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import {
   clearStoredApplicationUser,
+  getShowRecommendedCompanies,
   getStoredApplicationUser,
   getStoredUsername,
   setStoredApplicationUser,
+  setShowRecommendedCompanies,
 } from '@/lib/application-session';
 
 /* =========================================================
@@ -896,6 +898,7 @@ export default function SettingsPage() {
     targetRole: 'Software Engineer Intern',
     targetLocation: '',
     landingTab: 'Dashboard',
+    showRecommendedCompanies: true,
   });
 
   /* =====================================================
@@ -995,6 +998,7 @@ export default function SettingsPage() {
         setProfile((prev) => ({
           ...prev,
           fullName: account.full_name || '',
+          showRecommendedCompanies: getShowRecommendedCompanies(account.id),
         }));
       } catch (error) {
         console.error(error);
@@ -1084,6 +1088,11 @@ export default function SettingsPage() {
         fullName:
           updatedUser.full_name || '',
       }));
+
+      setShowRecommendedCompanies(
+        updatedUser.id,
+        profile.showRecommendedCompanies
+      );
 
       setProfileSaved(true);
 
@@ -1500,6 +1509,57 @@ export default function SettingsPage() {
                           Year level is currently a local setting
                           because the existing table has no year
                           level column.
+                        </p>
+                      </div>
+
+                      {/* RECOMMENDED COMPANIES */}
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Show Recommended Companies (Dashboard)
+                        </label>
+
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={profile.showRecommendedCompanies}
+                          onClick={() =>
+                            setProfile((prev) => ({
+                              ...prev,
+                              showRecommendedCompanies:
+                                !prev.showRecommendedCompanies,
+                            }))
+                          }
+                          className={`relative flex h-11 w-full items-center rounded-xl border px-4 text-left text-sm font-semibold transition-all ${
+                            profile.showRecommendedCompanies
+                              ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                              : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>
+                            {profile.showRecommendedCompanies
+                              ? 'Enabled'
+                              : 'Disabled'}
+                          </span>
+                          <span
+                            className={`absolute right-3 h-5 w-9 rounded-full transition-colors ${
+                              profile.showRecommendedCompanies
+                                ? 'bg-white/30'
+                                : 'bg-slate-200'
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                                profile.showRecommendedCompanies
+                                  ? 'translate-x-4'
+                                  : 'translate-x-0.5'
+                              }`}
+                            />
+                          </span>
+                        </button>
+
+                        <p className="text-[11px] text-slate-400 mt-1.5">
+                          Choose whether the recommendation table appears on your dashboard.
                         </p>
                       </div>
                     </div>

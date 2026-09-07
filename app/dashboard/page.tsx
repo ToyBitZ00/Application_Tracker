@@ -18,6 +18,7 @@ import {
 
 import {
   clearStoredApplicationUser,
+  getShowRecommendedCompanies,
   getStoredApplicationUser,
   getStoredApplicationLoginInstance,
   getStoredUsername,
@@ -168,12 +169,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
+      const storedUser = getStoredApplicationUser();
       const loginInstance = getStoredApplicationLoginInstance() || 'legacy';
       const dismissedInstance = sessionStorage.getItem(
         RECOMMENDED_COMPANIES_DISMISSED_KEY
       );
 
-      setShowRecommended(dismissedInstance !== loginInstance);
+      const preferenceEnabled = storedUser
+        ? getShowRecommendedCompanies(storedUser.id)
+        : true;
+
+      setShowRecommended(
+        preferenceEnabled && dismissedInstance !== loginInstance
+      );
     });
 
     return () => cancelAnimationFrame(frame);
