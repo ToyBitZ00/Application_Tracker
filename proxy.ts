@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 
 const SESSION_COOKIE_KEY = 'application_tracker_session';
 const ADMIN_SESSION_COOKIE_KEY = 'application_tracker_admin_session';
+const SESSION_ACTIVITY_COOKIE_KEY = 'application_tracker_session_activity';
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
 const PROTECTED_ROUTES = [
   '/dashboard',
@@ -14,6 +16,12 @@ const PROTECTED_ROUTES = [
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const lastActivity = Number(
+    request.cookies.get(SESSION_ACTIVITY_COOKIE_KEY)?.value
+  );
+  const hasActiveSession =
+    Number.isFinite(lastActivity) &&
+    Date.now() - lastActivity < SESSION_TIMEOUT_MS;
 
   const isAdminRoute =
     pathname === '/admin' ||
@@ -24,7 +32,7 @@ export function proxy(request: NextRequest) {
       request.cookies.get(ADMIN_SESSION_COOKIE_KEY)?.value
     );
 
-    if (hasAdminSession) {
+    if (hasAdminSession && hasActiveSession) {
       return NextResponse.next();
     }
 
@@ -48,7 +56,7 @@ export function proxy(request: NextRequest) {
     request.cookies.get(SESSION_COOKIE_KEY)?.value
   );
 
-  if (hasSession) {
+  if (hasSession && hasActiveSession) {
     return NextResponse.next();
   }
 

@@ -11,6 +11,9 @@ type StoredApplicationUser = {
 const SESSION_KEY = 'application_tracker_user';
 const SESSION_COOKIE_KEY = 'application_tracker_session';
 const ADMIN_SESSION_COOKIE_KEY = 'application_tracker_admin_session';
+const SESSION_ACTIVITY_COOKIE_KEY = 'application_tracker_session_activity';
+export const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+const SESSION_TIMEOUT_SECONDS = SESSION_TIMEOUT_MS / 1000;
 
 const LEGACY_USERNAME_KEYS = [
   'username',
@@ -62,15 +65,39 @@ export function setStoredApplicationUser(user: StoredApplicationUser) {
   localStorage.setItem(SESSION_KEY, JSON.stringify(user));
   document.cookie = `${SESSION_COOKIE_KEY}=${encodeURIComponent(
     user.id
-  )}; path=/; max-age=604800; samesite=lax`;
+  )}; path=/; max-age=${SESSION_TIMEOUT_SECONDS}; samesite=lax`;
+
+  touchStoredApplicationSession();
 
   if (user.role === 'admin' || user.role === 'super_admin') {
     document.cookie = `${ADMIN_SESSION_COOKIE_KEY}=${encodeURIComponent(
       user.role
-    )}; path=/; max-age=604800; samesite=lax`;
+    )}; path=/; max-age=${SESSION_TIMEOUT_SECONDS}; samesite=lax`;
   } else {
     document.cookie = `${ADMIN_SESSION_COOKIE_KEY}=; path=/; max-age=0; samesite=lax`;
   }
+}
+
+export function touchStoredApplicationSession() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  document.cookie = `${SESSION_ACTIVITY_COOKIE_KEY}=${Date.now()}; path=/; max-age=${SESSION_TIMEOUT_SECONDS}; samesite=lax`;
+}
+
+export function getStoredApplicationSessionLastActivity() {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const activityCookie = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(`${SESSION_ACTIVITY_COOKIE_KEY}=`));
+
+  const activity = Number(activityCookie?.split('=')[1]);
+
+  return Number.isFinite(activity) && activity > 0 ? activity : null;
 }
 
 export function getStoredUsername(): string | null {
@@ -103,6 +130,7 @@ export function clearStoredApplicationUser() {
   localStorage.removeItem(SESSION_KEY);
   document.cookie = `${SESSION_COOKIE_KEY}=; path=/; max-age=0; samesite=lax`;
   document.cookie = `${ADMIN_SESSION_COOKIE_KEY}=; path=/; max-age=0; samesite=lax`;
+  document.cookie = `${SESSION_ACTIVITY_COOKIE_KEY}=; path=/; max-age=0; samesite=lax`;
 
   LEGACY_USERNAME_KEYS.forEach((key) => {
     localStorage.removeItem(key);

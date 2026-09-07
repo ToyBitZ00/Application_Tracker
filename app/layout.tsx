@@ -2,6 +2,7 @@ import { Fraunces, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import SegmentedNav from '@/components/SegmentedNav';
 import PageTransition from '@/components/PageTransition';
+import SessionTimeoutMonitor from '@/components/SessionTimeoutMonitor';
 import { Analytics } from '@vercel/analytics/next';
 
 const fraunces = Fraunces({
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </PageTransition>
         <SegmentedNav />
+        <SessionTimeoutMonitor />
         <Analytics />
       </body>
     </html>
