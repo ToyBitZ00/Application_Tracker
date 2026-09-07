@@ -43,6 +43,7 @@ import {
   X,
   ArrowUpRight,
   RefreshCw,
+  Download,
 } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/client';
@@ -73,6 +74,8 @@ type Card = {
   interviewTag: string;
   status: string;
   position: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type Column = {
@@ -260,63 +263,6 @@ const INTERVIEW_TAG_OPTIONS = [
 ];
 
 /* =========================================================
-   SAMPLE COMPANIES
-========================================================= */
-
-const SAMPLE_COMPANIES: Company[] = [
-  {
-    id: 'company-1',
-    name: 'Accenture Philippines',
-    location: 'Manila, Philippines',
-    role: 'Software Developer Intern',
-    description:
-      'Technology and consulting internship opportunities focused on software development and digital solutions.',
-    website: 'https://www.accenture.com/ph-en',
-    logoUrl: 'https://logo.clearbit.com/accenture.com',
-  },
-  {
-    id: 'company-2',
-    name: 'Globe Telecom',
-    location: 'Taguig, Philippines',
-    role: 'IT / Software Intern',
-    description:
-      'Internship opportunities in software engineering, IT, data, and digital technology.',
-    website: 'https://www.globe.com.ph',
-    logoUrl: 'https://logo.clearbit.com/globe.com.ph',
-  },
-  {
-    id: 'company-3',
-    name: 'GCash / Mynt',
-    location: 'Taguig, Philippines',
-    role: 'Software Engineering Intern',
-    description:
-      'Popular Philippine fintech company with opportunities across software engineering, data, payments, and digital products.',
-    website: 'https://www.mynt.xyz',
-    logoUrl: '/applications/companies/gcash-mynt.svg',
-  },
-  {
-    id: 'company-4',
-    name: 'PLDT',
-    location: 'Makati, Philippines',
-    role: 'Technology Intern',
-    description:
-      'Technology roles involving software, systems, networking, and digital services.',
-    website: 'https://pldt.com.ph',
-    logoUrl: 'https://logo.clearbit.com/pldt.com.ph',
-  },
-  {
-    id: 'company-5',
-    name: 'IBM Philippines',
-    location: 'Quezon City, Philippines',
-    role: 'Software Engineering Intern',
-    description:
-      'Explore software engineering, cloud, AI, cybersecurity, and enterprise technology opportunities.',
-    website: 'https://www.ibm.com/ph-en',
-    logoUrl: 'https://logo.clearbit.com/ibm.com',
-  },
-];
-
-/* =========================================================
    HELPERS
 ========================================================= */
 
@@ -348,6 +294,8 @@ const buildBoardFromNotes = (
       interviewTag: note.interview_tag || '',
       status: note.status,
       position: note.position,
+      createdAt: note.created_at,
+      updatedAt: note.updated_at,
     });
   });
 
@@ -358,6 +306,35 @@ const buildBoardFromNotes = (
   });
 
   return board;
+};
+
+const escapeCsvValue = (
+  value:
+    | string
+    | number
+    | null
+    | undefined
+) => {
+  const text =
+    value === null ||
+    value === undefined
+      ? ''
+      : String(value);
+
+  return `"${text.replace(/"/g, '""')}"`;
+};
+
+const slugifyExportValue = (
+  value: string
+) => {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') ||
+    'user'
+  );
 };
 
 function getCompanyDomain(website: string) {
@@ -480,55 +457,6 @@ function sortRecommendedCompanies(companies: Company[]) {
 
     return a.name.localeCompare(b.name);
   });
-}
-
-function mergeCompanies(
-  primary: Company[],
-  fallback: Company[]
-) {
-  const merged = new Map<string, Company>();
-
-  fallback.forEach((company) => {
-    merged.set(
-      company.name.trim().toLowerCase(),
-      company
-    );
-  });
-
-  primary.forEach((company) => {
-      const key =
-        company.name.trim().toLowerCase();
-      const fallbackCompany =
-        merged.get(key);
-
-      merged.set(key, {
-        ...fallbackCompany,
-        ...company,
-        location:
-          company.location ||
-          fallbackCompany?.location ||
-          '',
-        role:
-          company.role ||
-          fallbackCompany?.role ||
-          '',
-        description:
-          company.description ||
-          fallbackCompany?.description ||
-          '',
-        website:
-          company.website &&
-          company.website !== '#'
-            ? company.website
-            : fallbackCompany?.website || '#',
-        logoUrl:
-          company.logoUrl ||
-          fallbackCompany?.logoUrl ||
-          '',
-      });
-  });
-
-  return Array.from(merged.values());
 }
 
 function CompanyLogo({
@@ -667,9 +595,7 @@ export default function ApplicationsPage() {
   ] = useState(false);
 
   const [companies, setCompanies] =
-    useState<Company[]>(
-      sortRecommendedCompanies(SAMPLE_COMPANIES)
-    );
+    useState<Company[]>([]);
 
   const [saving, setSaving] =
     useState(false);
@@ -679,6 +605,13 @@ export default function ApplicationsPage() {
 
   const [userId, setUserId] =
     useState<string | null>(null);
+
+  const [
+    currentUser,
+    setCurrentUser,
+  ] = useState<ApplicationUser | null>(
+    null
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -746,6 +679,7 @@ export default function ApplicationsPage() {
         if (!currentUser) {
           if (mounted) {
             setUserId(null);
+            setCurrentUser(null);
             setColumns(createEmptyBoard());
             setLoadingNotes(false);
           }
@@ -755,6 +689,7 @@ export default function ApplicationsPage() {
 
         if (mounted) {
           setUserId(currentUser.id);
+          setCurrentUser(currentUser);
         }
 
         /*
@@ -837,6 +772,15 @@ export default function ApplicationsPage() {
           });
 
         if (error || !data) {
+          console.error(
+            'Error loading companies:',
+            error
+          );
+
+          if (mounted) {
+            setCompanies([]);
+          }
+
           return;
         }
 
@@ -859,17 +803,19 @@ export default function ApplicationsPage() {
         if (mounted) {
           setCompanies(
             sortRecommendedCompanies(
-              databaseCompanies.length > 0
-                ? mergeCompanies(
-                    databaseCompanies,
-                    SAMPLE_COMPANIES
-                  )
-                : SAMPLE_COMPANIES
+              databaseCompanies
             )
           );
         }
-      } catch {
-        // Keep sample companies.
+      } catch (error) {
+        console.error(
+          'Unexpected company load error:',
+          error
+        );
+
+        if (mounted) {
+          setCompanies([]);
+        }
       }
     };
 
@@ -893,11 +839,13 @@ export default function ApplicationsPage() {
 
       if (!currentUser) {
         setUserId(null);
+        setCurrentUser(null);
         setColumns(createEmptyBoard());
         return;
       }
 
       setUserId(currentUser.id);
+      setCurrentUser(currentUser);
 
       const {
         data,
@@ -1113,6 +1061,10 @@ export default function ApplicationsPage() {
           databaseNote.status,
         position:
           databaseNote.position,
+        createdAt:
+          databaseNote.created_at,
+        updatedAt:
+          databaseNote.updated_at,
       };
 
       const nextColumns =
@@ -1213,6 +1165,10 @@ export default function ApplicationsPage() {
           databaseNote.status,
         position:
           databaseNote.position,
+        createdAt:
+          databaseNote.created_at,
+        updatedAt:
+          databaseNote.updated_at,
       };
 
       setUserId(currentUserId);
@@ -1437,6 +1393,10 @@ export default function ApplicationsPage() {
                         interviewTag:
                           updatedNote.interview_tag ||
                           '',
+                        createdAt:
+                          updatedNote.created_at,
+                        updatedAt:
+                          updatedNote.updated_at,
                       }
                     : card
               ),
@@ -1959,6 +1919,81 @@ export default function ApplicationsPage() {
       0
     );
 
+  const exportNotes = () => {
+    if (!currentUser || totalCards === 0) {
+      return;
+    }
+
+    const exportedAt =
+      new Date().toISOString();
+
+    const headers = [
+      'user_id',
+      'username',
+      'full_name',
+      'note_id',
+      'title',
+      'description',
+      'status',
+      'status_label',
+      'interview_tag',
+      'position',
+      'created_at',
+      'updated_at',
+      'exported_at',
+    ];
+
+    const rows = columns.flatMap(
+      (column) =>
+        column.cards.map((card) => [
+          currentUser.id,
+          currentUser.username,
+          currentUser.full_name || '',
+          card.id,
+          card.title,
+          card.description,
+          card.status,
+          column.title,
+          card.interviewTag,
+          card.position,
+          card.createdAt,
+          card.updatedAt,
+          exportedAt,
+        ])
+    );
+
+    const csv = [
+      headers,
+      ...rows,
+    ]
+      .map((row) =>
+        row
+          .map(escapeCsvValue)
+          .join(',')
+      )
+      .join('\r\n');
+
+    const blob = new Blob(
+      [`\uFEFF${csv}`],
+      {
+        type: 'text/csv;charset=utf-8;',
+      }
+    );
+    const url =
+      URL.createObjectURL(blob);
+    const link =
+      document.createElement('a');
+
+    link.href = url;
+    link.download = `application-notes-${slugifyExportValue(
+      currentUser.username
+    )}-${exportedAt.slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const displayedCompanies =
     showAllCompanies
       ? filteredCompanies
@@ -2095,6 +2130,21 @@ export default function ApplicationsPage() {
                     Saving...
                   </div>
                 )}
+
+                <button
+                  type="button"
+                  onClick={exportNotes}
+                  disabled={
+                    loadingNotes ||
+                    totalCards === 0 ||
+                    !currentUser
+                  }
+                  className="h-9 px-3 rounded-xl bg-white/80 border border-slate-200 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 hover:bg-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                  title="Export sticky notes"
+                >
+                  <Download size={15} />
+                  Export
+                </button>
 
                 <button
                   type="button"
