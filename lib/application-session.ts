@@ -10,6 +10,7 @@ type StoredApplicationUser = {
 
 const SESSION_KEY = 'application_tracker_user';
 const LOGIN_INSTANCE_KEY = 'application_tracker_login_instance';
+const SHOW_RECOMMENDED_COMPANIES_KEY = 'application_tracker_show_recommended_companies';
 const SESSION_COOKIE_KEY = 'application_tracker_session';
 const ADMIN_SESSION_COOKIE_KEY = 'application_tracker_admin_session';
 const SESSION_ACTIVITY_COOKIE_KEY = 'application_tracker_session_activity';
@@ -22,6 +23,7 @@ export function startStoredApplicationLogin() {
   }
 
   sessionStorage.setItem(LOGIN_INSTANCE_KEY, `${Date.now()}-${Math.random()}`);
+  sessionStorage.removeItem('dashboard_recommended_companies_dismissed');
 }
 
 export function getStoredApplicationLoginInstance() {
@@ -30,6 +32,28 @@ export function getStoredApplicationLoginInstance() {
   }
 
   return sessionStorage.getItem(LOGIN_INSTANCE_KEY);
+}
+
+export function getShowRecommendedCompanies(userId: string) {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+
+  return (
+    localStorage.getItem(`${SHOW_RECOMMENDED_COMPANIES_KEY}_${userId}`) !==
+    'false'
+  );
+}
+
+export function setShowRecommendedCompanies(userId: string, value: boolean) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  localStorage.setItem(
+    `${SHOW_RECOMMENDED_COMPANIES_KEY}_${userId}`,
+    String(value)
+  );
 }
 
 const LEGACY_USERNAME_KEYS = [
