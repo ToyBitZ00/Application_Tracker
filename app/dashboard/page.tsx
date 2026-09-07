@@ -280,11 +280,12 @@ export default function DashboardPage() {
         if (cached) {
           try {
             const parsed = JSON.parse(cached) as RecommendedCompany[];
-            if (mounted) {
+            if (parsed.length > 0 && mounted) {
               setRecommendedCompanies(parsed);
               setLoadingRecommended(false);
+
+              return;
             }
-            return;
           } catch {
             sessionStorage.removeItem(RECOMMENDED_COMPANIES_CACHE_KEY);
           }
@@ -293,7 +294,8 @@ export default function DashboardPage() {
 
       const { data, error } = await supabase
         .from('companies')
-        .select('name, role, location');
+        .select('name, role, location')
+        .order('name', { ascending: true });
 
       if (error) {
         console.error('Error loading recommended companies:', error);
@@ -306,7 +308,7 @@ export default function DashboardPage() {
 
       const companies = (data as RecommendedCompany[] | null) || [];
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && companies.length > 0) {
         sessionStorage.setItem(
           RECOMMENDED_COMPANIES_CACHE_KEY,
           JSON.stringify(companies)
