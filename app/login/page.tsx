@@ -24,8 +24,10 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-import { createClient } from '@/lib/supabase/client';
-import { setStoredApplicationUser } from '@/lib/application-session';
+import {
+  setStoredApplicationUser,
+  startStoredApplicationLogin,
+} from '@/lib/application-session';
 
 const DEBOUNCE_MS = 600;
 
@@ -155,8 +157,6 @@ function validatePasswordRequired(
 
 export default function LoginPage() {
   const router = useRouter();
-
-  const supabase = createClient();
 
   // ==========================================================
   // MODE
@@ -394,6 +394,7 @@ export default function LoginPage() {
       isBlocked: Boolean(user.is_blocked),
     };
 
+    startStoredApplicationLogin();
     setStoredApplicationUser(currentUser);
 
     return currentUser;
@@ -440,26 +441,28 @@ export default function LoginPage() {
 
     try {
       // ======================================================
-      // LOGIN THROUGH SUPABASE RPC
+      // LOGIN THROUGH THE RATE-LIMITED SERVER ROUTE
       // ======================================================
 
-      const { data, error: loginError } =
-        await supabase.rpc(
-          'login_application_user',
-          {
-            p_username: username
-              .trim()
-              .toLowerCase(),
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username.trim().toLowerCase(),
+          password,
+        }),
+      });
+      const data = await response.json().catch(() => null);
 
-            p_password: password,
-          }
-        );
+      if (response.status === 429) {
+        setError('Too many login attempts. Please try again later.');
+        setLoading(false);
+        await triggerShake(loginShake);
+        return;
+      }
 
-      if (loginError) {
-        console.error(
-          'Login RPC error:',
-          loginError
-        );
+      if (!response.ok) {
+        console.error('Login route error:', data?.error);
 
         setError(
           'Invalid username or password.'
@@ -596,32 +599,31 @@ export default function LoginPage() {
 
     try {
       // ======================================================
-      // CREATE ACCOUNT IN SUPABASE
+      // CREATE ACCOUNT THROUGH THE RATE-LIMITED SERVER ROUTE
       // ======================================================
 
-      const { data, error: signupError } =
-        await supabase.rpc(
-          'create_application_user',
-          {
-            p_full_name: fullName.trim(),
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          username: username.trim().toLowerCase(),
+          password,
+        }),
+      });
+      const data = await response.json().catch(() => null);
 
-            p_username: username
-              .trim()
-              .toLowerCase(),
+      if (response.status === 429) {
+        setError('Too many signup attempts. Please try again later.');
+        setLoading(false);
+        await triggerShake(signupShake);
+        return;
+      }
 
-            p_password: password,
-          }
-        );
+      if (!response.ok) {
+        console.error('Signup route error:', data?.error);
 
-      if (signupError) {
-        console.error(
-          'Signup RPC error:',
-          signupError
-        );
-
-        const message =
-          signupError.message?.toLowerCase() ||
-          '';
+        const message = data?.error?.toLowerCase() || '';
 
         if (
           message.includes(
@@ -633,7 +635,7 @@ export default function LoginPage() {
           );
         } else {
           setError(
-            signupError.message ||
+            data?.error ||
               'Unable to create your account.'
           );
         }

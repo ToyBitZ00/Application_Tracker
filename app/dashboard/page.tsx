@@ -19,6 +19,7 @@ import {
 import {
   clearStoredApplicationUser,
   getStoredApplicationUser,
+  getStoredApplicationLoginInstance,
   getStoredUsername,
   setStoredApplicationUser,
 } from '@/lib/application-session';
@@ -69,6 +70,7 @@ type RecommendedCompany = {
 };
 
 const RECOMMENDED_COMPANIES_CACHE_KEY = 'dashboard_recommended_companies';
+const RECOMMENDED_COMPANIES_DISMISSED_KEY = 'dashboard_recommended_companies_dismissed';
 
 const statusLabels: Record<string, string> = {
   applied: 'Applied',
@@ -163,6 +165,19 @@ export default function DashboardPage() {
     RecommendedCompany[]
   >([]);
   const [loadingRecommended, setLoadingRecommended] = useState(true);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const loginInstance = getStoredApplicationLoginInstance() || 'legacy';
+      const dismissedInstance = sessionStorage.getItem(
+        RECOMMENDED_COMPANIES_DISMISSED_KEY
+      );
+
+      setShowRecommended(dismissedInstance !== loginInstance);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   /* ================================================= */
   /* LOAD APPLICATION NOTES */
@@ -504,7 +519,16 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-end gap-6 px-6 py-4">
                       <button
                         type="button"
-                        onClick={() => setShowRecommended(false)}
+                        onClick={() => {
+                          const loginInstance =
+                            getStoredApplicationLoginInstance() || 'legacy';
+
+                          sessionStorage.setItem(
+                            RECOMMENDED_COMPANIES_DISMISSED_KEY,
+                            loginInstance
+                          );
+                          setShowRecommended(false);
+                        }}
                         className="text-sm font-semibold text-red-500 hover:text-red-600 transition-colors"
                       >
                         Dismiss

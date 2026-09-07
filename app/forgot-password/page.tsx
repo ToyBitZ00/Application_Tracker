@@ -15,8 +15,6 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-import { createClient } from '@/lib/supabase/client';
-
 const DEBOUNCE_MS = 600;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -32,8 +30,6 @@ function validateEmailRequired(email: string): string | undefined {
 }
 
 export default function ForgotPasswordPage() {
-  const supabase = createClient();
-
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
@@ -68,13 +64,21 @@ export default function ForgotPasswordPage() {
     setError('');
 
     try {
-      const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
-        { redirectTo: `${window.location.origin}/reset-password` }
-      );
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await response.json().catch(() => null);
 
-      if (supabaseError) {
-        console.error('Reset password error:', supabaseError);
+      if (response.status === 429) {
+        setError('Too many reset requests. Please try again later.');
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        console.error('Reset password error:', data?.error);
         setError('Unable to send reset link. Please try again.');
         setLoading(false);
         return;
@@ -221,7 +225,7 @@ export default function ForgotPasswordPage() {
                 Forgot your password?
               </h2>
               <p className="text-white/70 text-base leading-relaxed">
-                No worries, we'll send you a link to get back into your account.
+                No worries, we&apos;ll send you a link to get back into your account.
               </p>
             </div>
           </div>
