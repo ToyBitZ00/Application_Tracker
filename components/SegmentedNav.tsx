@@ -11,7 +11,8 @@ import {
   Settings, 
   LayoutDashboard, 
   Users, 
-  GraduationCap 
+  GraduationCap,
+  ClipboardList // <-- Added for Audit Logs
 } from 'lucide-react';
 
 // Student Nav Items
@@ -27,6 +28,7 @@ const adminNavItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Accounts', href: '/admin/students', icon: Users },
   { label: 'Courses', href: '/admin/courses', icon: GraduationCap },
+  { label: 'Audit Logs', href: '/admin/audit-logs', icon: ClipboardList }, // <-- Added here
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

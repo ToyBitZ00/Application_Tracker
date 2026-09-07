@@ -641,8 +641,10 @@ export default function AdminSettingsPage() {
       />
 
       <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide">
-        <div className="mx-auto max-w-7xl px-5 pb-32 pt-10 sm:px-6 lg:px-8">
-          <header className="mb-8 flex flex-col gap-2">
+        <div className="mx-auto max-w-7xl px-5 pb-32 pt-10 sm:px-6 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
+          {/* HEADER ANIMATION CLASS ADDED HERE */}
+          <header className="mb-8 flex flex-col gap-2 animate-header-in">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-blue-600" />
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">
@@ -860,6 +862,15 @@ export default function AdminSettingsPage() {
           onConfirm={handleSignOut}
         />
       )}
+
+      {/* GLOBAL STYLES ANIMATION ADDED HERE */}
+      <style jsx global>{`
+        @keyframes header-in {
+          from { opacity: 0; transform: translateY(-12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-header-in { animation: header-in 0.4s ease-out forwards; }
+      `}</style>
     </>
   );
 }

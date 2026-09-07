@@ -186,14 +186,47 @@ export default function StudentManagementPage() {
 
   return (
     <>
+      {/* ================================================= */}
+      {/* BACKGROUND DESIGN (UNIFIED) */}
+      {/* ================================================= */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse" />
+        <div
+          className="absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl animate-pulse"
+          style={{ animationDelay: '1.5s' }}
+        />
+        <div
+          className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-blue-400/5 blur-3xl animate-pulse"
+          style={{ animationDelay: '3s' }}
+        />
       </div>
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-10 pb-32">
-          <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.35] z-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, #cbd5e1 1px, transparent 1px),
+            linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)
+          `,
+          backgroundSize: '48px 48px',
+          maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+        }}
+      />
+
+      {/* ================================================= */}
+      {/* SCROLLABLE CONTENT */}
+      {/* ================================================= */}
+      <main 
+        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
+        style={{
+          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-10 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
+          <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between animate-header-in">
             <div>
               <div className="mb-2 flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-blue-600" />
@@ -210,17 +243,17 @@ export default function StudentManagementPage() {
             </div>
 
             <div className="grid grid-cols-3 gap-2 sm:min-w-[360px]">
-              <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
+              <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur-xl">
                 <Users size={17} className="text-blue-600" />
                 <p className="mt-2 text-2xl font-bold text-slate-950">{totals.users}</p>
                 <p className="text-[11px] font-semibold text-slate-400">Accounts</p>
               </div>
-              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow-sm backdrop-blur-xl">
                 <Shield size={17} className="text-blue-700" />
                 <p className="mt-2 text-2xl font-bold text-blue-950">{totals.admins}</p>
                 <p className="text-[11px] font-semibold text-blue-500">Admins</p>
               </div>
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm">
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm backdrop-blur-xl">
                 <Ban size={17} className="text-red-700" />
                 <p className="mt-2 text-2xl font-bold text-red-950">{totals.blocked}</p>
                 <p className="text-[11px] font-semibold text-red-500">Blocked</p>
@@ -228,7 +261,7 @@ export default function StudentManagementPage() {
             </div>
           </header>
 
-          <section className="mt-8 rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm">
+          <section className="mt-8 rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-xl">
             <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="relative w-full lg:max-w-md">
                 <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -242,14 +275,14 @@ export default function StudentManagementPage() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <div className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3">
+                <div className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10">
                   <Filter size={15} className="text-slate-400" />
                   <select
                     value={roleFilter}
                     onChange={(event) =>
                       setRoleFilter(event.target.value as 'all' | AccountRole)
                     }
-                    className="bg-transparent text-sm font-semibold text-slate-700 outline-none"
+                    className="bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-pointer"
                   >
                     <option value="all">All roles</option>
                     <option value="user">Students</option>
@@ -263,7 +296,7 @@ export default function StudentManagementPage() {
                   onChange={(event) =>
                     setStatusFilter(event.target.value as 'all' | 'active' | 'blocked')
                   }
-                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none"
+                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none cursor-pointer transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                 >
                   <option value="all">All statuses</option>
                   <option value="active">Active</option>
@@ -300,6 +333,7 @@ export default function StudentManagementPage() {
                   ) : filteredUsers.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-5 py-14 text-center text-sm font-semibold text-slate-400">
+                        <Users size={24} className="mx-auto mb-3 opacity-20" />
                         No accounts found.
                       </td>
                     </tr>
@@ -316,7 +350,7 @@ export default function StudentManagementPage() {
                         user.account_role !== 'super_admin';
 
                       return (
-                        <tr key={user.id} className="bg-white hover:bg-slate-50">
+                        <tr key={user.id} className="bg-white hover:bg-slate-50 transition-colors">
                           <td className="border-t border-slate-200 px-5 py-4">
                             <div className="flex items-center gap-3">
                               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-xs font-extrabold text-slate-600">
@@ -325,7 +359,7 @@ export default function StudentManagementPage() {
                               <div>
                                 <p className="font-bold text-slate-950">{user.full_name}</p>
                                 <p className="text-xs font-medium text-slate-500">@{user.username}</p>
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-300">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-300 mt-0.5">
                                   Joined {formatDate(user.created_at)}
                                 </p>
                               </div>
@@ -366,7 +400,7 @@ export default function StudentManagementPage() {
                                       user.account_role === 'admin' ? 'user' : 'admin'
                                     )
                                   }
-                                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+                                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition-colors"
                                 >
                                   <UserCog size={13} />
                                   {user.account_role === 'admin' ? 'Make Student' : 'Make Admin'}
@@ -377,7 +411,7 @@ export default function StudentManagementPage() {
                                 type="button"
                                 disabled={!canBlock || isSaving}
                                 onClick={() => setBlocked(user, !user.is_blocked)}
-                                className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-40 ${
+                                className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                                   user.is_blocked
                                     ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                                     : 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
@@ -398,6 +432,20 @@ export default function StudentManagementPage() {
           </section>
         </div>
       </main>
+
+      {/* ================================================= */}
+      {/* BOTTOM FADE-IN EFFECT */}
+      {/* ================================================= */}
+      <div className="fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#f5f7fb] via-[#f5f7fb]/80 to-transparent z-30 pointer-events-none" />
+
+      {/* GLOBAL STYLES ANIMATION ADDED HERE */}
+      <style jsx global>{`
+        @keyframes header-in {
+          from { opacity: 0; transform: translateY(-12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-header-in { animation: header-in 0.4s ease-out forwards; }
+      `}</style>
     </>
   );
 }
