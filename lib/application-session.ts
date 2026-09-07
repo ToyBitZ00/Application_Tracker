@@ -9,30 +9,12 @@ type StoredApplicationUser = {
 };
 
 const SESSION_KEY = 'application_tracker_user';
-const LOGIN_INSTANCE_KEY = 'application_tracker_login_instance';
 const SHOW_RECOMMENDED_COMPANIES_KEY = 'application_tracker_show_recommended_companies';
 const SESSION_COOKIE_KEY = 'application_tracker_session';
 const ADMIN_SESSION_COOKIE_KEY = 'application_tracker_admin_session';
 const SESSION_ACTIVITY_COOKIE_KEY = 'application_tracker_session_activity';
 export const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const SESSION_TIMEOUT_SECONDS = SESSION_TIMEOUT_MS / 1000;
-
-export function startStoredApplicationLogin() {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  sessionStorage.setItem(LOGIN_INSTANCE_KEY, `${Date.now()}-${Math.random()}`);
-  sessionStorage.removeItem('dashboard_recommended_companies_dismissed');
-}
-
-export function getStoredApplicationLoginInstance() {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  return sessionStorage.getItem(LOGIN_INSTANCE_KEY);
-}
 
 export function getShowRecommendedCompanies(userId: string) {
   if (typeof window === 'undefined') {
