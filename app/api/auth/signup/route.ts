@@ -38,5 +38,27 @@ export async function POST(request: Request) {
     return Response.json({ error: error.message }, { status: 400 });
   }
 
+  const result = data as {
+    success?: boolean;
+    id?: string;
+    username?: string;
+    full_name?: string;
+  } | null;
+
+  if (result?.success && result.id) {
+    await supabase.rpc('record_application_audit_log', {
+      p_actor_user_id: null,
+      p_action: 'User Created',
+      p_action_type: 'Created',
+      p_category: 'Users',
+      p_entity: result.username || username,
+      p_changes: `New account registered for ${result.full_name || fullName}.`,
+      p_metadata: {
+        source: 'signup_api',
+        user_id: result.id,
+      },
+    });
+  }
+
   return Response.json(data);
 }

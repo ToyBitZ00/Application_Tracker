@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -12,7 +12,14 @@ import {
   Check,
 } from 'lucide-react';
 
-const COURSES = ['BSCS', 'BSBA', 'BEED', 'BSHM', 'BSEd'];
+import { getStoredApplicationUser } from '@/lib/application-session';
+import { createClient } from '@/lib/supabase/client';
+
+type Course = {
+  id: string;
+  code: string;
+  name: string;
+};
 
 type FormState = {
   sex: string;
@@ -29,8 +36,13 @@ const STEPS = [
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const currentUser = getStoredApplicationUser();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [courseError, setCourseError] = useState('');
   const [form, setForm] = useState<FormState>({ sex: '', age: '', school: '', course: '' });
 
   const update = (key: keyof FormState, value: string) =>
@@ -49,11 +61,51 @@ export default function OnboardingPage() {
 
   const goBack = () => setStep((s) => Math.max(s - 1, 0));
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCourses() {
+      const { data, error } = await supabase.rpc('list_active_courses');
+
+      if (!mounted) {
+        return;
+      }
+
+      if (error) {
+        setCourseError(error.message || 'Unable to load courses.');
+        setCourses([]);
+        setLoadingCourses(false);
+        return;
+      }
+
+      setCourses((data as Course[] | null) || []);
+      setLoadingCourses(false);
+    }
+
+    loadCourses();
+
+    return () => {
+      mounted = false;
+    };
+  }, [supabase]);
+
+  const selectedCourse = courses.find((course) => course.id === form.course);
+
   const handleFinish = async () => {
     setSubmitting(true);
-    // TODO: persist profile to Supabase, then fetch recommended companies for form.course
-    // on the dashboard (superadmin manages the companies-per-course table).
-    await new Promise((r) => setTimeout(r, 600));
+
+    if (currentUser?.id) {
+      const ageValue = Number(form.age);
+
+      await supabase.rpc('save_application_user_profile', {
+        p_user_id: currentUser.id,
+        p_sex: form.sex,
+        p_age: Number.isFinite(ageValue) ? ageValue : null,
+        p_school: form.school,
+        p_course_id: form.course,
+      });
+    }
+
     router.push('/dashboard');
   };
 
@@ -207,21 +259,37 @@ export default function OnboardingPage() {
 
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Course</label>
+                      {courseError && (
+                        <p className="mb-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">
+                          {courseError}
+                        </p>
+                      )}
                       <div className="grid grid-cols-2 gap-2">
-                        {COURSES.map((course) => (
+                        {loadingCourses ? (
+                          <div className="col-span-2 flex h-20 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-400">
+                            Loading courses...
+                          </div>
+                        ) : courses.length === 0 ? (
+                          <div className="col-span-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm font-semibold text-slate-400">
+                            No active courses are available.
+                          </div>
+                        ) : (
+                          courses.map((course) => (
                           <button
-                            key={course}
+                            key={course.id}
                             type="button"
-                            onClick={() => update('course', course)}
+                            onClick={() => update('course', course.id)}
                             className={`h-11 rounded-xl border text-sm font-semibold transition-colors ${
-                              form.course === course
+                              form.course === course.id
                                 ? 'border-blue-600 bg-blue-600 text-white'
                                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                             }`}
+                            title={course.name}
                           >
-                            {course}
+                            {course.code}
                           </button>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </div>
                   </div>
@@ -243,7 +311,7 @@ export default function OnboardingPage() {
                       ['Sex', form.sex || '—'],
                       ['Age', form.age || '—'],
                       ['School', form.school || '—'],
-                      ['Course', form.course || '—'],
+                      ['Course', selectedCourse?.code || '—'],
                     ].map(([label, value]) => (
                       <div key={label} className="flex items-center justify-between px-4 py-3">
                         <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">

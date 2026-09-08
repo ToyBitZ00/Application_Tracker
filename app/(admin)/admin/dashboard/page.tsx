@@ -319,14 +319,8 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <main 
-        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
-        style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-10 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
           <header className="flex flex-col gap-2 animate-header-in">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-blue-600" />
@@ -342,7 +336,17 @@ export default function AdminDashboardPage() {
               activity.
             </p>
           </header>
+        </div>
+      </div>
 
+      <main 
+        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
+        style={{
+          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-6 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {error && (
             <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-600">
               {error}

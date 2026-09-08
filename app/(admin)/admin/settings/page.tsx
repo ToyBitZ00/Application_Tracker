@@ -640,11 +640,9 @@ export default function AdminSettingsPage() {
         }}
       />
 
-      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide">
-        <div className="mx-auto max-w-7xl px-5 pb-32 pt-10 sm:px-6 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
-          {/* HEADER ANIMATION CLASS ADDED HERE */}
-          <header className="mb-8 flex flex-col gap-2 animate-header-in">
+      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 pointer-events-auto">
+          <header className="flex flex-col gap-2 animate-header-in">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-blue-600" />
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">
@@ -658,7 +656,11 @@ export default function AdminSettingsPage() {
               Manage the master profile, appearance, security, and session.
             </p>
           </header>
+        </div>
+      </div>
 
+      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide">
+        <div className="mx-auto max-w-7xl px-5 pb-32 pt-6 sm:px-6 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {error && (
             <div className="mb-6 flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
               <AlertCircle size={18} className="mt-0.5 shrink-0" />
