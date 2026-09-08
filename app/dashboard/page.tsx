@@ -160,7 +160,7 @@ export default function DashboardPage() {
   const [notes, setNotes] = useState<SupabaseNote[]>([]);
   const [loadingApplications, setLoadingApplications] = useState(true);
   const tableSectionRef = useRef<HTMLElement | null>(null);
-  const [showRecommended, setShowRecommended] = useState(true);
+  const [showRecommended, setShowRecommended] = useState<boolean | null>(null);
   const [recommendedCompanies, setRecommendedCompanies] = useState<
     RecommendedCompany[]
   >([]);
@@ -463,7 +463,7 @@ export default function DashboardPage() {
 
           {/* RECOMMENDED COMPANIES */}
           <AnimatePresence>
-            {showRecommended &&
+            {showRecommended === true &&
               (
                 <motion.section
                   key="recommended-companies"
