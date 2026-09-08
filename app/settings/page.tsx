@@ -43,6 +43,12 @@ type ApplicationUser = {
   updated_at: string;
 };
 
+type Course = {
+  id: string;
+  code: string;
+  name: string;
+};
+
 /* =========================================================
    CONSTANTS
 ========================================================= */
@@ -72,8 +78,6 @@ const THEMES: {
     value: 'system',
   },
 ];
-
-const COURSES = ['BSCS', 'BSBA', 'BSHM', 'BEED', 'BSEd'];
 
 const THEME_STORAGE_KEY = 'application_tracker_theme';
 
@@ -891,10 +895,16 @@ export default function SettingsPage() {
   const [user, setUser] =
     useState<ApplicationUser | null>(null);
 
+  const [courses, setCourses] =
+    useState<Course[]>([]);
+
+  const [loadingCourses, setLoadingCourses] =
+    useState(true);
+
   const [profile, setProfile] = useState({
     fullName: '',
     email: '',
-    program: 'BSCS',
+    program: '',
     targetRole: 'Software Engineer Intern',
     targetLocation: '',
     landingTab: 'Dashboard',
@@ -927,6 +937,34 @@ export default function SettingsPage() {
       media.removeEventListener('change', handleChange);
     };
   }, [theme]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCourses() {
+      const { data, error } = await supabase.rpc('list_active_courses');
+
+      if (!mounted) {
+        return;
+      }
+
+      if (error) {
+        console.error('Supabase courses fetch error:', error);
+        setCourses([]);
+        setLoadingCourses(false);
+        return;
+      }
+
+      setCourses((data as Course[] | null) || []);
+      setLoadingCourses(false);
+    }
+
+    loadCourses();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   /* =====================================================
      LOAD ACCOUNT FROM SUPABASE
@@ -1000,6 +1038,25 @@ export default function SettingsPage() {
           fullName: account.full_name || '',
           showRecommendedCompanies: getShowRecommendedCompanies(account.id),
         }));
+
+        const { data: courseProfile } = await supabase.rpc(
+          'get_application_user_course',
+          {
+            p_user_id: account.id,
+          }
+        );
+
+        const selectedCourseProfile =
+          courseProfile as {
+            course_id?: string | null;
+          } | null;
+
+        if (selectedCourseProfile?.course_id) {
+          setProfile((prev) => ({
+            ...prev,
+            program: selectedCourseProfile.course_id || '',
+          }));
+        }
       } catch (error) {
         console.error(error);
 
@@ -1093,6 +1150,23 @@ export default function SettingsPage() {
         updatedUser.id,
         profile.showRecommendedCompanies
       );
+
+      if (profile.program) {
+        const { error: courseError } = await supabase.rpc(
+          'update_application_user_course',
+          {
+            p_user_id: updatedUser.id,
+            p_course_id: profile.program,
+          }
+        );
+
+        if (courseError) {
+          throw new Error(
+            courseError.message ||
+              'Unable to save course.'
+          );
+        }
+      }
 
       setProfileSaved(true);
 
@@ -1441,20 +1515,28 @@ export default function SettingsPage() {
                           Course / Program
                         </label>
 
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          {COURSES.map((course) => {
+                        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2">
+                          {loadingCourses ? (
+                            <div className="col-span-full flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-400">
+                              Loading courses...
+                            </div>
+                          ) : courses.length === 0 ? (
+                            <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-center text-xs font-semibold text-slate-400">
+                              No active courses are available.
+                            </div>
+                          ) : courses.map((course) => {
                             const isActive =
                               profile.program ===
-                              course;
+                              course.id;
 
                             return (
                               <button
-                                key={course}
+                                key={course.id}
                                 type="button"
                                 onClick={() =>
                                   handleUpdateProfile(
                                     'program',
-                                    course
+                                    course.id
                                   )
                                 }
                                 className={`flex flex-1 items-center justify-center h-11 rounded-xl border text-[11px] sm:text-[12px] font-bold transition-all duration-200 ${
@@ -1471,16 +1553,15 @@ export default function SettingsPage() {
                                   />
                                 )}
 
-                                {course}
+                                {course.code}
                               </button>
                             );
                           })}
                         </div>
 
                         <p className="text-[11px] text-slate-400 mt-1.5">
-                          Course is currently a local setting
-                          because application_users does not
-                          contain a program column.
+                          Course is synced from the admin
+                          courses table in Supabase.
                         </p>
                       </div>
 

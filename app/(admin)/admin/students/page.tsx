@@ -43,6 +43,8 @@ const roleStyles: Record<AccountRole, string> = {
   super_admin: 'border-amber-200 bg-amber-50 text-amber-700',
 };
 
+const PAGE_SIZE = 10;
+
 function formatDate(value: string) {
   const date = new Date(value);
 
@@ -78,6 +80,7 @@ export default function StudentManagementPage() {
   const [loading, setLoading] = useState(true);
   const [savingUserId, setSavingUserId] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   async function loadUsers() {
     if (!currentUser?.id) {
@@ -123,6 +126,21 @@ export default function StudentManagementPage() {
 
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredUsers.length / PAGE_SIZE)
+  );
+  const normalizedPage = Math.min(
+    currentPage,
+    totalPages
+  );
+  const pageStart =
+    (normalizedPage - 1) * PAGE_SIZE;
+  const paginatedUsers = filteredUsers.slice(
+    pageStart,
+    pageStart + PAGE_SIZE
+  );
 
   async function setBlocked(user: ManagedUser, isBlocked: boolean) {
     if (!currentUser?.id) {
@@ -215,17 +233,10 @@ export default function StudentManagementPage() {
       />
 
       {/* ================================================= */}
-      {/* SCROLLABLE CONTENT */}
+      {/* FIXED HEADER */}
       {/* ================================================= */}
-      <main 
-        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
-        style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-10 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
+      <div className="relative z-40 w-full shrink-0 pt-8 pb-4 bg-transparent pointer-events-none">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pointer-events-auto">
           <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between animate-header-in">
             <div>
               <div className="mb-2 flex items-center gap-2">
@@ -260,7 +271,20 @@ export default function StudentManagementPage() {
               </div>
             </div>
           </header>
+        </div>
+      </div>
 
+      {/* ================================================= */}
+      {/* SCROLLABLE CONTENT */}
+      {/* ================================================= */}
+      <main 
+        className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 w-full scroll-smooth scrollbar-hide"
+        style={{
+          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black calc(100% - 60px), transparent 100%)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-6 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <section className="mt-8 rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-xl">
             <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="relative w-full lg:max-w-md">
@@ -268,7 +292,10 @@ export default function StudentManagementPage() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    setCurrentPage(1);
+                  }}
                   placeholder="Search name or username..."
                   className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                 />
@@ -279,9 +306,10 @@ export default function StudentManagementPage() {
                   <Filter size={15} className="text-slate-400" />
                   <select
                     value={roleFilter}
-                    onChange={(event) =>
-                      setRoleFilter(event.target.value as 'all' | AccountRole)
-                    }
+                    onChange={(event) => {
+                      setRoleFilter(event.target.value as 'all' | AccountRole);
+                      setCurrentPage(1);
+                    }}
                     className="bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-pointer"
                   >
                     <option value="all">All roles</option>
@@ -293,9 +321,10 @@ export default function StudentManagementPage() {
 
                 <select
                   value={statusFilter}
-                  onChange={(event) =>
-                    setStatusFilter(event.target.value as 'all' | 'active' | 'blocked')
-                  }
+                  onChange={(event) => {
+                    setStatusFilter(event.target.value as 'all' | 'active' | 'blocked');
+                    setCurrentPage(1);
+                  }}
                   className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none cursor-pointer transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                 >
                   <option value="all">All statuses</option>
@@ -338,7 +367,7 @@ export default function StudentManagementPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredUsers.map((user) => {
+                    paginatedUsers.map((user) => {
                       const isSelf = user.id === currentUser?.id;
                       const isSaving = savingUserId === user.id;
                       const canEditRole =
@@ -428,6 +457,44 @@ export default function StudentManagementPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-b-2xl border-t border-slate-200 bg-slate-50/80 px-5 py-4 text-xs font-medium text-slate-500">
+              <span>
+                Showing {filteredUsers.length === 0 ? 0 : pageStart + 1}-
+                {Math.min(pageStart + PAGE_SIZE, filteredUsers.length)} of{' '}
+                {filteredUsers.length} accounts
+              </span>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-slate-700">
+                  Page {normalizedPage} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) =>
+                      Math.max(1, page - 1)
+                    )
+                  }
+                  disabled={normalizedPage === 1}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) =>
+                      Math.min(totalPages, page + 1)
+                    )
+                  }
+                  disabled={normalizedPage === totalPages}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </section>
         </div>
