@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   User,
+  GraduationCap,
   Palette,
   ChevronRight,
   LogOut,
@@ -43,10 +44,10 @@ type ApplicationUser = {
   updated_at: string;
 };
 
-type Course = {
-  id: string;
-  code: string;
-  name: string;
+type OnboardingProfile = {
+  course_id: string | null;
+  course_code: string | null;
+  course_name: string | null;
 };
 
 /* =========================================================
@@ -895,16 +896,16 @@ export default function SettingsPage() {
   const [user, setUser] =
     useState<ApplicationUser | null>(null);
 
-  const [courses, setCourses] =
-    useState<Course[]>([]);
-
-  const [loadingCourses, setLoadingCourses] =
-    useState(true);
+  const [
+    onboardingProfile,
+    setOnboardingProfile,
+  ] = useState<OnboardingProfile | null>(
+    null
+  );
 
   const [profile, setProfile] = useState({
     fullName: '',
     email: '',
-    program: '',
     targetRole: 'Software Engineer Intern',
     targetLocation: '',
     landingTab: 'Dashboard',
@@ -937,34 +938,6 @@ export default function SettingsPage() {
       media.removeEventListener('change', handleChange);
     };
   }, [theme]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadCourses() {
-      const { data, error } = await supabase.rpc('list_active_courses');
-
-      if (!mounted) {
-        return;
-      }
-
-      if (error) {
-        console.error('Supabase courses fetch error:', error);
-        setCourses([]);
-        setLoadingCourses(false);
-        return;
-      }
-
-      setCourses((data as Course[] | null) || []);
-      setLoadingCourses(false);
-    }
-
-    loadCourses();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   /* =====================================================
      LOAD ACCOUNT FROM SUPABASE
@@ -1039,24 +1012,28 @@ export default function SettingsPage() {
           showRecommendedCompanies: getShowRecommendedCompanies(account.id),
         }));
 
-        const { data: courseProfile } = await supabase.rpc(
-          'get_application_user_course',
+        const {
+          data: onboardingData,
+          error: onboardingError,
+        } = await supabase.rpc(
+          'get_application_user_onboarding_profile',
           {
             p_user_id: account.id,
           }
         );
 
-        const selectedCourseProfile =
-          courseProfile as {
-            course_id?: string | null;
-          } | null;
-
-        if (selectedCourseProfile?.course_id) {
-          setProfile((prev) => ({
-            ...prev,
-            program: selectedCourseProfile.course_id || '',
-          }));
+        if (onboardingError) {
+          console.error(
+            'Supabase onboarding profile fetch error:',
+            onboardingError
+          );
+        } else if (mounted) {
+          setOnboardingProfile(
+            (onboardingData as OnboardingProfile | null) ||
+              null
+          );
         }
+
       } catch (error) {
         console.error(error);
 
@@ -1150,23 +1127,6 @@ export default function SettingsPage() {
         updatedUser.id,
         profile.showRecommendedCompanies
       );
-
-      if (profile.program) {
-        const { error: courseError } = await supabase.rpc(
-          'update_application_user_course',
-          {
-            p_user_id: updatedUser.id,
-            p_course_id: profile.program,
-          }
-        );
-
-        if (courseError) {
-          throw new Error(
-            courseError.message ||
-              'Unable to save course.'
-          );
-        }
-      }
 
       setProfileSaved(true);
 
@@ -1425,12 +1385,6 @@ export default function SettingsPage() {
                         : 'U'}
                     </div>
 
-                    <button
-                      type="button"
-                      className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 transition w-full text-center"
-                    >
-                      Change photo
-                    </button>
                   </div>
 
                   <div className="flex-1">
@@ -1508,60 +1462,34 @@ export default function SettingsPage() {
                         </p>
                       </div>
 
-                      {/* PROGRAM */}
+                      {/* COURSE */}
 
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
                           Course / Program
                         </label>
 
-                        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2">
-                          {loadingCourses ? (
-                            <div className="col-span-full flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-400">
-                              Loading courses...
-                            </div>
-                          ) : courses.length === 0 ? (
-                            <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-center text-xs font-semibold text-slate-400">
-                              No active courses are available.
-                            </div>
-                          ) : courses.map((course) => {
-                            const isActive =
-                              profile.program ===
-                              course.id;
+                        <div className="relative">
+                          <GraduationCap
+                            size={16}
+                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                          />
 
-                            return (
-                              <button
-                                key={course.id}
-                                type="button"
-                                onClick={() =>
-                                  handleUpdateProfile(
-                                    'program',
-                                    course.id
-                                  )
-                                }
-                                className={`flex flex-1 items-center justify-center h-11 rounded-xl border text-[11px] sm:text-[12px] font-bold transition-all duration-200 ${
-                                  isActive
-                                    ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/25 scale-[1.02] ring-2 ring-blue-600/20 z-10'
-                                    : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800'
-                                }`}
-                              >
-                                {isActive && (
-                                  <Check
-                                    size={14}
-                                    strokeWidth={3}
-                                    className="mr-1.5"
-                                  />
-                                )}
-
-                                {course.code}
-                              </button>
-                            );
-                          })}
+                          <input
+                            type="text"
+                            value={
+                              onboardingProfile?.course_code
+                                ? `${onboardingProfile.course_code} - ${onboardingProfile.course_name || ''}`
+                                : 'Not set'
+                            }
+                            readOnly
+                            className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-500 outline-none cursor-not-allowed"
+                          />
                         </div>
 
                         <p className="text-[11px] text-slate-400 mt-1.5">
-                          Course is synced from the admin
-                          courses table in Supabase.
+                          Course is synced from the choice
+                          saved during onboarding.
                         </p>
                       </div>
 
