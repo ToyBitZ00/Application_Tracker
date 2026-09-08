@@ -262,6 +262,17 @@ const INTERVIEW_TAG_OPTIONS = [
   '3rd Interview',
 ];
 
+const STATUS_FILTER_OPTIONS = [
+  {
+    value: 'all',
+    label: 'All statuses',
+  },
+  ...INITIAL_COLUMNS.map((column) => ({
+    value: column.id,
+    label: column.title,
+  })),
+];
+
 /* =========================================================
    HELPERS
 ========================================================= */
@@ -549,6 +560,12 @@ export default function ApplicationsPage() {
 
   const [search, setSearch] =
     useState('');
+
+  const [statusFilter, setStatusFilter] =
+    useState('all');
+
+  const [latestFirst, setLatestFirst] =
+    useState(false);
 
   const [activeCard, setActiveCard] =
     useState<Card | null>(null);
@@ -1877,17 +1894,33 @@ export default function ApplicationsPage() {
     search.trim().toLowerCase();
 
   const filteredCards = (
+    columnId: string,
     cards: Card[]
   ) => {
-    if (!searchQuery) {
-      return cards;
+    if (
+      statusFilter !== 'all' &&
+      statusFilter !== columnId
+    ) {
+      return [];
     }
 
-    return cards.filter(
-      (card) =>
-        `${card.title} ${card.description} ${card.interviewTag}`
-          .toLowerCase()
-          .includes(searchQuery)
+    const matchingCards = searchQuery
+      ? cards.filter(
+          (card) =>
+            `${card.title} ${card.description} ${card.interviewTag}`
+              .toLowerCase()
+              .includes(searchQuery)
+        )
+      : cards;
+
+    if (!latestFirst) {
+      return matchingCards;
+    }
+
+    return [...matchingCards].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime()
     );
   };
 
@@ -2220,22 +2253,59 @@ export default function ApplicationsPage() {
 
                   </div>
 
-                  <button
-                    type="button"
-                    className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"
-                  >
+                  <div className="relative sm:w-44">
                     <SlidersHorizontal
                       size={15}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                     />
 
-                    Filter
-                  </button>
+                    <select
+                      value={statusFilter}
+                      onChange={(event) =>
+                        setStatusFilter(
+                          event.target.value
+                        )
+                      }
+                      className="h-10 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-9 pr-8 text-sm font-medium text-slate-600 outline-none hover:bg-slate-50 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                      title="Filter notes by status"
+                    >
+                      {STATUS_FILTER_OPTIONS.map(
+                        (option) => (
+                          <option
+                            key={
+                              option.value
+                            }
+                            value={
+                              option.value
+                            }
+                          >
+                            {
+                              option.label
+                            }
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
 
                   <button
                     type="button"
-                    className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all"
+                    onClick={() =>
+                      setLatestFirst(
+                        (previous) =>
+                          !previous
+                      )
+                    }
+                    className={`h-10 px-4 rounded-xl border text-sm font-medium transition-all ${
+                      latestFirst
+                        ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm shadow-blue-950/5'
+                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                    title="Show newest notes first"
                   >
-                    Latest
+                    {latestFirst
+                      ? 'Latest on'
+                      : 'Latest'}
                   </button>
 
                 </div>
@@ -2440,6 +2510,7 @@ export default function ApplicationsPage() {
                           column
                         }
                         cards={filteredCards(
+                          column.id,
                           column.cards
                         )}
                         totalCards={

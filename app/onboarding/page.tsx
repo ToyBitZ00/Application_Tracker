@@ -89,24 +89,85 @@ export default function OnboardingPage() {
     };
   }, [supabase]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadSavedProfile() {
+      if (!currentUser?.id) {
+        return;
+      }
+
+      const { data, error } = await supabase.rpc(
+        'get_application_user_onboarding_profile',
+        {
+          p_user_id: currentUser.id,
+        }
+      );
+
+      if (!mounted || error || !data) {
+        return;
+      }
+
+      const savedProfile = data as {
+        sex?: string | null;
+        age?: number | null;
+        school?: string | null;
+        course_id?: string | null;
+      };
+
+      setForm((previous) => ({
+        ...previous,
+        sex: savedProfile.sex || previous.sex,
+        age:
+          savedProfile.age === null ||
+          savedProfile.age === undefined
+            ? previous.age
+            : String(savedProfile.age),
+        school: savedProfile.school || previous.school,
+        course: savedProfile.course_id || previous.course,
+      }));
+    }
+
+    loadSavedProfile();
+
+    return () => {
+      mounted = false;
+    };
+  }, [currentUser?.id, supabase]);
+
   const selectedCourse = courses.find((course) => course.id === form.course);
 
   const handleFinish = async () => {
     setSubmitting(true);
 
-    if (currentUser?.id) {
+    if (!currentUser?.id) {
+      router.push('/login');
+      return;
+    }
+
+    try {
       const ageValue = Number(form.age);
 
-      await supabase.rpc('save_application_user_profile', {
+      const { error } = await supabase.rpc('save_application_user_profile', {
         p_user_id: currentUser.id,
         p_sex: form.sex,
         p_age: Number.isFinite(ageValue) ? ageValue : null,
         p_school: form.school,
         p_course_id: form.course,
       });
-    }
 
-    router.push('/dashboard');
+      if (error) {
+        setCourseError(error.message || 'Unable to save your profile.');
+        setSubmitting(false);
+        return;
+      }
+
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Onboarding save error:', error);
+      setCourseError('Unable to save your profile.');
+      setSubmitting(false);
+    }
   };
 
   return (

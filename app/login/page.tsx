@@ -670,7 +670,7 @@ export default function LoginPage() {
 
       redirectTimer.current =
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/onboarding');
           router.refresh();
         }, 1600);
 
