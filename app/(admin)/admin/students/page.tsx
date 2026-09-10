@@ -249,7 +249,7 @@ export default function StudentManagementPage() {
                 Account Management
               </h1>
               <p className="mt-2 text-sm text-slate-500 md:text-base">
-                Manage logged-in accounts, admin access, and blocked users.
+                Manage logged-in accounts, admin access, and suspended users.
               </p>
             </div>
 
@@ -267,7 +267,7 @@ export default function StudentManagementPage() {
               <div className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm backdrop-blur-xl">
                 <Ban size={17} className="text-red-700" />
                 <p className="mt-2 text-2xl font-bold text-red-950">{totals.blocked}</p>
-                <p className="text-[11px] font-semibold text-red-500">Blocked</p>
+                <p className="text-[11px] font-semibold text-red-500">Suspended</p>
               </div>
             </div>
           </header>
@@ -329,7 +329,7 @@ export default function StudentManagementPage() {
                 >
                   <option value="all">All statuses</option>
                   <option value="active">Active</option>
-                  <option value="blocked">Blocked</option>
+                  <option value="blocked">Suspended</option>
                 </select>
               </div>
             </div>
@@ -413,7 +413,7 @@ export default function StudentManagementPage() {
                                 : 'border-emerald-200 bg-emerald-50 text-emerald-700'
                             }`}>
                               {user.is_blocked ? <Ban size={12} /> : <CheckCircle2 size={12} />}
-                              {user.is_blocked ? 'Blocked' : 'Active'}
+                              {user.is_blocked ? 'Suspended' : 'Active'}
                             </span>
                           </td>
 
@@ -447,7 +447,7 @@ export default function StudentManagementPage() {
                                 }`}
                               >
                                 {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Ban size={13} />}
-                                {user.is_blocked ? 'Unblock' : 'Block'}
+                                {user.is_blocked ? 'Unsuspend' : 'Suspend'}
                               </button>
                             </div>
                           </td>

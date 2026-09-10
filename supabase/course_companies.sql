@@ -90,6 +90,39 @@ begin
 end;
 $$;
 
+create or replace function public.list_recommended_companies_for_user(
+  p_user_id uuid
+)
+returns table (
+  id uuid,
+  name text,
+  description text,
+  location text,
+  website text,
+  role text,
+  logo_url text
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select c.id,
+         c.name,
+         c.description,
+         c.location,
+         c.website,
+         c.role,
+         c.logo_url
+  from public.application_user_profiles aup
+  join public.course_companies cc on cc.course_id = aup.course_id
+  join public.companies c on c.id = cc.company_id
+  where aup.user_id = p_user_id
+  order by c.name asc;
+$$;
+
+grant execute on function public.list_recommended_companies_for_user(uuid)
+  to anon, authenticated;
+
 create or replace function public.create_company_for_admin(
   p_actor_user_id uuid,
   p_name text,

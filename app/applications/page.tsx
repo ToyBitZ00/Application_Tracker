@@ -776,17 +776,22 @@ export default function ApplicationsPage() {
 
     const loadCompanies = async () => {
       try {
-        const {
-          data,
-          error,
-        } = await supabase
-          .from('companies')
-          .select(
-            'id, name, location, role, description, website, logo_url'
-          )
-          .order('name', {
-            ascending: true,
-          });
+        const currentUser = await getCurrentApplicationUser();
+
+        if (!currentUser) {
+          if (mounted) {
+            setCompanies([]);
+          }
+
+          return;
+        }
+
+        const { data, error } = await supabase.rpc(
+          'list_recommended_companies_for_user',
+          {
+            p_user_id: currentUser.id,
+          }
+        );
 
         if (error || !data) {
           console.error(
@@ -802,9 +807,7 @@ export default function ApplicationsPage() {
         }
 
         const databaseCompanies =
-          (
-            data as SupabaseCompany[]
-          ).map((company) => ({
+          (data as SupabaseCompany[]).map((company) => ({
             id: `supabase-${company.id}`,
             name: company.name,
             location: company.location,
@@ -841,7 +844,7 @@ export default function ApplicationsPage() {
     return () => {
       mounted = false;
     };
-  }, [supabase]);
+  }, [getCurrentApplicationUser, supabase]);
 
   /* =========================================================
      REFRESH FROM SUPABASE
