@@ -70,8 +70,6 @@ type RecommendedCompany = {
   location: string;
 };
 
-const RECOMMENDED_COMPANIES_CACHE_KEY = 'dashboard_recommended_companies';
-
 const statusLabels: Record<string, string> = {
   applied: 'Applied',
   screening: 'Screening',
@@ -215,6 +213,8 @@ export default function DashboardPage() {
         if (mounted) {
           setNotes([]);
           setLoadingApplications(false);
+          setRecommendedCompanies([]);
+          setLoadingRecommended(false);
         }
 
         clearStoredApplicationUser();
@@ -227,6 +227,22 @@ export default function DashboardPage() {
         username: account.username,
         fullName: account.full_name || '',
       });
+
+      const { data: recommendedData, error: recommendedError } =
+        await supabase.rpc('list_recommended_companies_for_user', {
+          p_user_id: account.id,
+        });
+
+      if (recommendedError) {
+        console.error('Error loading recommended companies:', recommendedError);
+      }
+
+      if (mounted) {
+        setRecommendedCompanies(
+          (recommendedData as RecommendedCompany[] | null) || []
+        );
+        setLoadingRecommended(false);
+      }
 
       const { data, error } = await supabase
         .from('application_notes')
@@ -257,69 +273,6 @@ export default function DashboardPage() {
       mounted = false;
     };
   }, [router, supabase]);
-
-  /* ================================================= */
-  /* LOAD RECOMMENDED COMPANIES (cached per session) */
-  /* ================================================= */
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadRecommendedCompanies() {
-      if (typeof window !== 'undefined') {
-        const cached = sessionStorage.getItem(
-          RECOMMENDED_COMPANIES_CACHE_KEY
-        );
-
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached) as RecommendedCompany[];
-            if (parsed.length > 0 && mounted) {
-              setRecommendedCompanies(parsed);
-              setLoadingRecommended(false);
-
-              return;
-            }
-          } catch {
-            sessionStorage.removeItem(RECOMMENDED_COMPANIES_CACHE_KEY);
-          }
-        }
-      }
-
-      const { data, error } = await supabase
-        .from('companies')
-        .select('name, role, location')
-        .order('name', { ascending: true });
-
-      if (error) {
-        console.error('Error loading recommended companies:', error);
-        if (mounted) {
-          setRecommendedCompanies([]);
-          setLoadingRecommended(false);
-        }
-        return;
-      }
-
-      const companies = (data as RecommendedCompany[] | null) || [];
-
-      if (typeof window !== 'undefined' && companies.length > 0) {
-        sessionStorage.setItem(
-          RECOMMENDED_COMPANIES_CACHE_KEY,
-          JSON.stringify(companies)
-        );
-      }
-
-      if (mounted) {
-        setRecommendedCompanies(companies);
-        setLoadingRecommended(false);
-      }
-    }
-
-    loadRecommendedCompanies();
-
-    return () => {
-      mounted = false;
-    };
-  }, [supabase]);
 
   /* ================================================= */
   /* DERIVE TABLE DATA FROM NOTES */

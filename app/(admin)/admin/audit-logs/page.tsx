@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
+  CheckCircle2,
   ClipboardList,
   Filter,
   Loader2,
@@ -112,6 +113,7 @@ export default function AuditLogsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshFeedback, setRefreshFeedback] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -119,7 +121,7 @@ export default function AuditLogsPage() {
     if (!currentUser?.id) {
       setLogs([]);
       setLoading(false);
-      return;
+      return false;
     }
 
     setError('');
@@ -135,11 +137,12 @@ export default function AuditLogsPage() {
       setError(logsError.message || 'Unable to load audit logs.');
       setLogs([]);
       setLoading(false);
-      return;
+      return false;
     }
 
     setLogs((data as AuditLog[] | null) || []);
     setLoading(false);
+    return true;
   };
 
   useEffect(() => {
@@ -150,8 +153,9 @@ export default function AuditLogsPage() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await loadLogs();
+    const refreshed = await loadLogs();
     setIsRefreshing(false);
+    setRefreshFeedback(refreshed);
   };
 
   const handleClearFilters = () => {
@@ -258,9 +262,9 @@ export default function AuditLogsPage() {
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-6 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex flex-col mb-6">
-            <div className="flex flex-col lg:flex-row items-center gap-4">
-              <div className="flex items-center flex-1 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden w-full h-14 transition-all focus-within:ring-4 focus-within:ring-blue-500/10 focus-within:border-blue-500">
-                <div className="relative flex-1 w-full flex items-center h-full">
+            <div className="flex flex-col md:flex-row items-stretch gap-4">
+              <div className="flex items-center min-w-0 md:flex-1 shrink-0 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden w-full h-14 transition-all focus-within:ring-4 focus-within:ring-blue-500/10 focus-within:border-blue-500">
+                <div className="relative min-w-0 flex-1 w-full flex items-center h-full">
                   <Search
                     size={18}
                     className="absolute left-4 text-slate-400 pointer-events-none"
@@ -276,24 +280,29 @@ export default function AuditLogsPage() {
                     className="w-full h-full pl-11 pr-4 bg-transparent text-sm text-slate-800 focus:outline-none placeholder:text-slate-400"
                   />
 
-                  <div className="px-4 text-xs font-semibold text-slate-400 border-l border-slate-200 shrink-0 flex items-center h-full bg-slate-50/50">
+                  <div className="px-2.5 sm:px-4 text-[11px] sm:text-xs font-semibold text-slate-400 whitespace-nowrap shrink-0 flex items-center h-full bg-transparent">
                     {filteredLogs.length} results
                   </div>
 
                   <button
                     type="button"
                     onClick={handleRefresh}
-                    title="Refresh logs"
-                    className="px-4 h-full flex items-center justify-center border-l border-slate-200 bg-white hover:bg-slate-50 text-slate-400 hover:text-blue-600 transition-colors shrink-0 focus:outline-none focus:bg-blue-50"
+                    aria-label={refreshFeedback ? 'Logs refreshed' : 'Refresh logs'}
+                    title={refreshFeedback ? 'Logs refreshed' : 'Refresh logs'}
+                    className="px-3 sm:px-4 h-full flex items-center justify-center border-l border-slate-200 bg-white hover:bg-slate-50 text-slate-400 hover:text-blue-600 transition-colors shrink-0 focus:outline-none focus:bg-blue-50"
                   >
-                    <RefreshCw
-                      size={18}
-                      className={
-                        isRefreshing
-                          ? 'animate-spin text-blue-600'
-                          : ''
-                      }
-                    />
+                    {refreshFeedback && !isRefreshing ? (
+                      <CheckCircle2 size={18} className="text-emerald-600" />
+                    ) : (
+                      <RefreshCw
+                        size={18}
+                        className={
+                          isRefreshing
+                            ? 'animate-spin text-blue-600'
+                            : ''
+                        }
+                      />
+                    )}
                   </button>
                 </div>
               </div>
@@ -301,14 +310,14 @@ export default function AuditLogsPage() {
               <button
                 type="button"
                 onClick={() => setShowFilters((previous) => !previous)}
-                className={`flex items-center justify-center gap-2 h-14 px-6 text-sm font-semibold rounded-2xl transition-all duration-300 active:scale-95 shrink-0 outline-none ${
+                className={`flex w-full md:w-auto items-center justify-center gap-2 h-14 px-6 text-sm font-semibold rounded-2xl transition-all duration-300 active:scale-95 shrink-0 outline-none ${
                   showFilters
                     ? 'bg-blue-700 text-white border border-blue-700 ring-4 ring-blue-500/20 shadow-inner'
                     : 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 shadow-sm hover:shadow-md'
                 }`}
               >
                 <Filter size={18} />
-                <span className="max-lg:hidden">Filters</span>
+                <span>Filters</span>
               </button>
             </div>
 
